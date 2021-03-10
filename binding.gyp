@@ -1,8 +1,8 @@
 {
    "targets": [
       {
-         "target_name": "main",
-         "sources": ["cpp_source/main.cpp"]
+         "target_name": "AvyuktaEngine",
+         "sources": ["AvyuktaEngineSource/jsmain.cpp"]
       }
    ]
 }
