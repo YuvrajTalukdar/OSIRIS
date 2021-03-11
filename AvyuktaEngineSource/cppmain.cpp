@@ -11,7 +11,8 @@ using namespace std;
 
 int main()
 {
-    cout<<"hello world";
-    data_node obj;
+    operation_class operations;
+    database_class db;
+    db.initialize_db();
     return 0;
 }

@@ -1,5 +1,6 @@
 #include<iostream>
 #include<string>
+#include<string.h>//fpr strcasestr
 #include<vector>
 
 using namespace std;
