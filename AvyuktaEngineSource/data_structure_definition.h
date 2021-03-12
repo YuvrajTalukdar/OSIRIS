@@ -33,3 +33,10 @@ struct general_data
     vector<string> node_types;//person,animal,place what node is this? 
     //If it is a person than what is its sex or dob? this kind of info will be implemented using relations and not by node_types.
 };
+
+struct file_info
+{
+    string file_name;
+    unsigned int file_id,start_id,end_id;
+    bool file_full=false;
+};
