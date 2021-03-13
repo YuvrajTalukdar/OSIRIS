@@ -24,7 +24,7 @@ struct data_node
     unsigned int node_id;
     string node_name;
     unsigned int node_type_id;
-    vector<relation> relation_list;
+    vector<unsigned int> relation_id_list;
 };
 
 struct general_data

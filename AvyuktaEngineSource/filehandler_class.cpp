@@ -179,7 +179,6 @@ void filehandler_class::load_file_list()
 
 void filehandler_class::add_new_data_to_filelist(file_info &new_data)
 {
-    cout<<"\ncheck333";
     file_list.push_back(new_data);
     fstream list_file_in(file_list_dir,ios::in);
     unsigned int line_count=0;
@@ -231,7 +230,46 @@ void filehandler_class::add_new_data_to_filelist(file_info &new_data)
 
 void filehandler_class::load_nodes()
 {
-
+    string node_file_dir,line,word;
+    unsigned int line_count,comma_count;
+    for(int a=0;a<file_list.size();a++)
+    {
+        node_file_dir=database_dir+file_list.at(a).file_name;
+        ifstream in_file(node_file_dir,ios::in);
+        line_count=0;
+        while(in_file)
+        {
+            getline(in_file,line);
+            if(in_file.eof())
+            {   break;}
+            if(line_count>1)
+            {
+                comma_count=0;
+                data_node node;
+                for(int b=0;b<line.size();b++)
+                {  
+                    if(line.at(b)!=',')
+                    {   word.push_back(line.at(b));}
+                    else
+                    {   
+                        if(comma_count==0)
+                        {   node.node_id=stoi(word);}
+                        else if(comma_count==1)
+                        {   node.node_name=word;}
+                        else if(comma_count==2)
+                        {   node.node_type_id=stoi(word);}
+                        else
+                        {   node.relation_id_list.push_back(stoi(word));};
+                        word="";
+                        comma_count++;
+                    }
+                }
+                data_node_list.push_back(node);
+            }
+            line_count++;
+        }
+        in_file.close();
+    }
 }
 
 unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_node &node)
@@ -318,9 +356,9 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
     line+=",";
     line+=to_string(node.node_type_id);
     line+=",";
-    for(int a=0;a<node.relation_list.size();a++)
+    for(int a=0;a<node.relation_id_list.size();a++)
     {
-        line+=to_string(node.relation_list.at(a).relation_id);
+        line+=to_string(node.relation_id_list.at(a));
         line+=",";
     }
     line+="\n";
@@ -340,7 +378,7 @@ void filehandler_class::add_new_node(data_node &node)
     // if file not available or if file full create new file
     unsigned int no_of_nodes_in_current_file=0;
     if(file_list.size()==0)//if no file available
-    {   //cout<<"\n\ncheck111";
+    {   
         file_info new_file;
         new_file.file_id=0;
         new_file.file_name="nf"+to_string(0);
@@ -357,7 +395,7 @@ void filehandler_class::add_new_node(data_node &node)
         change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
     }
     else if(file_list.at(file_list.size()-1).file_full)//if file is full
-    {   //cout<<"\n\ncheck2";
+    {   
         file_info new_file;
         new_file.file_id=file_list.at(file_list.size()-1).file_id+1;
         new_file.file_name="nf"+to_string(new_file.file_id);
@@ -375,14 +413,13 @@ void filehandler_class::add_new_node(data_node &node)
     }
     else//if file available and file not full. 
     {
-        cout<<"\n\ncheck4";
         no_of_nodes_in_current_file=write_nodedata_to_file(file_list.at(file_list.size()-1).file_name,node);
         string new_file_dir=database_dir+file_list.at(file_list.size()-1).file_name;
         change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE",to_string(no_of_nodes_in_current_file));
         change_settings(file_list_dir,"NO_OF_NODES",to_string((total_no_of_nodefile-1)*no_of_nodes_in_one_node_file+no_of_nodes_in_current_file));
-        //change settings in node_file_list.csv
+        total_no_of_nodes++;
     }
-    if(no_of_nodes_in_current_file==no_of_nodes_in_one_node_file)
+    if(no_of_nodes_in_current_file==no_of_nodes_in_one_node_file)//for turning the file full value to true in node_file_list.csv. 
     {
         file_list.at(file_list.size()-1).file_full=true;
         ifstream in_file(file_list_dir,ios::in);
@@ -416,5 +453,4 @@ void filehandler_class::add_new_node(data_node &node)
         out_file<<temp_data;
         out_file.close();
     }
-    //write node data
 }

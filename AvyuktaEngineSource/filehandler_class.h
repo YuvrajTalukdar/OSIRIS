@@ -69,4 +69,17 @@ class filehandler_class
             cout<<file_list.at(a).file_id<<","<<file_list.at(a).file_name<<","<<file_list.at(a).start_id<<","<<file_list.at(a).end_id<<endl;
         }
     }
+
+    void test3()
+    {
+        for(int a=0;a<data_node_list.size();a++)
+        {
+            cout<<data_node_list.at(a).node_id<<","<<data_node_list.at(a).node_name<<","<<data_node_list.at(a).node_type_id<<",";
+            for(int b=0;b<data_node_list.at(a).relation_id_list.size();b++)
+            {
+                cout<<data_node_list.at(a).relation_id_list.at(b)<<",";
+            }
+            cout<<"\n";
+        }
+    }
 };
