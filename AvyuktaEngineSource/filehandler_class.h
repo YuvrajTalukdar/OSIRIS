@@ -29,19 +29,30 @@ class filehandler_class
     bool encryption;
     vector<file_info> file_list;
     vector<data_node> data_node_list;
+    vector<unsigned int> gap_node_id_list;
+    vector<relation> relation_list;
+    vector<unsigned int> gap_relation_id_list;
 
     void calc_node_list_size(float);
-
+    //node related private functions
+    unsigned int write_nodedata_to_file(string file_name,data_node&);//ok tested
+    void delete_node_data_from_file(string file_name,unsigned int node_index);
+    void add_new_data_to_filelist(file_info&);//ok tested
+    void load_file_list();//ok tested
+    void set_file_full_status(unsigned int file_id,bool file_full);
+    
     public:
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE"};
-
-    unsigned int write_nodedata_to_file(string file_name,data_node&);
-    void add_new_node(data_node&);
-    void load_nodes();
+    //settings related functions
     void change_settings(string file_dir,string settings_name,string settings_value);//ok tested, Function for changing individual settings of a file.
     unsigned int load_db_settings();//ok tested
-    void load_file_list();//ok tested
-    void add_new_data_to_filelist(file_info&);//ok tested
+    //node related public functions
+    void add_new_node(data_node&);
+    void load_nodes();//ok tested
+    void delete_node(unsigned int node_id);//need to be implemented
+    
+    //relkation related functions
+    void add_new_relation();
 
     void test()//temporary testing function
     {
@@ -81,5 +92,11 @@ class filehandler_class
             }
             cout<<"\n";
         }
+        cout<<"size="<<gap_node_id_list.size()<<endl;
+        for(int a=0;a<gap_node_id_list.size();a++)
+        {
+            cout<<"\nid="<<gap_node_id_list[a];
+        }
+
     }
 };
