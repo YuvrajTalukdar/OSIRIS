@@ -5,6 +5,7 @@
 */
 #include<fstream>
 #include<dirent.h>
+#include<algorithm>
 #include "data_structure_definition.h"
 
 #include<stdlib.h>
@@ -16,6 +17,8 @@ class filehandler_class
     string database_dir="./database/";
     string settings_file_dir="./database/settings.csv";
     string file_list_dir="./database/node_file_list.csv";
+    string relation_type_file_dir="./database/relation_type_list.csv";
+    string node_type_file_dir="./database/node_type_list.csv";
     unsigned int total_no_of_nodes;
     unsigned int total_no_of_nodefile;
     float percent_of_node_in_memory;
@@ -34,29 +37,38 @@ class filehandler_class
     vector<unsigned int> gap_relation_id_list;
 
     void calc_node_list_size(float);
+    bool check_if_file_is_present(string);
     //node related private functions
     unsigned int write_nodedata_to_file(string file_name,data_node&);//ok tested
-    void delete_node_data_from_file(string file_name,unsigned int node_index);
+    void delete_node_data_from_file(string file_name,unsigned int node_index);//ok tested
     void add_new_data_to_filelist(file_info&);//ok tested
-    void load_file_list();//ok tested
-    void set_file_full_status(unsigned int file_id,bool file_full);
+    void load_node_file_list();//ok tested
+    void set_file_full_status(unsigned int file_id,bool file_full);//ok tested
+    //relation related file
+    void load_relation_file_list();
     
     public:
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE"};
+    vector<node_relation_type> node_types;
+    vector<node_relation_type> relation_types;
     //settings related functions
     void change_settings(string file_dir,string settings_name,string settings_value);//ok tested, Function for changing individual settings of a file.
-    unsigned int load_db_settings();//ok tested
+    void load_db_settings();//ok tested
     //node related public functions
-    void add_new_node(data_node&);
+    void add_new_node(data_node&);//ok tested
     void load_nodes();//ok tested
-    void delete_node(unsigned int node_id);//need to be implemented
-    
-    //relkation related functions
-    void add_new_relation();
-
+    void delete_node(unsigned int node_id);//relation part need to be implemented
+    //node relation type related functions
+    void load_node_relation_type(int node_or_relation);//ok tested
+    void add_node_relation_type(string,int);//ok tested
+    void delete_node_relation_type(unsigned int id,int node_or_relation);//ok tested
+    //relation related functions
+    void load_relations();
+    void add_new_relation(relation&);
+    void delete_relation(unsigned int relation_id);
+    //test functions
     void test()//temporary testing function
     {
-        //cout<<"no_of_nodes="<<total_no_of_nodes<<endl;
         cout<<"percent_nodes_in_memory="<<percent_of_node_in_memory<<endl;
         cout<<"encryption="<<encryption<<endl;
         cout<<"author="<<authors[0]<<endl;
@@ -97,6 +109,19 @@ class filehandler_class
         {
             cout<<"\nid="<<gap_node_id_list[a];
         }
+    }
 
+    void test4()
+    {
+        cout<<"node type list:-\n";
+        for(int a=0;a<node_types.size();a++)
+        {
+            cout<<"id="<<node_types.at(a).id<<" type="<<node_types.at(a).type_name<<endl;
+        }
+        cout<<"relation type list:-\n";
+        for(int a=0;a<relation_types.size();a++)
+        {
+            cout<<"id="<<relation_types.at(a).id<<" type="<<relation_types.at(a).type_name<<endl;
+        }
     }
 };

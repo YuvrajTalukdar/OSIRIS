@@ -3,81 +3,61 @@
 void filehandler_class::calc_node_list_size(float percent)
 {   no_of_nodes_in_memory=total_no_of_nodes*percent/100;}
 
-unsigned int filehandler_class::load_db_settings()
+void filehandler_class::load_db_settings()
 {
-    struct dirent *de;
-    DIR *dr=opendir(database_dir.c_str());
-    if(dr==NULL)
-    {   return 1;}
-    else
+    bool settings_file_found=check_if_file_is_present("settings.csv");
+    ifstream settings_file(settings_file_dir,ios::in);
+    string line;
+    while(settings_file)
     {
-        bool settings_file_found=false;
-        while((de=readdir(dr))!=NULL)
+        getline(settings_file,line);//space problem is fixed here.
+        if(settings_file.eof())
+        {   break;}
+        if(strcmp(line.c_str(),"#END")==0)
+        {   break;}
+        else
         {
-            if(strcmp("settings.csv",de->d_name)==0)
+            int count=0;
+            string word="";
+            short int option=-1;
+            for(int a=0;a<line.length();a++)
             {
-                settings_file_found=true;
-
-                ifstream settings_file(settings_file_dir,ios::in);
-                string line;
-                while(settings_file)
+                if(line.at(a)!=',')
+                {   word.push_back(line.at(a));}
+                else
                 {
-                    getline(settings_file,line);//space problem is fixed here.
-                    if(settings_file.eof())
-                    {   break;}
-                    if(strcmp(line.c_str(),"#END")==0)
-                    {   break;}
-                    else
+                    if(count==0)
                     {
-                        int count=0;
-                        string word="";
-                        short int option=-1;
-                        for(int a=0;a<line.length();a++)
+                        for(int b=0;b<4;b++)
                         {
-                            if(line.at(a)!=',')
-                            {   word.push_back(line.at(a));}
-                            else
-                            {
-                                if(count==0)
-                                {
-                                    for(int b=0;b<4;b++)
-                                    {
-                                        string settings_name=settings_list[b]+":";
-                                        if(strcmp(word.c_str(),settings_name.c_str())==0)
-                                        {   option=b;break;}
-                                    }
-                                }
-                                else
-                                {
-                                    if(option==0)
-                                    {   
-                                        if(strcmp(word.c_str(),"true")==0)
-                                        {   encryption=true;}
-                                        else
-                                        {   encryption=false;}
-                                    }
-                                    else if(option==1)
-                                    {   percent_of_node_in_memory=stof(word);}
-                                    else if(option==2)
-                                    {   authors.push_back(word);}
-                                    else if(option==3)
-                                    {   no_of_nodes_in_one_node_file=stoi(word);}
-                                }
-                                word="";
-                                count++;
-                            }
+                            string settings_name=settings_list[b]+":";
+                            if(strcmp(word.c_str(),settings_name.c_str())==0)
+                            {   option=b;break;}
                         }
                     }
+                    else
+                    {
+                        if(option==0)
+                        {   
+                            if(strcmp(word.c_str(),"true")==0)
+                            {   encryption=true;}
+                            else
+                            {   encryption=false;}
+                        }
+                        else if(option==1)
+                        {   percent_of_node_in_memory=stof(word);}
+                        else if(option==2)
+                        {   authors.push_back(word);}
+                        else if(option==3)
+                        {   no_of_nodes_in_one_node_file=stoi(word);}
+                    }
+                    word="";
+                    count++;
                 }
-                settings_file.close();
-                break;
             }
         }
-        if(settings_file_found)
-        {   return 0;}
-        else
-        {   return 2;}
     }
+    settings_file.close();
 }
 
 void filehandler_class::change_settings(string file_dir,string settings_name,string settings_value)
@@ -108,7 +88,7 @@ void filehandler_class::change_settings(string file_dir,string settings_name,str
     new_settings_file.close();
 }
 
-void filehandler_class::load_file_list()
+void filehandler_class::load_node_file_list()
 {
     ifstream list_file(file_list_dir,ios::in);
     string line;
@@ -235,7 +215,7 @@ void filehandler_class::load_nodes()
     gap_node.node_name="gap_node";
     gap_node.node_type_id=0;
     
-    load_file_list();
+    load_node_file_list();
     string node_file_dir,line,word;
     unsigned int line_count,comma_count,previous_id=0;
     for(int a=0;a<file_list.size();a++)
@@ -298,7 +278,7 @@ void filehandler_class::load_nodes()
     }
 }
 
-unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_node &node)
+bool filehandler_class::check_if_file_is_present(string file_name)
 {
     struct dirent *de;
     DIR *dr=opendir(database_dir.c_str());
@@ -308,6 +288,12 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
         if(strcmp(file_name.c_str(),de->d_name)==0)
         {   file_found=true;break;}
     }
+    return file_found;
+}
+
+unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_node &node)
+{
+    bool file_found=check_if_file_is_present(file_name);
     file_name=database_dir+file_name;
     ifstream in_file(file_name,ios::in);
     string temp_data,line,line2;
@@ -657,4 +643,215 @@ void filehandler_class::delete_node(unsigned int node_id)
     {
         cout<<"ERROR!: Index not matching with id.";
     }
+}
+
+void filehandler_class::load_node_relation_type(int node_or_relation)
+{
+    string dir,file_name;
+    if(node_or_relation==0)
+    {   dir=node_type_file_dir;file_name="node_type_list.csv";}
+    else if(node_or_relation==1)
+    {   dir=relation_type_file_dir;file_name="relation_type_list.csv";}
+
+    if(check_if_file_is_present(file_name))
+    {
+        ifstream in_file(dir,ios::in);
+        unsigned int line_count=0,comma_count;
+        string line,word;
+        while(in_file)
+        {
+            getline(in_file,line);
+            if(in_file.eof())
+            {   break;}
+            if(line_count>0)
+            {   
+                node_relation_type obj;
+                comma_count=0;
+                for(int a=0;a<line.length();a++)
+                {
+                    if(line.at(a)!=',')
+                    {   word.push_back(line.at(a));}
+                    else
+                    {
+                        if(comma_count==0)
+                        {   obj.id=stoi(word);}
+                        else if(comma_count==1)
+                        {   obj.type_name=word;}
+                        comma_count++;
+                        word="";
+                    }
+                }
+                if(node_or_relation==0)
+                {   node_types.push_back(obj);}
+                else if(node_or_relation==1)
+                {   relation_types.push_back(obj);}
+            }
+            line_count++;
+        }
+        in_file.close();
+    }
+}
+
+void filehandler_class::add_node_relation_type(string type,int node_or_relation)
+{
+    //check if file node_type_list.csv is present
+    string dir,file_name;
+    if(node_or_relation==0)
+    {   dir=node_type_file_dir;file_name="node_type_list.csv";}
+    else if(node_or_relation==1)
+    {   dir=relation_type_file_dir;file_name="relation_type_list.csv";}
+
+    bool file_found=check_if_file_is_present(file_name);
+    string temp_data;
+    int last_id=-1;
+    if(file_found)
+    {
+        ifstream in_file(dir,ios::in);
+        string line,word,last_line;
+        while(in_file)
+        {
+            getline(in_file,line);
+            if(in_file.eof())
+            {   break;}
+            temp_data+=line;
+            temp_data+="\n";
+            last_line=line;
+        }
+        for(int a=0;a<last_line.length();a++)
+        {
+            if(last_line.at(a)!=',')
+            {   word.push_back(last_line.at(a));}
+            else
+            {
+                last_id=stoi(word);
+                break;
+            }
+        }
+        in_file.close();
+    }
+    else
+    {   
+        if(node_or_relation==0)
+        {   temp_data+="ID,NODE_TYPE,\n";}
+        else if(node_or_relation==1)
+        {   temp_data+="ID,RELATION_TYPE,\n";}
+    }
+    temp_data+=to_string(last_id+1);
+    temp_data+=",";
+    transform(type.begin(), type.end(), type.begin(), ::toupper);
+    temp_data+=type;
+    temp_data+=",";
+    temp_data+="\n";
+    ofstream out_file(dir,ios::out);
+    out_file<<temp_data;
+    out_file.close();
+    node_relation_type obj;
+    obj.id=last_id+1;
+    obj.type_name=type;
+    if(node_or_relation==0)
+    {   node_types.push_back(obj);}
+    else if(node_or_relation==1)
+    {   relation_types.push_back(obj);}
+}
+
+void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_relation)//gap ignorance technique is used here
+{
+    string dir,file_name;
+    if(node_or_relation==0)
+    {   dir=node_type_file_dir;file_name="node_type_list.csv";}
+    else if(node_or_relation==1)
+    {   dir=relation_type_file_dir;file_name="relation_type_list.csv";}
+
+    ifstream in_file(dir,ios::in);
+    string temp_data,line,word;
+    unsigned int line_count=0;
+    while(in_file)
+    {
+        getline(in_file,line);
+        if(in_file.eof())
+        {   break;}
+        if(line_count>0)
+        {
+            for(int a=0;a<line.length();a++)
+            {
+                if(line.at(a)!=',')
+                {   word.push_back(line.at(a));}
+                else
+                {
+                    if(stoi(word)!=id)
+                    {   
+                        temp_data+=line;
+                        temp_data+="\n";
+                    }
+                    word="";
+                    break;
+                }
+            }
+        }
+        else
+        {   
+            temp_data+=line;
+            temp_data+="\n";
+        }
+        line_count++;
+    }
+    in_file.close();
+    ofstream out_file(dir,ios::out);
+    out_file<<temp_data;
+    out_file.close();
+    //Binary search is done here
+    if(node_or_relation==0)
+    {
+        int left=0,right=node_types.size()-1,mid;
+        bool found=false;
+        while(left <= right)
+        {   
+            mid=left+(right-left)/2;
+            if(node_types.at(mid).id==id)
+            {   found=true;break;}
+            else if(node_types.at(mid).id>id)
+            {   right=mid-1;}
+            else if(node_types.at(mid).id<id)
+            {   left=mid+1;}
+        }
+        if(found)
+        {   node_types.erase(node_types.begin()+mid);}
+    }
+    else if(node_or_relation==1)
+    {
+        int left=0,right=relation_types.size()-1,mid;
+        bool found=false;
+        while(left <= right)
+        {
+            mid=left+(right-left)/2;
+            if(relation_types.at(mid).id==id)
+            {   found=true;break;}
+            else if(relation_types.at(mid).id>id)
+            {   right=mid-1;}
+            else if(relation_types.at(mid).id<id)
+            {   left=mid+1;}
+        }
+        if(found)
+        {   relation_types.erase(relation_types.begin()+mid);}
+    }
+}
+
+void filehandler_class::load_relation_file_list()
+{
+     
+}
+
+void filehandler_class::load_relations()
+{
+
+}
+
+void filehandler_class::add_new_relation(relation &relation)
+{
+
+}
+
+void filehandler_class::delete_relation(unsigned int relation_id)
+{
+
 }
