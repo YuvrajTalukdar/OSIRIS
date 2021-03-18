@@ -2,6 +2,7 @@
 #include<string>
 #include<string.h>//fpr strcasestr
 #include<vector>
+#include<bits/stdc++.h>//for multimap
 
 using namespace std;
 
@@ -26,13 +27,6 @@ struct data_node
     unsigned int node_type_id;
     vector<unsigned int> relation_id_list;
 };
-/*
-struct general_data
-{
-    vector<string> relation_type;//financial, blood, dob, 
-    vector<string> node_types;//person,animal,place what node is this? 
-    //If it is a person than what is its sex or dob? this kind of info will be implemented using relations and not by node_types.
-};*/
 
 struct node_relation_type
 {

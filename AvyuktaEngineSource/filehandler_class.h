@@ -14,11 +14,13 @@
 class filehandler_class
 {
     private:
+    //dir data
     string database_dir="./database/";
     string settings_file_dir="./database/settings.csv";
     string file_list_dir="./database/node_file_list.csv";
     string relation_type_file_dir="./database/relation_type_list.csv";
     string node_type_file_dir="./database/node_type_list.csv";
+    //settings data
     unsigned int total_no_of_nodes;
     unsigned int total_no_of_nodefile;
     float percent_of_node_in_memory;
@@ -27,12 +29,14 @@ class filehandler_class
     unsigned int node_id_upper_range;//includes this value
     unsigned int node_id_lower_range;//includes this value
     vector<string> authors;
-    vector<string> node_file_list;
-    vector<string> relation_file_list;
+    //file related data
     bool encryption;
-    vector<file_info> file_list;
+    //node related data
+    vector<file_info> node_file_list;
     vector<data_node> data_node_list;
+    multimap<string,int> node_meta_list;//nodename, file_list index. This is used for fast search.
     vector<unsigned int> gap_node_id_list;
+    //relation related data
     vector<relation> relation_list;
     vector<unsigned int> gap_relation_id_list;
 
@@ -74,22 +78,13 @@ class filehandler_class
         cout<<"author="<<authors[0]<<endl;
         cout<<"NO OF NODES IN 1 FILE="<<no_of_nodes_in_one_node_file<<endl;
         cout<<"\nNODE FILES:"<<endl;
-        for(int a=0;a<node_file_list.size();a++)
-        {
-            cout<<node_file_list.at(a)<<endl;
-        }
-        cout<<"RELATION FILE LIST:"<<endl;
-        for(int a=0;a<relation_file_list.size();a++)
-        {
-            cout<<relation_file_list[a]<<endl;
-        }
     }
 
     void test2()
     {
-        for(int a=0;a<file_list.size();a++)
+        for(int a=0;a<node_file_list.size();a++)
         {
-            cout<<file_list.at(a).file_id<<","<<file_list.at(a).file_name<<","<<file_list.at(a).start_id<<","<<file_list.at(a).end_id<<endl;
+            cout<<node_file_list.at(a).file_id<<","<<node_file_list.at(a).file_name<<","<<node_file_list.at(a).start_id<<","<<node_file_list.at(a).end_id<<endl;
         }
     }
 
@@ -122,6 +117,17 @@ class filehandler_class
         for(int a=0;a<relation_types.size();a++)
         {
             cout<<"id="<<relation_types.at(a).id<<" type="<<relation_types.at(a).type_name<<endl;
+        }
+    }
+
+    void test5()
+    {
+        cout<<"\n\n";
+        multimap<string,int>::iterator i;
+        i=node_meta_list.begin();
+        for(;i!=node_meta_list.end();i++)
+        {
+            cout<<"name="<<i->first<<" ,index="<<i->second<<endl;
         }
     }
 };
