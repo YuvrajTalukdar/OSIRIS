@@ -14,6 +14,10 @@ struct relation
     unsigned int source_node_id;
     unsigned int destination_node_id;
 
+    double weight=0;
+
+    bool gap_relation=false;
+
     vector<string> source_url_list;
     vector<string> source_local;// if the data is available locally in hdd.
     vector<unsigned int> relation_id_list;//for relation on relation

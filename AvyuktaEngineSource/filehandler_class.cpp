@@ -28,7 +28,7 @@ void filehandler_class::load_db_settings()
                 {
                     if(count==0)
                     {
-                        for(int b=0;b<4;b++)
+                        for(int b=0;b<5;b++)
                         {
                             string settings_name=settings_list[b]+":";
                             if(strcmp(word.c_str(),settings_name.c_str())==0)
@@ -50,6 +50,8 @@ void filehandler_class::load_db_settings()
                         {   authors.push_back(word);}
                         else if(option==3)
                         {   no_of_nodes_in_one_node_file=stoi(word);}
+                        else if(option==4)
+                        {   no_of_relation_in_one_file=stoi(word);}
                     }
                     word="";
                     count++;
@@ -88,9 +90,14 @@ void filehandler_class::change_settings(string file_dir,string settings_name,str
     new_settings_file.close();
 }
 
-void filehandler_class::load_node_file_list()
+void filehandler_class::load_node_relation_file_list(int node_or_relation)
 {
-    ifstream list_file(file_list_dir,ios::in);
+    string dir;
+    if(node_or_relation==0)
+    {   dir=node_file_list_dir;}
+    else if(node_or_relation==1)
+    {   dir=relation_file_list_dir;}
+    ifstream list_file(dir,ios::in);
     string line;
     unsigned int line_count=0;
     while(list_file)
@@ -112,9 +119,19 @@ void filehandler_class::load_node_file_list()
                     if(comma_count==2)
                     {   
                         if(line_count==0)
-                        {   total_no_of_nodes=stoi(word);}
+                        {   
+                            if(node_or_relation==0)
+                            {   total_no_of_nodes=stoi(word);}
+                            else if(node_or_relation==1)
+                            {   total_no_of_relations=stoi(word);}
+                        }
                         else if(line_count==1)
-                        {   total_no_of_nodefile=stoi(word);}
+                        {   
+                            if(node_or_relation==0)
+                            {   total_no_of_nodefile=stoi(word);}
+                            else if(node_or_relation==1)
+                            {   total_on_of_relationfile=stoi(word);}
+                        }
                     }
                     word="";
                 }
@@ -150,17 +167,20 @@ void filehandler_class::load_node_file_list()
                     word="";
                 }
             }
-            node_file_list.push_back(obj1);
+            if(node_or_relation==0)
+            {   node_file_list.push_back(obj1);}
+            else if(node_or_relation==1)
+            {   relation_file_list.push_back(obj1);}
         }
         line_count++;
     }
     list_file.close();
 }
 
-void filehandler_class::add_new_data_to_filelist(file_info &new_data)
+void filehandler_class::add_new_data_to_node_filelist(file_info &new_data)
 {
     node_file_list.push_back(new_data);
-    fstream list_file_in(file_list_dir,ios::in);
+    fstream list_file_in(node_file_list_dir,ios::in);
     unsigned int line_count=0;
     string temp_data,line;
     while(list_file_in)
@@ -203,7 +223,7 @@ void filehandler_class::add_new_data_to_filelist(file_info &new_data)
     else
     {   temp_data+=to_string(0);}
     temp_data+=",\n";
-    ofstream list_file_out(file_list_dir,ios::out);
+    ofstream list_file_out(node_file_list_dir,ios::out);
     list_file_out<<temp_data;
     list_file_out.close();
 }
@@ -215,7 +235,7 @@ void filehandler_class::load_nodes()
     gap_node.node_name="gap_node";
     gap_node.node_type_id=0;
     
-    load_node_file_list();
+    load_node_relation_file_list(0);
     string node_file_dir,line,word;
     unsigned int line_count,comma_count,previous_id=0;
     for(int a=0;a<node_file_list.size();a++)
@@ -252,7 +272,7 @@ void filehandler_class::load_nodes()
                         comma_count++;
                     }
                 }
-                if(node.node_id-previous_id>1)
+                if(node.node_id-previous_id>1)//0+ bug may be present
                 {
                     for(unsigned int b=previous_id+1;b<node.node_id;b++)
                     {
@@ -260,9 +280,6 @@ void filehandler_class::load_nodes()
                         gap_node.node_id=b;
                         data_node_list.push_back(gap_node);
                     }
-                    node_meta_list.insert(make_pair(node.node_name,data_node_list.size()));
-                    data_node_list.push_back(node);
-                    previous_id=node.node_id;
                 }
                 else
                 {
@@ -272,9 +289,10 @@ void filehandler_class::load_nodes()
                         gap_node.node_id=0;
                         data_node_list.push_back(gap_node);
                     }
-                    node_meta_list.insert(make_pair(node.node_name,data_node_list.size()));
-                    data_node_list.push_back(node);previous_id=node.node_id;
                 }
+                node_meta_list.insert(make_pair(node.node_name,data_node_list.size()));
+                data_node_list.push_back(node);
+                previous_id=node.node_id;
             }
             line_count++;
         }
@@ -469,7 +487,7 @@ void filehandler_class::add_new_node(data_node &node)
         {   new_file.file_full=true;}
         else
         {   new_file.file_full=false;}
-        add_new_data_to_filelist(new_file);
+        add_new_data_to_node_filelist(new_file);
         no_of_nodes_in_current_file=write_nodedata_to_file(new_file.file_name,node);
         string new_file_dir=database_dir+new_file.file_name;
         change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
@@ -489,7 +507,7 @@ void filehandler_class::add_new_node(data_node &node)
         total_no_of_nodes++;
         file_name=database_dir+file_name;
         change_settings(file_name,"NO_OF_NODES_IN_THIS_FILE",to_string(no_of_nodes_in_current_file));
-        change_settings(file_list_dir,"NO_OF_NODES",to_string(total_no_of_nodes));
+        change_settings(node_file_list_dir,"NO_OF_NODES",to_string(total_no_of_nodes));
     }
     else if(gap_node_id_list.size()==0 && node_file_list.at(node_file_list.size()-1).file_full)//if file is full
     {   
@@ -503,7 +521,7 @@ void filehandler_class::add_new_node(data_node &node)
         {   new_file.file_full=true;}
         else
         {   new_file.file_full=false;}
-        add_new_data_to_filelist(new_file);
+        add_new_data_to_node_filelist(new_file);
         no_of_nodes_in_current_file=write_nodedata_to_file(new_file.file_name,node);
         string new_file_dir=database_dir+new_file.file_name;
         change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
@@ -514,7 +532,7 @@ void filehandler_class::add_new_node(data_node &node)
         no_of_nodes_in_current_file=write_nodedata_to_file(node_file_list.at(node_file_list.size()-1).file_name,node);
         string new_file_dir=database_dir+node_file_list.at(node_file_list.size()-1).file_name;
         change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE",to_string(no_of_nodes_in_current_file));
-        change_settings(file_list_dir,"NO_OF_NODES",to_string((total_no_of_nodefile-1)*no_of_nodes_in_one_node_file+no_of_nodes_in_current_file));
+        change_settings(node_file_list_dir,"NO_OF_NODES",to_string((total_no_of_nodefile-1)*no_of_nodes_in_one_node_file+no_of_nodes_in_current_file));
         total_no_of_nodes++;
         current_file_id=node_file_list.size()-1;
     }
@@ -525,7 +543,7 @@ void filehandler_class::add_new_node(data_node &node)
 void filehandler_class::set_file_full_status(unsigned int file_id,bool file_full)
 {
     node_file_list.at(file_id).file_full=file_full;
-    ifstream in_file(file_list_dir,ios::in);
+    ifstream in_file(node_file_list_dir,ios::in);
     string temp_data="",line;
     vector<string> line_list;
     while(in_file)
@@ -536,7 +554,7 @@ void filehandler_class::set_file_full_status(unsigned int file_id,bool file_full
         line_list.push_back(line);
     }        
     in_file.close();
-    ofstream out_file(file_list_dir,ios::out);
+    ofstream out_file(node_file_list_dir,ios::out);
     for(int a=0;a<line_list.size();a++)
     {
         if((a-3)!=file_id)
@@ -649,7 +667,7 @@ void filehandler_class::delete_node(unsigned int node_id)
             data_node_list.at(node_id).relation_id_list.clear();
             gap_node_id_list.push_back(node_id);
             //change all the settings from node_file_list.csv
-            change_settings(file_list_dir,"NO_OF_NODES",to_string(total_no_of_nodes));
+            change_settings(node_file_list_dir,"NO_OF_NODES",to_string(total_no_of_nodes));
             set_file_full_status(node_id/no_of_nodes_in_one_node_file,false);
         }
     }
@@ -850,19 +868,300 @@ void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_re
     }
 }
 
-void filehandler_class::load_relation_file_list()
-{
-     
-}
-
 void filehandler_class::load_relations()
 {
+    load_node_relation_file_list(1);
+    relation gap_relation;
+    gap_relation.gap_relation=true;
+    string dir,line,word;
+    unsigned int comma_count=0,line_count=0,previous_id=0;
+    bool is_prev_id_neg=true;
+    for(int a=0;a<relation_file_list.size();a++)
+    {
+        dir=database_dir+relation_file_list.at(a).file_name;
+        ifstream in_file(dir,ios::in);
+        while(in_file)
+        {
+            getline(in_file,line);
+            if(in_file.eof())
+            {   break;}
+            if(strcasestr(line.c_str(),"RELATION_ID"))
+            {
+                relation r1;
+                line_count=0;
+                unsigned int current_line;
+                bool local_source_list_lock=false,source_url_list_lock=false;
+                while(!strcasestr(line.c_str(),"#END"))
+                {   
+                    comma_count=0;
+                    if(strcasestr(line.c_str(),"SOURCE_URL_LIST"))
+                    {   current_line=line_count;source_url_list_lock=true;local_source_list_lock=false;}
+                    else if(strcasestr(line.c_str(),"LOCAL_SOURCE_LIST"))
+                    {   current_line=line_count;source_url_list_lock=false;local_source_list_lock=true;}
+                    if(!source_url_list_lock && !local_source_list_lock)
+                    {   
+                        for(int b=0;b<line.length();b++)
+                        {
+                            if(line.at(b)!=',')
+                            {   word.push_back(line.at(b));}
+                            else
+                            {
+                                if(comma_count==1 && line_count==0)//RELATION_ID
+                                {   r1.relation_id=stoi(word);}
+                                else if(comma_count==1 && line_count==1)//RELATION_TYPE_ID
+                                {   r1.relation_type_id=stoi(word);}
+                                else if(comma_count==1 && line_count==2)//SOURCE_NODE
+                                {   r1.source_node_id=stoi(word);}
+                                else if(comma_count==1 && line_count==3)//DESTINATION_NODE_ID
+                                {   r1.destination_node_id=stoi(word);}
+                                else if(comma_count==1 && line_count==4)//WEIGHT
+                                {   r1.weight=stod(word);}
+                                else if(comma_count>0 && line_count==5)//RELATION_ID_LIST
+                                {   r1.relation_id_list.push_back(stoi(word));}
+                                else if(comma_count>0 && line_count==6)//GROUPED_RELATION_ID_LIST
+                                {   r1.grouped_relation_id_list.push_back(stoi(word));}
+                                word="";
+                                comma_count++;
+                            }
+                        }
+                    }
+                    if(current_line<line_count && source_url_list_lock)//source url list
+                    {   r1.source_url_list.push_back(line);}
+                    else if(current_line<line_count && local_source_list_lock)//source local
+                    {   r1.source_local.push_back(line);}
+                    getline(in_file,line);
+                    line_count++;
+                }
+                if(r1.relation_id-previous_id>1)
+                {
+                    unsigned int b;
+                    if(is_prev_id_neg)
+                    {   b=previous_id;}
+                    else
+                    {   b=previous_id+1;}
+                    for(b;b<r1.relation_id;b++)
+                    {
+                        gap_relation_id_list.push_back(b);
+                        gap_relation.relation_id=b;
+                        relation_list.push_back(gap_relation);
+                    }
+                }
+                if(r1.relation_id-previous_id==1 && previous_id==0 && is_prev_id_neg)
+                {
+                    gap_relation_id_list.push_back(0);
+                    gap_relation.relation_id=0;
+                    relation_list.push_back(gap_relation);
+                }
+                relation_list.push_back(r1);
+                previous_id=r1.relation_id;
+                is_prev_id_neg=false;
+            }
+        }
+        in_file.close();
+    }
+}
 
+unsigned int filehandler_class::write_relationdata_to_file(string file_name,relation &relation)
+{
+    bool file_found=check_if_file_is_present(file_name);
+    file_name=database_dir+file_name;
+    ifstream in_file(file_name,ios::in);
+    string temp_data,line;
+    unsigned int no_of_relation_in_this_file,relation_count=0;
+    temp_data+="NO_OF_RELATIONS_IN_THIS_FILE:,";
+    string word="";
+    unsigned int comma_count=0,id;
+    if(file_found)//for getting the no of_nodes_in_this_file.
+    {
+        getline(in_file,line);
+        for(int a=0;a<line.length();a++)
+        {
+            if(line.at(a)!=',')
+            {   word.push_back(line.at(a));}
+            else
+            {
+                if(comma_count==1)
+                {   no_of_relation_in_this_file=stoi(word);}
+                word="";
+                comma_count++;
+            }
+        }
+        no_of_relation_in_this_file++;
+        temp_data+=to_string(no_of_relation_in_this_file);
+        temp_data+=",\n";
+    }
+    else
+    {
+        no_of_relation_in_this_file=1;
+        temp_data+=to_string(1);
+        temp_data+=",\n";
+    }
+    unsigned int insertion_point=0,block_size=4;
+    if(gap_relation_id_list.size()>0)
+    {   insertion_point=gap_relation_id_list.at(0);}//gap erasing will be donw later.
+    while(in_file || !file_found)
+    {   
+        getline(in_file,line);
+        if(in_file.eof())
+        {   break;}
+        if(strcasestr(line.c_str(),"RELATION_ID") || !file_found)
+        {
+            if(relation_count==insertion_point)
+            {
+                temp_data+="RELATION_ID:,";
+                temp_data+=to_string(relation.relation_id);
+                temp_data+=",\n";
+                temp_data+="RELATION_TYPE_ID:,";
+                temp_data+=to_string(relation.relation_type_id);
+                temp_data+=",\n";
+                temp_data+="SOURCE_NODE_ID:,";
+                temp_data+=to_string(relation.source_node_id);
+                temp_data+=",\n";
+                temp_data+="DESTINATION_NODE_ID:,";
+                temp_data+=to_string(relation.destination_node_id);
+                temp_data+=",\n";
+                temp_data+="WEIGHT:,";
+                temp_data+=to_string(relation.weight);
+                temp_data+=",\n";
+                temp_data+="RELATION_ID_LIST:,";
+                for(int a=0;a<relation.relation_id_list.size();a++)
+                {
+                    temp_data+=to_string(relation.relation_id_list.at(a));
+                    temp_data+=",";
+                }
+                temp_data+="\n";
+                temp_data+="GROUPED_RELATION_ID_LIST:,";
+                for(int a=0;a<relation.grouped_relation_id_list.size();a++)
+                {
+                    temp_data+=to_string(relation.grouped_relation_id_list.at(a));
+                    temp_data+=",";
+                }
+                temp_data+="\n";
+                temp_data+="SOURCE_URL_LIST:,\n";
+                for(int a=0;a<relation.source_url_list.size();a++)
+                {
+                    temp_data+=relation.source_url_list.at(a);
+                    temp_data+="\n";
+                }
+                temp_data+="LOCAL_SOURCE_LIST:,\n";
+                for(int a=0;a<relation.source_local.size();a++)
+                {
+                    temp_data+=relation.source_local.at(a);
+                    temp_data+="\n";
+                }
+                temp_data+="#END\n";
+            }
+            relation_count++;
+        }
+        if(strcmp(line.c_str(),"")!=0)
+        {
+            temp_data+=line;
+            temp_data+="\n";
+        }
+        file_found=true;
+    }
+    in_file.close();
+    ofstream out_file(file_name,ios::out);
+    out_file<<temp_data;
+    out_file.close();
+    return no_of_relation_in_this_file;
+}
+
+void filehandler_class::add_new_data_to_relation_file_list(file_info &new_file)
+{
+    relation_file_list.push_back(new_file);
+    ifstream in_file(relation_file_list_dir,ios::in);
+    unsigned int line_count=0;
+    string temp_data,line;
+    while(in_file)
+    {
+        getline(in_file,line);
+        if(in_file.eof())
+        {   break;}
+        if(line_count==0)
+        {
+            temp_data+="NO_OF_RELATIONS:,";
+            total_no_of_relations++;//this value will be read druing the relation loading process.
+            temp_data+=to_string(total_no_of_relations);
+            temp_data+=",\n";
+        }
+        else if(line_count==1)
+        {
+            temp_data+="NO_OF_RELATIONFILE:,";
+            total_on_of_relationfile++;
+            temp_data+=to_string(total_on_of_relationfile);
+            temp_data+=",\n";
+        }
+        else 
+        {
+            temp_data+=line;
+            temp_data+="\n";
+        }
+        line_count++;
+    }
+    in_file.close();
+    temp_data+=to_string(new_file.file_id);
+    temp_data+=",";
+    temp_data+=new_file.file_name;
+    temp_data+=",";
+    temp_data+=to_string(new_file.start_id);
+    temp_data+=",";
+    temp_data+=to_string(new_file.end_id);
+    temp_data+=",";
+    if(new_file.file_full)
+    {   temp_data+=to_string(1);}
+    else
+    {   temp_data+=to_string(0);}
+    temp_data+=",\n";
+    ofstream file_out(relation_file_list_dir,ios::out);
+    file_out<<temp_data;
+    file_out.close();
 }
 
 void filehandler_class::add_new_relation(relation &relation)
 {
+    unsigned int no_of_relation_in_current_file=0,current_file_id;
+    if(check_if_file_is_present("relation_file_list.csv"))
+    {
+        if(relation_file_list.size()==0)
+        {   cout<<"check1";
+            total_no_of_relations=0;
+            total_on_of_relationfile=0;
+            file_info new_file;
+            new_file.file_id=0;
+            new_file.file_name="rf"+to_string(0);
+            new_file.start_id=0;
+            new_file.end_id=0;
+            relation.relation_id=0;
+            if(no_of_nodes_in_one_node_file==1)
+            {   new_file.file_full=true;}
+            else
+            {   new_file.file_full=false;}
+            add_new_data_to_relation_file_list(new_file);
+            no_of_relation_in_current_file=write_relationdata_to_file(new_file.file_name,relation);
+            string new_file_dir=database_dir+new_file.file_name;
+            change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
+            current_file_id=0;
+        }
+        else if(gap_relation_id_list.size()>0)
+        {
 
+        }
+        else if(gap_relation_id_list.size()==0 && relation_file_list.at(relation_file_list.size()).file_full)
+        {
+
+        }
+        else
+        {
+
+        }
+        if(no_of_relation_in_one_file==no_of_relation_in_current_file)
+        {
+
+        }
+    }
+    else
+    {   cout<<"ERROR!: relation_file_list.csv not found.";}
 }
 
 void filehandler_class::delete_relation(unsigned int relation_id)
