@@ -42,15 +42,15 @@ void database_class::initialize_db()
     r1.source_local.push_back("dir2");
     r1.source_local.push_back("dir3");
     //file_handler.add_new_relation(r1);
-    file_handler.test6();
-    file_handler.test7();
+    //file_handler.test6();
+    //file_handler.test7();
     //file_handler.add_node_relation_type("Blood",1);
     //file_handler.add_node_relation_type("Financial",1);
     
     //file_handler.delete_node_relation_type(1,1);//id, node_or_relation
     //file_handler.delete_node(4);
 
-    //file_handler.test3();
+    file_handler.test3();
     
     //file_handler.test();
     //file_handler.test2();

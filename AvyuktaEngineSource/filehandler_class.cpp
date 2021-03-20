@@ -238,6 +238,7 @@ void filehandler_class::load_nodes()
     load_node_relation_file_list(0);
     string node_file_dir,line,word;
     unsigned int line_count,comma_count,previous_id=0;
+    bool is_prev_id_neg=true;
     for(int a=0;a<node_file_list.size();a++)
     {
         node_file_dir=database_dir+node_file_list.at(a).file_name;
@@ -274,7 +275,12 @@ void filehandler_class::load_nodes()
                 }
                 if(node.node_id-previous_id>1)//0+ bug may be present
                 {
-                    for(unsigned int b=previous_id+1;b<node.node_id;b++)
+                    unsigned int b;
+                    if(is_prev_id_neg)//if first and the next node is missing.
+                    {   b=previous_id;}
+                    else
+                    {   b=previous_id+1;}
+                    for(b;b<node.node_id;b++)
                     {
                         gap_node_id_list.push_back(b);
                         gap_node.node_id=b;
@@ -283,13 +289,14 @@ void filehandler_class::load_nodes()
                 }
                 else
                 {
-                    if(a==0 && line_count==2 && node.node_id!=0)//if the first node is missing
+                    if(node.node_id-previous_id==1 && previous_id==0 && is_prev_id_neg)//if the first node is missing
                     {
                         gap_node_id_list.push_back(0);
                         gap_node.node_id=0;
                         data_node_list.push_back(gap_node);
                     }
                 }
+                is_prev_id_neg=false;
                 node_meta_list.insert(make_pair(node.node_name,data_node_list.size()));
                 data_node_list.push_back(node);
                 previous_id=node.node_id;
