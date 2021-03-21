@@ -24,7 +24,9 @@ void database_class::initialize_db()
     obj2.relation_id_list.push_back(2);
     obj2.relation_id_list.push_back(3);
     obj2.relation_id_list.push_back(4);
-    //file_handler.add_new_node(obj2);
+    file_handler.add_new_node(obj2);
+    //for(int a=0;a<6;a++)
+    //file_handler.delete_node(4);
     
     relation r1;
     r1.source_node_id=0;
@@ -41,7 +43,7 @@ void database_class::initialize_db()
     r1.source_local.push_back("dir1");
     r1.source_local.push_back("dir2");
     r1.source_local.push_back("dir3");
-    file_handler.add_new_relation(r1);
+    //file_handler.add_new_relation(r1);
     //for(int a=0;a<6;a++)
     //file_handler.delete_relation(a);
     //file_handler.test6();
@@ -51,7 +53,7 @@ void database_class::initialize_db()
     //file_handler.add_node_relation_type("Financial",1);
     
     //file_handler.delete_node_relation_type(1,1);//id, node_or_relation
-    //file_handler.delete_node(4);
+    
 
     //file_handler.test3();
     

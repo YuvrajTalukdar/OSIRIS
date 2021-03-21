@@ -326,7 +326,7 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
     file_name=database_dir+file_name;
     ifstream in_file(file_name,ios::in);
     string temp_data,line,line2;
-    unsigned int no_of_nodes_in_this_file;
+    unsigned int no_of_nodes_in_this_file,insertion_index=0;
     temp_data+="NO_OF_NODES_IN_THIS_FILE:,";
     string word="";
     unsigned int comma_count=0,line_count=0,id;
@@ -348,125 +348,59 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
         no_of_nodes_in_this_file++;
         temp_data+=to_string(no_of_nodes_in_this_file);
         temp_data+=",\n";
+        getline(in_file,line);//for the FILE_ID,FILE_NAME,NODE_START_ID,NODE_END_ID,FILE_FULL, line.
+        temp_data+=line;
+        temp_data+="\n";
     }
     else
     {   
-        temp_data+=to_string(0);
+        temp_data+=to_string(1);
+        no_of_nodes_in_this_file=1;
         temp_data+=",\n";
         string heading_line;
         heading_line="NODE_ID,NODE_NAME,NODE_TYPE_ID,RELATION_LIST:-,\n";
         temp_data+=heading_line;
     }
     if(gap_node_id_list.size()>0)
-    {
-        bool position_found=false,this_time_only=false;
-        while(in_file)
-        {
-            getline(in_file,line);
-            if(in_file.eof())
-            {   break;}
-            this_time_only=false;
-            comma_count=0;
-            if(line_count>=1 && !position_found)
-            {
-                word="";
-                for(unsigned int a=0;a<line.length();a++)
-                {
-                    if(line.at(a)!=',')
-                    {   word.push_back(line.at(a));}
-                    else
-                    {   id=stoi(word);break;}
-                }
-                if(id-gap_node_id_list.at(0)==1 || id-gap_node_id_list.at(0)==-1)
-                {   
-                    line2="";
-                    line2+=to_string(node.node_id);
-                    line2+=",";
-                    line2+=node.node_name;
-                    line2+=",";
-                    line2+=to_string(node.node_type_id);
-                    line2+=",";
-                    for(int a=0;a<node.relation_id_list.size();a++)
-                    {
-                        line2+=to_string(node.relation_id_list.at(a));
-                        line2+=",";
-                    }
-                    if(id>gap_node_id_list.at(0))
-                    {
-                        temp_data+=line2;
-                        temp_data+="\n";
-                        temp_data+=line;
-                        temp_data+="\n";
-                    }
-                    else
-                    {
-                        temp_data+=line;
-                        temp_data+="\n";
-                        temp_data+=line2;
-                        temp_data+="\n";
-                    }
-                    position_found=true;
-                    this_time_only=true;
-                }
-            }
-            if(!this_time_only)
-            {
-                temp_data+=line;
-                temp_data+="\n";
-            }
-            line_count++;
-        }
-    }
+    {   insertion_index=gap_node_id_list.at(0);}
     else
-    {
-        string last_line;
-        while(in_file)
+    {   insertion_index=total_no_of_nodes;}
+    node.node_id=insertion_index;
+    
+    line2=to_string(node.node_id)+","+node.node_name+","+to_string(node.node_type_id)+",";
+    for(int a=0;a<node.relation_id_list.size();a++)
+    {   line2+=to_string(node.relation_id_list.at(a));line2+=",";}
+    line2+="\n";
+    
+    bool insertion_done=false;
+    while (in_file)
+    {   
+        getline(in_file,line);
+        if(in_file.eof())
+        {   break;}
+        if(strcmp(line.c_str(),"")!=0)
         {
-            getline(in_file,line);
-            if(in_file.eof())
-            {   break;}
+            word="";
+            for(unsigned int a=0;a<line.length();a++)
+            {
+                if(line.at(a)!=',')
+                {   word.push_back(line.at(a));}
+                else
+                {   id=stoi(word);break;}
+            }
+            if(insertion_index<id && !insertion_done)
+            {   
+                temp_data+=line2;
+                insertion_done=true;
+            }
             temp_data+=line;
-            last_line=line;
             temp_data+="\n";
         }
-        in_file.close();
-        word="";
-        comma_count=0;
-        unsigned int last_node_id=0;
-        for(int a=0;a<last_line.length();a++)
-        {
-            if(last_line.at(a)!=',')
-            {   word.push_back(last_line.at(a));}
-            else
-            {
-                comma_count++;
-                if(comma_count==1)
-                {
-                    last_node_id=stoi(word);
-                    word="";
-                    break;
-                }
-            }
-        }
-        if(!file_found)
-        {   node.node_id=total_no_of_nodes-1;}//total_no_of_nodes value is incremented later on.
-        else
-        {   node.node_id=last_node_id+1;}
-        line="";
-        line+=to_string(node.node_id);
-        line+=",";
-        line+=node.node_name;
-        line+=",";
-        line+=to_string(node.node_type_id);
-        line+=",";
-        for(int a=0;a<node.relation_id_list.size();a++)
-        {
-            line+=to_string(node.relation_id_list.at(a));
-            line+=",";
-        }
-        line+="\n";
-        temp_data+=line;
     }
+    if(!insertion_done)
+    {   temp_data+=line2;}
+    
+    in_file.close();
 
     ofstream out_file(file_name,ios::out);
     out_file<<temp_data;
@@ -483,7 +417,7 @@ void filehandler_class::add_new_node(data_node &node)
     // if file not available or if file full create new file
     unsigned int no_of_nodes_in_current_file=0,current_file_id;
     if(node_file_list.size()==0)//if no file available
-    {   
+    {   //cout<<"\n\ncheck1";
         file_info new_file;
         new_file.file_id=0;
         new_file.file_name="nf"+to_string(0);
@@ -496,12 +430,10 @@ void filehandler_class::add_new_node(data_node &node)
         {   new_file.file_full=false;}
         add_new_data_to_node_filelist(new_file);
         no_of_nodes_in_current_file=write_nodedata_to_file(new_file.file_name,node);
-        string new_file_dir=database_dir+new_file.file_name;
-        change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
         current_file_id=0;
     }
     else if(gap_node_id_list.size()>0)//if gap present.
-    {   
+    {   //cout<<"\n\ncheck2";
         data_node_list.at(gap_node_id_list.at(0)).node_id=gap_node_id_list.at(0);
         data_node_list.at(gap_node_id_list.at(0)).node_name=node.node_name;
         data_node_list.at(gap_node_id_list.at(0)).node_type_id=node.node_type_id;
@@ -512,12 +444,10 @@ void filehandler_class::add_new_node(data_node &node)
         no_of_nodes_in_current_file=write_nodedata_to_file(file_name,node);
         gap_node_id_list.erase(gap_node_id_list.begin());
         total_no_of_nodes++;
-        file_name=database_dir+file_name;
-        change_settings(file_name,"NO_OF_NODES_IN_THIS_FILE",to_string(no_of_nodes_in_current_file));
         change_settings(node_file_list_dir,"NO_OF_NODES",to_string(total_no_of_nodes));
     }
     else if(gap_node_id_list.size()==0 && node_file_list.at(node_file_list.size()-1).file_full)//if file is full
-    {   
+    {   //cout<<"\n\ncheck3";
         file_info new_file;
         new_file.file_id=node_file_list.at(node_file_list.size()-1).file_id+1;
         new_file.file_name="nf"+to_string(new_file.file_id);
@@ -530,18 +460,20 @@ void filehandler_class::add_new_node(data_node &node)
         {   new_file.file_full=false;}
         add_new_data_to_node_filelist(new_file);
         no_of_nodes_in_current_file=write_nodedata_to_file(new_file.file_name,node);
-        string new_file_dir=database_dir+new_file.file_name;
-        change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
         current_file_id=node_file_list.size()-1;
     }
     else//if file available and file not full. 
-    {   
-        no_of_nodes_in_current_file=write_nodedata_to_file(node_file_list.at(node_file_list.size()-1).file_name,node);
-        string new_file_dir=database_dir+node_file_list.at(node_file_list.size()-1).file_name;
-        change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE",to_string(no_of_nodes_in_current_file));
-        change_settings(node_file_list_dir,"NO_OF_NODES",to_string((total_no_of_nodefile-1)*no_of_nodes_in_one_node_file+no_of_nodes_in_current_file));
+    {   //cout<<"\n\ncheck4";
+        unsigned int free_file_index;
+        for(unsigned int a=0;a<node_file_list.size();a++)
+        {
+            if(!node_file_list.at(a).file_full)
+            {   free_file_index=a;break;}
+        }
+        no_of_nodes_in_current_file=write_nodedata_to_file(node_file_list.at(free_file_index).file_name,node);
+        change_settings(node_file_list_dir,"NO_OF_NODES",to_string((free_file_index)*no_of_nodes_in_one_node_file+no_of_nodes_in_current_file));
         total_no_of_nodes++;
-        current_file_id=node_file_list.size()-1;
+        current_file_id=free_file_index;
     }
     if(no_of_nodes_in_current_file==no_of_nodes_in_one_node_file)//for turning the file full value to true in node_file_list.csv. 
     {   set_file_full_status(current_file_id,true,0);}
@@ -691,8 +623,8 @@ void filehandler_class::delete_node(unsigned int node_id)
             
             data_node_list.at(node_id).node_name="gap_node";
             for(int a=0;a<data_node_list.at(node_id).relation_id_list.size();a++)
-            {   //delete the relations
-                delete_relation(data_node_list.at(node_id).relation_id_list.at(a));
+            {   //delete the relations. Enable the line below when dealing with actual data.
+                //delete_relation(data_node_list.at(node_id).relation_id_list.at(a));
             }
             data_node_list.at(node_id).relation_id_list.clear();
             if(gap_node_id_list.size()==0)
@@ -1174,7 +1106,7 @@ void filehandler_class::add_new_relation(relation &relation)
     if(check_if_file_is_present("relation_file_list.csv"))
     {
         if(relation_file_list.size()==0)//ok tested
-        {   cout<<"\n\ncheck1";
+        {   //cout<<"\n\ncheck1";
             total_no_of_relations=0;
             total_on_of_relationfile=0;
             file_info new_file;
@@ -1189,12 +1121,10 @@ void filehandler_class::add_new_relation(relation &relation)
             {   new_file.file_full=false;}
             add_new_data_to_relation_file_list(new_file);//total_no_of_relations++; this happens here.
             no_of_relation_in_current_file=write_relationdata_to_file(new_file.file_name,relation);
-            string new_file_dir=database_dir+new_file.file_name;
-            change_settings(new_file_dir,"NO_OF_NODES_IN_THIS_FILE","1");
             current_file_id=0;
         }
         else if(gap_relation_id_list.size()>0)//ok tested
-        {   cout<<"\n\ncheck2";
+        {   //cout<<"\n\ncheck2";
             relation_list.at(gap_relation_id_list.at(0)).relation_id=gap_relation_id_list.at(0);
             relation_list.at(gap_relation_id_list.at(0)).gap_relation=false;
             relation_list.at(gap_relation_id_list.at(0)).weight=relation.weight;
@@ -1213,12 +1143,10 @@ void filehandler_class::add_new_relation(relation &relation)
             no_of_relation_in_current_file=write_relationdata_to_file(file_name,relation);
             gap_relation_id_list.erase(gap_relation_id_list.begin());
             total_no_of_relations++;
-            file_name=database_dir+file_name;
-            change_settings(file_name,"NO_OF_RELATIONS_IN_THIS_FILE",to_string(no_of_relation_in_current_file));
             change_settings(relation_file_list_dir,"NO_OF_RELATIONS",to_string(total_no_of_relations));
         }
         else if(gap_relation_id_list.size()==0 && relation_file_list.at(relation_file_list.size()-1).file_full)//ok tested
-        {   cout<<"\n\ncheck2";
+        {   //cout<<"\n\ncheck3";
             file_info new_file;
             new_file.file_id=relation_file_list.at(relation_file_list.size()-1).file_id+1;
             new_file.file_name="rf"+to_string(new_file.file_id);
@@ -1231,12 +1159,10 @@ void filehandler_class::add_new_relation(relation &relation)
             {   new_file.file_full=false;}
             add_new_data_to_relation_file_list(new_file);
             no_of_relation_in_current_file=write_relationdata_to_file(new_file.file_name,relation);
-            string new_file_dir=database_dir+new_file.file_name;
-            change_settings(new_file_dir,"NO_OF_RELATIONS_IN_THIS_FILE","1");
             current_file_id=relation_file_list.size()-1;
         }
         else //ok tested
-        {   cout<<"\n\ncheck2";
+        {   //cout<<"\n\ncheck4";
             relation.relation_id=total_no_of_relations;
             unsigned int free_file_index;
             for(unsigned int a=0;a<relation_file_list.size();a++)
@@ -1245,8 +1171,6 @@ void filehandler_class::add_new_relation(relation &relation)
                 {   free_file_index=a;break;}
             }
             no_of_relation_in_current_file=write_relationdata_to_file(relation_file_list.at(free_file_index).file_name,relation);
-            string new_file_dir=database_dir+relation_file_list.at(free_file_index).file_name;
-            change_settings(new_file_dir,"NO_OF_RELATIONS_IN_THIS_FILE",to_string(no_of_relation_in_current_file));
             change_settings(relation_file_list_dir,"NO_OF_RELATIONS",to_string((free_file_index)*no_of_relation_in_one_file+no_of_relation_in_current_file));
             total_no_of_relations++;
             current_file_id=free_file_index;
