@@ -50,12 +50,12 @@ class filehandler_class
     unsigned int write_nodedata_to_file(string file_name,data_node&);//ok tested
     void delete_node_data_from_file(string file_name,unsigned int node_index);//ok tested
     void add_new_data_to_node_filelist(file_info&);//ok tested
-    void set_file_full_status(unsigned int file_id,bool file_full);//ok tested
     //relation related file
     unsigned int write_relationdata_to_file(string file_name,relation &relation);
     void add_new_data_to_relation_file_list(file_info &new_file);
     //both node_relation_functions
     void load_node_relation_file_list(int node_or_relation);//ok tested 0means node 1 means relation.
+    void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//ok tested
 
     public:
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
@@ -170,6 +170,11 @@ class filehandler_class
             cout<<"\nLOCAL LIST4:";
             for(int b=0;b<relation_list[a].source_local.size();b++)
             {   cout<<"\n"<<relation_list[a].source_local[b];}
+        }
+        cout<<"\n\ngap relation:-";
+        for(int a=0;a<gap_relation_id_list.size();a++)
+        {
+            cout<<"\n"<<gap_relation_id_list.at(a);
         }
     }
 };
