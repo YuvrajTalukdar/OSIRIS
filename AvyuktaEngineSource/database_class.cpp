@@ -42,6 +42,8 @@ void database_class::initialize_db()
     r1.source_local.push_back("dir2");
     r1.source_local.push_back("dir3");
     file_handler.add_new_relation(r1);
+    //for(int a=0;a<6;a++)
+    //file_handler.delete_relation(a);
     //file_handler.test6();
     //file_handler.test7();
     
