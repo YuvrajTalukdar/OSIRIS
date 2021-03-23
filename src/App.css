@@ -1,5 +1,7 @@
 .App {
-  text-align: center;
+  background-color: #282c34;
+  display:flex; 
+  justify-content: center;
 }
 
 .App-logo {
@@ -23,6 +25,18 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.Settings-App-Header {
+    background-color: #282c34;
+    min-height: 100vh;
+    min-width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+  }
 
 .App-link {
   color: #61dafb;
