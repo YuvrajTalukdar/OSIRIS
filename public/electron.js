@@ -9,18 +9,10 @@ cpp.dis_f();*/
 const electron = require('electron')
 const path=require('path');
 const is_dev=require('electron-is-dev');
-const {app,BrowserWindow,Menu,ipcMain} = electron;
-const url = require('url');
+const {app,BrowserWindow,Menu,ipcMain,ipcRenderer} = electron;
 
 let mainWindow;
-let settingsWindow;
-
-url.format({
-    pathname:path.join(__dirname,'../build/index.html'),
-    hash:'/',
-    protocol:'file:',
-    slashes:true
-});
+let settingsWindow=null;
 
 app.on('ready', () => 
 {
@@ -30,10 +22,9 @@ app.on('ready', () =>
         height:600,
         title:'OSIRIS',//nitle need to be changes in the html page. It is redundant here.
         webPreferences:
-        {    nodeIntegration:true}
+        {   nodeIntegration:true}
     });
     mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
-    //mainWindow.loadURL('http://localhost:3000');
     mainWindow.on('closed',()=>app.quit());
     mainWindow.setTitle("OSIRIS");
 
@@ -42,22 +33,34 @@ app.on('ready', () =>
 })
 
 function startSettingsWindow()
-{
-    settingsWindow=new BrowserWindow(
+{   
+    if(settingsWindow===null)
     {
-        width:800,
-        height:600,
-        title: 'Settings',
-        webPreferences:
-        {   nodeIntegration:true}
-    });
-    settingsWindow.loadURL(is_dev? 'http://localhost:3000/Settings':`file://${path.join(__dirname,"../build/index.html#/settings")}`);
-    settingsWindow.on('closed',()=>addWindow=null);
-    settingsWindow.setTitle("Settings");
-    if(process.env.NODE_ENV==='production')
-    {   settingsWindow.setMenu(null);}
-    
+        settingsWindow=new BrowserWindow(
+        {
+            width:800,
+            height:600,
+            alwaysOnTop: true,
+            title: 'Settings',
+            webPreferences:
+            {   nodeIntegration:true,
+                preload: path.join(__dirname, './preload.js'),
+                contextIsolation: false 
+            }
+        });
+        settingsWindow.loadURL(is_dev? 'http://localhost:3000/Settings':`file://${path.join(__dirname,"../build/index.html#/settings")}`);
+        settingsWindow.on('closed',()=>settingsWindow=null);
+        settingsWindow.setTitle("Settings");
+        if(process.env.NODE_ENV==='production')
+        {   settingsWindow.setMenu(null);}
+        //mainWindow.hide();
+    }
+    //window.postMessage({testmsg: 'test_message'});
 }
+
+ipcMain.on('cancelButton:pressed',(event,todo)=>{
+    settingsWindow.close();
+});
 
 const mainmenuTemplate=[
     {
@@ -66,7 +69,12 @@ const mainmenuTemplate=[
             {
                 label:'New Node',
                 click()
-                {   }
+                {   
+                    data_list=[];
+                    data_list.push("text1");
+                    data_list.push("text2");
+                    settingsWindow.webContents.send('settings:data',data_list);
+                }
             },
             {
                 label:'Settings',
