@@ -6,7 +6,7 @@
 class database_class
 {
     private:
-    filehandler_class file_handler;
     public:
+    filehandler_class file_handler;
     void initialize_db();
 };

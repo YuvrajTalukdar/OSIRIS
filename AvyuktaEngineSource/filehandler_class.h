@@ -76,6 +76,21 @@ class filehandler_class
     void load_relations();
     void add_new_relation(relation&);
     void delete_relation(unsigned int relation_id);
+    //return functions
+    //return settings
+    unsigned int return_total_no_of_nodes()
+    {   return total_no_of_nodes;}
+    bool return_encryption_status()
+    {   return encryption;}
+    float return_percent_of_nodes_in_memory()
+    {   return percent_of_node_in_memory;}
+    vector<string> return_authors()
+    {   return authors;}
+    unsigned int return_no_of_nodes_in_one_file()
+    {   return no_of_nodes_in_one_node_file;}
+    unsigned int return_no_of_relation_in_one_file()
+    {   return no_of_relation_in_one_file;}
+
     //test functions
     void test()//for settings
     {

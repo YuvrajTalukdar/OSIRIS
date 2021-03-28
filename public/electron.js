@@ -1,10 +1,10 @@
 //test code
-/*
-const cpp=require('../build/Release/AvyuktaEngine');
-const obj1=cpp.initialize_data(2.52,3.45);
-console.log('\nMsg From js= ',obj1.msg);
-console.log('\nresult from js=',obj1.result); 
-cpp.dis_f();*/
+
+const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
+//const obj1=AvyuktaEngine.initialize_data(2.52,3.45);
+//console.log('\nMsg From js= ',obj1.msg);
+//console.log('\nresult from js=',obj1.result); 
+AvyuktaEngine.dis_f();
 
 const electron = require('electron')
 const path=require('path');
@@ -13,6 +13,9 @@ const {app,BrowserWindow,Menu,ipcMain,ipcRenderer} = electron;
 
 let mainWindow;
 let settingsWindow=null;
+
+function initialize_engine()
+{   AvyuktaEngine.initialize_engine();}
 
 app.on('ready', () => 
 {
@@ -30,6 +33,8 @@ app.on('ready', () =>
 
     const mainMenu=Menu.buildFromTemplate(mainmenuTemplate);
     Menu.setApplicationMenu(mainMenu);
+
+    initialize_engine();
 })
 
 function startSettingsWindow()
@@ -62,6 +67,17 @@ ipcMain.on('cancelButton:pressed',(event,todo)=>{
     settingsWindow.close();
 });
 
+ipcMain.on('get_settings_data',(event,todo)=>{
+    var settings_obj=AvyuktaEngine.load_settings();
+    var data={
+        'nodes_in_one_nodefile':settings_obj.nodes_in_one_nodefile,
+        'relation_in_one_file':settings_obj.relation_in_one_file,
+        'percent_of_nodes_in_mem':settings_obj.percent_of_nodes_in_mem,
+        'encryption_status':settings_obj.encryption_status
+    };
+    settingsWindow.webContents.send('settings_data_received',data);
+});
+
 const mainmenuTemplate=[
     {
         label:'File',
@@ -70,10 +86,10 @@ const mainmenuTemplate=[
                 label:'New Node',
                 click()
                 {   
-                    data_list=[];
+                    /*data_list=[];
                     data_list.push("text1");
                     data_list.push("text2");
-                    settingsWindow.webContents.send('settings:data',data_list);
+                    settingsWindow.webContents.send('settings:data',data_list);*/
                 }
             },
             {
