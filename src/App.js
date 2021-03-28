@@ -1,7 +1,7 @@
 import './App.css';
 import Settings from './Settings';
 import Main from './Main';
-import {HashRouter,Route,Link} from 'react-router-dom';
+import {HashRouter,Route} from 'react-router-dom';
 
 function App()
 {   

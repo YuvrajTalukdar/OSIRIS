@@ -174,34 +174,36 @@ class Settings extends React.Component
     {
         var disable_save_button=true;
         
-        if(id==0 && data[0]!=data[1])
+        if(id===0 && data[0]!==data[1])
         {   disable_save_button=false;}
     
         const settings_num1=[...this.state.settings_num];
         for(var a=0;a<settings_num1.length;a++)
         {
-            if(id==settings_num1[a].id)
+            if(id===settings_num1[a].id)
             {   
-                if(data!=settings_num1[a].orig_val)
+                if(data!==settings_num1[a].orig_val)
                 {   disable_save_button=false;}
                 settings_num1[a].value=data; 
             }
-            if(settings_num1[a].value!=settings_num1[a].orig_val)
+            if(settings_num1[a].value!==settings_num1[a].orig_val)
             {   disable_save_button=false;}
         }
         
         this.setState({
             settings_num:settings_num1
         });
-
-        const settings_bool=[...this.state.settings_bool];
-        for(var a=0;a<settings_bool.length;a++)
+        if(id!==0)
         {
-            if(settings_bool[a].orig_val!=settings_bool[a].value)
-            {   disable_save_button=false;break;}
+            const settings_bool=[...this.state.settings_bool];
+            for(a=0;a<settings_bool.length;a++)
+            {
+                if(settings_bool[a].orig_val!==settings_bool[a].value)
+                {   disable_save_button=false;break;}
+            }
         }
         
-        if(this.state.save_button_disabled!=disable_save_button)
+        if(this.state.save_button_disabled!==disable_save_button)
         {
             this.setState({
                 save_button_disabled:disable_save_button
@@ -220,7 +222,7 @@ class Settings extends React.Component
             {   settings_bool[a].display_this=false;}
         }
         const settings_num=[...this.state.settings_num];
-        for(var a=0;a<settings_num.length;a++)
+        for(a=0;a<settings_num.length;a++)
         {
             if(settings_num[a].name.toUpperCase().includes(data.toUpperCase()))
             {   settings_num[a].display_this=true;}
