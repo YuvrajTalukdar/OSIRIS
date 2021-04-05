@@ -7,5 +7,5 @@
 class operation_class
 {
     public:
-    void test();
+    void change_settings(database_class &db,int nodes_in_one_file,int relations_in_one_file,float percent_of_data_in_ram,bool encryption);
 };

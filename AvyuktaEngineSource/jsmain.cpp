@@ -17,17 +17,14 @@ namespace calculate{
 using namespace std;
 using namespace calculate;
 
-float f=-1.12;
 database_class db;
+operation_class op_class;
 
 void Method1(const FunctionCallbackInfo<Value>& args)
 {
     float a=args[0].As<Number>()->Value();
     float b=args[1].As<Number>()->Value();
     float z=a+b;
-    f=z;
-    //cout<<"result="<<z<<" a="<<(a)<<" b="<<b<<endl;
-    //args.GetReturnValue().Set(z);
     
     Isolate* isolate = args.GetIsolate();
     Local<Context> context=isolate->GetCurrentContext();
@@ -51,11 +48,6 @@ void Method1(const FunctionCallbackInfo<Value>& args)
     args.GetReturnValue().Set(obj);
 }
 
-void display_f(const FunctionCallbackInfo<Value>& args)
-{
-    cout<<"\n\nvalue of f is="<<f;
-}
-
 void initialize_engine(const FunctionCallbackInfo<Value>& args)
 {   db.initialize_db();}
 
@@ -64,10 +56,10 @@ void load_settings(const FunctionCallbackInfo<Value>& args)//converts settings d
     Isolate* isolate = args.GetIsolate();
     Local<Object> obj=Object::New(isolate);
     Local<Context> context=isolate->GetCurrentContext();
-    Local<Number> v8_nodes_in_one_nodefile=Number::New(v8::Isolate::GetCurrent(),db.file_handler.return_no_of_nodes_in_one_file());
-    Local<Number> v8_relation_in_one_file=Number::New(v8::Isolate::GetCurrent(),db.file_handler.return_no_of_relation_in_one_file());
-    Local<Number> v8_percent_of_nodes_in_mem=Number::New(v8::Isolate::GetCurrent(),db.file_handler.return_percent_of_nodes_in_memory());
-    Local<Boolean> v8_encryption_status=Boolean::New(v8::Isolate::GetCurrent(),db.file_handler.return_encryption_status());
+    Local<Number> v8_nodes_in_one_nodefile=Number::New(v8::Isolate::GetCurrent(),db.file_handler.no_of_nodes_in_one_node_file);
+    Local<Number> v8_relation_in_one_file=Number::New(v8::Isolate::GetCurrent(),db.file_handler.no_of_relation_in_one_file);
+    Local<Number> v8_percent_of_nodes_in_mem=Number::New(v8::Isolate::GetCurrent(),db.file_handler.percent_of_node_in_memory);
+    Local<Boolean> v8_encryption_status=Boolean::New(v8::Isolate::GetCurrent(),db.file_handler.encryption);
 
     obj->Set(context,v8::String::NewFromUtf8(isolate,"nodes_in_one_nodefile").ToLocalChecked(),v8_nodes_in_one_nodefile).FromJust();
     obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_in_one_file").ToLocalChecked(),v8_relation_in_one_file).FromJust();
@@ -76,13 +68,22 @@ void load_settings(const FunctionCallbackInfo<Value>& args)//converts settings d
     args.GetReturnValue().Set(obj);
 }
 
+void change_settings(const FunctionCallbackInfo<Value>& args)
+{
+    int no_of_nodes_in_one_file=args[0].As<Number>()->Value();
+    int no_of_relation_in_onefile=args[1].As<Number>()->Value();
+    float percent_of_nodes_in_mem=args[2].As<Number>()->Value();
+    bool encryption_status=args[3].As<Boolean>()->Value();
+    op_class.change_settings(db,no_of_nodes_in_one_file,no_of_relation_in_onefile,percent_of_nodes_in_mem,encryption_status);
+}
+
 void Initialize(Local<Object> exports)
 {
     NODE_SET_METHOD(exports,"initialize_data",Method1);
-    NODE_SET_METHOD(exports,"dis_f",display_f);
 
     NODE_SET_METHOD(exports,"initialize_engine",initialize_engine);
     NODE_SET_METHOD(exports,"load_settings",load_settings);
+    NODE_SET_METHOD(exports,"change_settings",change_settings);
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

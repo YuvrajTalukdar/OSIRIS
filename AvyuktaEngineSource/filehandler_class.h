@@ -16,23 +16,10 @@ class filehandler_class
     private:
     //dir data
     string database_dir="./database/";
-    string settings_file_dir="./database/settings.csv";
     string node_file_list_dir="./database/node_file_list.csv";
     string relation_file_list_dir="./database/relation_file_list.csv";
     string relation_type_file_dir="./database/relation_type_list.csv";
     string node_type_file_dir="./database/node_type_list.csv";
-    //settings data
-    unsigned int total_no_of_nodes;
-    unsigned int total_no_of_nodefile;
-    float percent_of_node_in_memory;
-    unsigned int no_of_nodes_in_memory;
-    unsigned int no_of_nodes_in_one_node_file;
-    vector<string> authors;
-    unsigned int total_no_of_relations;
-    unsigned int total_on_of_relationfile;
-    unsigned int no_of_relation_in_one_file;
-    //file related data
-    bool encryption;
     //node related data
     vector<file_info> node_file_list;
     vector<data_node> data_node_list;
@@ -42,7 +29,6 @@ class filehandler_class
     vector<relation> relation_list;
     vector<unsigned int> gap_relation_id_list;
     vector<file_info> relation_file_list;
-
 
     void calc_node_list_size(float);
     bool check_if_file_is_present(string);
@@ -58,6 +44,20 @@ class filehandler_class
     void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//ok tested
 
     public:
+    string settings_file_dir="./database/settings.csv";
+    //settings data
+    unsigned int total_no_of_nodes;
+    unsigned int total_no_of_nodefile;
+    float percent_of_node_in_memory;
+    unsigned int no_of_nodes_in_memory;
+    unsigned int no_of_nodes_in_one_node_file;
+    vector<string> authors;
+    unsigned int total_no_of_relations;
+    unsigned int total_on_of_relationfile;
+    unsigned int no_of_relation_in_one_file;
+    //file related data
+    bool encryption;
+
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
     vector<node_relation_type> node_types;
     vector<node_relation_type> relation_types;
@@ -76,20 +76,6 @@ class filehandler_class
     void load_relations();
     void add_new_relation(relation&);
     void delete_relation(unsigned int relation_id);
-    //return functions
-    //return settings
-    unsigned int return_total_no_of_nodes()
-    {   return total_no_of_nodes;}
-    bool return_encryption_status()
-    {   return encryption;}
-    float return_percent_of_nodes_in_memory()
-    {   return percent_of_node_in_memory;}
-    vector<string> return_authors()
-    {   return authors;}
-    unsigned int return_no_of_nodes_in_one_file()
-    {   return no_of_nodes_in_one_node_file;}
-    unsigned int return_no_of_relation_in_one_file()
-    {   return no_of_relation_in_one_file;}
 
     //test functions
     void test()//for settings

@@ -236,7 +236,22 @@ class Settings extends React.Component
 
     save_settings()
     {
-        window.postMessage({    close_settings: 1});
+        const settings_num=[...this.state.settings_num];
+        if(settings_num[2].value>100)
+        {
+            alert('Settings Percent of data in RAM cannot be more than 100 !');
+        }
+        else
+        {
+            const settings_bool=[...this.state.settings_bool];
+            var data={
+                'nodes_in_one_nodefile':parseInt(settings_num[0].value),
+                'relation_in_one_file':parseInt(settings_num[1].value),
+                'percent_of_nodes_in_mem':parseFloat(settings_num[2].value),
+                'encryption_status':settings_bool[0].value
+            };
+            window.ipcRenderer.send('new_settings',data);
+        }
     }
 
     render()
@@ -372,13 +387,12 @@ class Settings extends React.Component
                                     disabled={this.state.save_button_disabled}
                                     classes={{ root: this.props.classes.button, disabled: this.props.classes.disabled_button }}
                                     onClick={()=>{
-                                        console.log('test======'+window.isElectron)
-                                        alert('test======'+window.isElectron)
+                                        this.save_settings();
                                     }}>Save</Button>
                             </Grid>
                             <Grid item xs={2} container direction="row" alignContent="flex-end" justify="flex-end">
                                 <Button id="cancelButton" variant="contained" color="primary" style={{width:'70%'}}
-                                onClick={()=>{this.save_settings()}}>Close</Button>
+                                onClick={()=>{window.postMessage({close_settings: 1});}}>Close</Button>
                             </Grid>
                         </Grid>
                     </Grid>

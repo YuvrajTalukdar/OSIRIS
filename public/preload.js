@@ -3,7 +3,7 @@ const electron = require('electron');
 
 process.once('loaded', () => 
 {
-    global.ipcRenderer = electron.ipcRenderer;
+    //global.ipcRenderer = electron.ipcRenderer;
   
     window.addEventListener('message', event => 
     {
@@ -11,11 +11,6 @@ process.once('loaded', () =>
         if (message.close_settings === 1) 
         {   ipcRenderer.send('cancelButton:pressed', message);}
     });
-
-    /*ipcRenderer.on('testmsg:electron',(event,todo)=>{
-        console.log('testing565656');
-        window.postMessage({testmsg: 'test_message'});
-    });*/
 });
 
 function init() 

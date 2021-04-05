@@ -1,15 +1,9 @@
-//test code
-
 const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
-//const obj1=AvyuktaEngine.initialize_data(2.52,3.45);
-//console.log('\nMsg From js= ',obj1.msg);
-//console.log('\nresult from js=',obj1.result); 
-AvyuktaEngine.dis_f();
 
 const electron = require('electron')
 const path=require('path');
 const is_dev=require('electron-is-dev');
-const {app,BrowserWindow,Menu,ipcMain,ipcRenderer} = electron;
+const {app,BrowserWindow,Menu,ipcMain} = electron;
 
 let mainWindow;
 let settingsWindow=null;
@@ -51,7 +45,8 @@ function startSettingsWindow()
             {   nodeIntegration:true,
                 preload: path.join(__dirname, './preload.js'),
                 contextIsolation: false 
-            }
+            },
+            resizable:false
         });
         settingsWindow.loadURL(is_dev? 'http://localhost:3000/Settings':`file://${path.join(__dirname,"../build/index.html#/settings")}`);
         settingsWindow.on('closed',()=>settingsWindow=null);
@@ -60,7 +55,6 @@ function startSettingsWindow()
         {   settingsWindow.setMenu(null);}
         //mainWindow.hide();
     }
-    //window.postMessage({testmsg: 'test_message'});
 }
 
 ipcMain.on('cancelButton:pressed',(event,todo)=>{
@@ -76,6 +70,12 @@ ipcMain.on('get_settings_data',(event,todo)=>{
         'encryption_status':settings_obj.encryption_status
     };
     settingsWindow.webContents.send('settings_data_received',data);
+});
+
+ipcMain.on('new_settings',(event,data)=>
+{
+    settingsWindow.close();
+    AvyuktaEngine.change_settings(data.nodes_in_one_nodefile,data.relation_in_one_file,data.percent_of_nodes_in_mem,data.encryption_status);
 });
 
 const mainmenuTemplate=[
