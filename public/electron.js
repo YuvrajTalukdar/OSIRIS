@@ -3,7 +3,7 @@ const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
 const electron = require('electron')
 const path=require('path');
 const is_dev=require('electron-is-dev');
-const {app,BrowserWindow,Menu,ipcMain} = electron;
+const {app,BrowserWindow,Menu,ipcMain,screen} = electron;
 
 let mainWindow;
 let settingsWindow=null;
@@ -13,10 +13,11 @@ function initialize_engine()
 
 app.on('ready', () => 
 {
+    const {height,width} = screen.getPrimaryDisplay().workAreaSize;
     mainWindow = new BrowserWindow(
     {   
-        width:800, 
-        height:600,
+        width:width, 
+        height:height,
         title:'OSIRIS',//nitle need to be changes in the html page. It is redundant here.
         webPreferences:
         {   nodeIntegration:true}
