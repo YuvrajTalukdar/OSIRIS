@@ -12,7 +12,7 @@ const theme = createMuiTheme(
         },
         secondary:
         {   
-            main:"#03DAC5",
+            main:"#FFA500",
             contrastText:"#000000"
         }
     },
@@ -32,7 +32,20 @@ const theme = createMuiTheme(
               height: '4px',
             }
           }
-        }
+        },
+        MuiAutocomplete: {
+            option: {
+              '&[data-focus="true"]': {
+                backgroundColor: 'black',
+                color:'orange'
+              },
+            },
+            listbox:{
+                backgroundColor:'black',
+                color:'#03DAC5'
+            }
+          }
+          
       }
 })
 
