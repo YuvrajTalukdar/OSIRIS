@@ -110,8 +110,6 @@ const useStyles = (theme)=>
     },
     inputRoot: {
         color: "#03DAC5",
-        // This matches the specificity of the default styles at https://github.com/mui-org/material-ui/blob/v4.11.3/packages/material-ui-lab/src/Autocomplete/Autocomplete.js#L90
-        
         "& .MuiOutlinedInput-notchedOutline": {
             borderColor: "#03DAC5"
         },
@@ -245,6 +243,7 @@ class Main extends React.Component
             search_drawer_open:false,
             operation_drawer_open:false,
             relation_node_properties_drawer_open:false,
+            relation_node_properties_icon_color:'primary',
             collaborate_drawer_open:false
         };
         this.handle_drawer=this.handle_drawer.bind(this);
@@ -254,7 +253,6 @@ class Main extends React.Component
     {
         if(drawer_id==0)
         {
-            console.log("check1");
             var color;
             if(this.state.add_drawer_open)
             {   color='primary';}
@@ -266,6 +264,24 @@ class Main extends React.Component
                 search_drawer_open:false,
                 operation_drawer_open:false,
                 relation_node_properties_drawer_open:false,
+                relation_node_properties_icon_color:'primary',
+                collaborate_drawer_open:false
+            });
+        }
+        else if(drawer_id==3)
+        {
+            var color;
+            if(this.state.relation_node_properties_drawer_open)
+            {   color='primary';}
+            else
+            {   color='secondary'}
+            this.setState({
+                add_drawer_open:false,
+                add_icon_color:'primary',
+                search_drawer_open:false,
+                operation_drawer_open:false,
+                relation_node_properties_drawer_open:!this.state.relation_node_properties_drawer_open,
+                relation_node_properties_icon_color:color,
                 collaborate_drawer_open:false
             });
         }
@@ -276,6 +292,7 @@ class Main extends React.Component
         return(
         <ThemeProvider theme={theme}>
             <header className="Settings-Style">
+                {/*-----------------------------------------App Bar--------------------------------------------------- */ }
                 <AppBar  style={{ background: '#242527',paddingLeft: 40 }} className={this.props.classes.appBar}>
                     <Toolbar variant="dense">
                         <Grid container direction="column"  spacing={2} xs={6} alignItems="left">
@@ -321,7 +338,7 @@ class Main extends React.Component
                         </Grid>
                     </Toolbar>
                 </AppBar>
-
+                {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
                 <Drawer variant="persistent"
                  anchor="left"
                  open={this.state.add_drawer_open}
@@ -341,21 +358,25 @@ class Main extends React.Component
                                 </Typography>
                             </Grid>
                             <ListItem>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="New Node Name" 
-                                variant="outlined" 
+                            <Autocomplete
                                 size="small"
-                                InputLabelProps={
-                                    {   className: this.props.classes.textfield_label}}
-                                InputProps={{
-                                    className: this.props.classes.valueTextField,
-                                    classes:{
-                                        root:this.props.classes.root,
-                                        notchedOutline: this.props.classes.valueTextField,
-                                        disabled: this.props.classes.valueTextField
-                                    }
-                                }}/>
+                                classes={this.props.classes}
+                                options={top100Films}
+                                getOptionLabel={(option) => option.title}
+                                style={{ width: 300 }}
+                                renderInput=
+                                {
+                                    (params) => 
+                                        <TextField 
+                                        {...params} label="New Node Name" variant="outlined" 
+                                        InputLabelProps=
+                                        {{   
+                                                ...params.InputLabelProps,
+                                                className: this.props.classes.textfield_label
+                                        }}
+                                        />
+                                }
+                            />
                             </ListItem>
                             <ListItem>
                                 <Autocomplete
@@ -489,7 +510,15 @@ class Main extends React.Component
                         </List>
                     </Grid>
                 </Drawer>
+                {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
+                <Drawer variant="persistent"
+                 anchor="left"
+                 open={this.state.relation_node_properties_drawer_open}
+                 className={this.props.classes.drawer}
+                 classes={{paper: this.props.classes.drawerPaper2,}}>
 
+                </Drawer>
+                {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
                 <Drawer variant="permanent" className={this.props.classes.drawer}
                  classes={{paper: this.props.classes.drawerPaper,}}>
                     <Toolbar variant="dense"/>
@@ -510,7 +539,7 @@ class Main extends React.Component
                             </IconButton>
                         </Tooltip>
                         <Tooltip title="Relation and Node Properties">
-                            <IconButton color="primary">
+                            <IconButton color={this.state.relation_node_properties_icon_color} onClick={()=>this.handle_drawer(3)}>
                                 <CategoryIcon/>
                             </IconButton>
                         </Tooltip>

@@ -36,17 +36,22 @@ const theme = createMuiTheme(
         MuiAutocomplete: {
             option: {
               '&[data-focus="true"]': {
-                backgroundColor: 'black',
+                backgroundColor: '#191919',
                 color:'orange'
               },
             },
             listbox:{
-                backgroundColor:'black',
-                color:'#03DAC5'
-            }
-          }
-          
-      }
+                backgroundColor:'#191919',
+                color:'#03DAC5',
+                border:'1px solid orange'
+            }, 
+            noOptions:{
+                backgroundColor:'#191919',
+                color:'red',
+                border:'1px solid orange'
+            },
+        }      
+    }
 })
 
 export default theme;
