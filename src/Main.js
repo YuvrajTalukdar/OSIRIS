@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Divider,List,ListItem,Popper} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Divider,List,ListItem} from '@material-ui/core';
 import theme from './theme';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import SpeedIcon from '@material-ui/icons/Speed';
@@ -14,6 +14,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import ColorPicker from "material-ui-color-picker";
 
 const useStyles = (theme)=>
 ({
@@ -51,10 +52,16 @@ const useStyles = (theme)=>
     },
     notchedOutline: {},
     list_class:{
-        maxHeight: '100%',
         width: '100%',
         position: 'relative',
         overflow: 'auto',
+    },
+    properties_list_class:{
+        height: "35vh",
+        width: '100%',
+        position: 'relative',
+        overflow: 'auto',
+        border:'1px solid #03DAC5'
     },
     formControl: {
         minWidth: '100%',
@@ -244,9 +251,18 @@ class Main extends React.Component
             operation_drawer_open:false,
             relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
-            collaborate_drawer_open:false
+            collaborate_drawer_open:false,
+            color_picker_hex_value:"#03DAC5"
         };
         this.handle_drawer=this.handle_drawer.bind(this);
+        this.color_picker_handler=this.color_picker_handler.bind(this);
+    }
+
+    color_picker_handler(color)
+    {
+        this.setState({
+            color_picker_hex_value:color
+        });
     }
 
     handle_drawer(drawer_id)
@@ -265,7 +281,7 @@ class Main extends React.Component
                 operation_drawer_open:false,
                 relation_node_properties_drawer_open:false,
                 relation_node_properties_icon_color:'primary',
-                collaborate_drawer_open:false
+                collaborate_drawer_open:false,
             });
         }
         else if(drawer_id==3)
@@ -352,31 +368,30 @@ class Main extends React.Component
                                 <Typography
                                 color="primary"
                                 display="block"
-                                variant="caption"
-                                >
+                                variant="caption">
                                 New Node
                                 </Typography>
                             </Grid>
                             <ListItem>
-                            <Autocomplete
-                                size="small"
-                                classes={this.props.classes}
-                                options={top100Films}
-                                getOptionLabel={(option) => option.title}
-                                style={{ width: 300 }}
-                                renderInput=
-                                {
-                                    (params) => 
-                                        <TextField 
-                                        {...params} label="New Node Name" variant="outlined" 
-                                        InputLabelProps=
-                                        {{   
-                                                ...params.InputLabelProps,
-                                                className: this.props.classes.textfield_label
-                                        }}
-                                        />
-                                }
-                            />
+                                <Autocomplete
+                                    size="small"
+                                    classes={this.props.classes}
+                                    options={top100Films}
+                                    getOptionLabel={(option) => option.title}
+                                    style={{ width: 300 }}
+                                    renderInput=
+                                    {
+                                        (params) => 
+                                            <TextField 
+                                            {...params} label="New Node Name" variant="outlined" 
+                                            InputLabelProps=
+                                            {{   
+                                                    ...params.InputLabelProps,
+                                                    className: this.props.classes.textfield_label
+                                            }}
+                                            />
+                                    }
+                                />
                             </ListItem>
                             <ListItem>
                                 <Autocomplete
@@ -419,8 +434,7 @@ class Main extends React.Component
                                     <Typography
                                         color="primary"
                                         display="block"
-                                        variant="caption"
-                                        >
+                                        variant="caption">
                                         From:
                                     </Typography>
                                     <Autocomplete
@@ -449,8 +463,7 @@ class Main extends React.Component
                                     <Typography
                                         color="primary"
                                         display="block"
-                                        variant="caption"
-                                        >
+                                        variant="caption">
                                         To:
                                     </Typography>
                                     <Autocomplete
@@ -479,8 +492,7 @@ class Main extends React.Component
                                     <Typography
                                         color="primary"
                                         display="block"
-                                        variant="caption"
-                                        >
+                                        variant="caption">
                                         Type:
                                     </Typography>
                                     <Autocomplete
@@ -516,7 +528,108 @@ class Main extends React.Component
                  open={this.state.relation_node_properties_drawer_open}
                  className={this.props.classes.drawer}
                  classes={{paper: this.props.classes.drawerPaper2,}}>
+                    <Toolbar variant="dense"/>
+                    <Grid container direction="column" className={this.props.classes.gridDrawer} xs={12} alignItems="flex-start" justify="flex-start">
+                        <List className={this.props.classes.list_class}> 
+                            <Grid container direction="row" justify="center" alignItems="center">
+                                <Typography
+                                color="primary"
+                                display="block"
+                                variant="caption">
+                                Node Type
+                                </Typography>
+                            </Grid>
+                            <ListItem>
+                                <Grid container direction="row" justify="center" alignItems="center">
+                                    <TextField         
+                                    label='Node Type' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '79%' }}
+                                    InputLabelProps={
+                                    {   className: this.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: this.props.classes.valueTextField,
+                                        classes:{
+                                            root:this.props.classes.root,
+                                            notchedOutline: this.props.classes.valueTextField,
+                                            disabled: this.props.classes.valueTextField
+                                        }
+                                    }}/>
+                                    <IconButton color='primary'>
+                                        <AddIcon/>
+                                    </IconButton>
+                                </Grid>
+                            </ListItem>
+                            <ListItem>
+                                <List className={this.props.classes.properties_list_class}>
 
+                                </List>
+                            </ListItem>
+                            <Divider light classes={{root:this.props.classes.divider}}/>
+                            <ListItem>
+                                <Grid container direction="row" justify="center" alignItems="center">
+                                    <Typography
+                                    color="primary"
+                                    display="block"
+                                    variant="caption">
+                                    Relation Properties
+                                    </Typography>
+                                </Grid>
+                            </ListItem>
+                            <ListItem>
+                                <Grid container direction="row" justify="center" alignItems="center">
+                                    <TextField         
+                                    label='Relation Type' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '100%' }}
+                                    InputLabelProps={
+                                    {   className: this.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: this.props.classes.valueTextField,
+                                        classes:{
+                                            root:this.props.classes.root,
+                                            notchedOutline: this.props.classes.valueTextField,
+                                            disabled: this.props.classes.valueTextField
+                                        }
+                                    }}/>
+                                </Grid>
+                            </ListItem>
+                            <ListItem>
+                                <div className="colorPickerStyle">
+                                    <ColorPicker
+                                        name="color"
+                                        variant='outlined' 
+                                        size="small"
+                                        onChange={color => 
+                                            {
+                                                console.log(color);
+                                                this.color_picker_handler(color);
+                                            }}
+                                        InputProps={{
+                                            value:this.state.color_picker_hex_value, 
+                                            style:{color:this.state.color_picker_hex_value},
+                                            classes:{
+                                                root:this.props.classes.root,
+                                                notchedOutline: this.props.classes.valueTextField,
+                                                disabled: this.props.classes.valueTextField
+                                            }
+                                        }}
+                                        value={this.state.color_picker_hex_value}
+                                    />
+                                </div>
+                            </ListItem>
+                            <ListItem>
+                            <Button variant="contained" size="small" color="primary" style={{width:'100%'}}>Add</Button>
+                            </ListItem>
+                            <ListItem>
+                                <List className={this.props.classes.properties_list_class}>
+
+                                </List>
+                            </ListItem>
+                        </List>
+                    </Grid>
                 </Drawer>
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
                 <Drawer variant="permanent" className={this.props.classes.drawer}

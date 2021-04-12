@@ -47,7 +47,19 @@
 
 ::-webkit-scrollbar 
 {   width: 5px;}
+
+.colorPickerStyle 
+{
+    font-family: sans-serif;
+    text-align: center;
+}
+
+.colorPickerStyle2 
+{
+    background: #394458;
+}
   
+/*For custom scrool bar*/
 /* Track */
 ::-webkit-scrollbar-track 
 {   background: #394458;}

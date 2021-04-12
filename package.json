@@ -17,6 +17,7 @@
     "@testing-library/user-event": "^12.8.3",
     "cross-env": "^7.0.3",
     "electron-is-dev": "^2.0.0",
+    "material-ui-color-picker": "^3.5.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",

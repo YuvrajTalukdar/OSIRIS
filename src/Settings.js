@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import {Grid,List,ListItem,ListItemText,ThemeProvider} from '@material-ui/core';
+import {Grid,List,ListItem,ListItemText,ThemeProvider,DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import theme from './theme';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -95,11 +95,13 @@ class Settings extends React.Component
             settings_num:[],
             settings_bool:[],
             save_button_disabled:true,
-            search_text:""
+            search_text:"",
+            alert_dialog_open:false
         };
         this.add_settings=this.add_settings.bind(this);
         this.change_encryption_status=this.change_encryption_status.bind(this);
         this.enable_save_button=this.enable_save_button.bind(this);
+        this.handleAlertClose=this.handleAlertClose.bind(this);
     }
     add_settings(data)
     {
@@ -238,9 +240,7 @@ class Settings extends React.Component
     {
         const settings_num=[...this.state.settings_num];
         if(settings_num[2].value>100)
-        {
-            alert('Settings Percent of data in RAM cannot be more than 100 !');
-        }
+        {   this.setState({alert_dialog_open:true});}
         else
         {
             const settings_bool=[...this.state.settings_bool];
@@ -253,6 +253,9 @@ class Settings extends React.Component
             window.ipcRenderer.send('new_settings',data);
         }
     }
+
+    handleAlertClose()
+    {   this.setState({alert_dialog_open:false});}
 
     render()
     {   
@@ -307,6 +310,29 @@ class Settings extends React.Component
                                 }/>
                         </Grid>
                         <Grid container direction ="column" xs={12} alignItems="center">
+                            <Dialog
+                                open={this.state.alert_dialog_open}
+                                onClose={this.handleAlertClose}
+                                aria-labelledby="alert-dialog-title"
+                                aria-describedby="alert-dialog-description"
+                                PaperProps={{
+                                    style:{
+                                        backgroundColor:'#191919'
+                                    }
+                                }}
+                            >
+                                <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Alert</span></DialogTitle>
+                                <DialogContent>
+                                    <DialogContentText>
+                                        <span style={{color: 'white'}}>Settings Percent of data in RAM cannot be more than 100 !</span>
+                                    </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={this.handleAlertClose} color="primary">
+                                        Ok
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
                             <div className={this.props.classes.FixedSizedList_props}>
                                 <List className={this.props.classes.list_class}>   
                                 {
