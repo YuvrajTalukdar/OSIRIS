@@ -258,6 +258,7 @@ class Main extends React.Component
             relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
             collaborate_drawer_open:false,
+
             color_picker_hex_value:"#03DAC5",
 
             node_type_data_list:[],
@@ -268,6 +269,7 @@ class Main extends React.Component
             relation_type_data_list:[],
             relation_type_search_text:"",
             relation_type_search_close_button_visible:"none",
+            relation_type_name:"",
 
             permission_dialog_open:false,
             permission_dialog_text:"",
@@ -279,8 +281,12 @@ class Main extends React.Component
         this.add_main_window_data=this.add_main_window_data.bind(this);
         this.search_node_type=this.search_node_type.bind(this);
         this.permission_dialog_options=this.permission_dialog_options.bind(this);
+        this.permission_dialog_yes_clicked=this.permission_dialog_yes_clicked.bind(this);
         this.delete_node_type=this.delete_node_type.bind(this);
         this.add_node_type=this.add_node_type.bind(this);
+        this.add_relation_type=this.add_relation_type.bind(this);
+        this.search_relation_type=this.search_relation_type.bind(this);
+        this.delete_relation_type=this.delete_relation_type.bind(this);
     }
 
     color_picker_handler(color)
@@ -340,7 +346,7 @@ class Main extends React.Component
         }
         if(!found)
         {
-            var data={node_or_relation:0,type:this.state.node_type_name};
+            var data={node_or_relation:0,type:this.state.node_type_name,color_code:""};
             window.ipcRenderer.send('add_node_relation_type',data);
             const newData={
                 id:node_type_list[node_type_list.length-1].id+1,
@@ -375,18 +381,33 @@ class Main extends React.Component
         window.ipcRenderer.send('delete_node_relation_type',data);
         this.delete_node_type_id=-1;
         this.setState({
-            permission_dialog_open:false,
             node_type_data_list:new_node_type_list
         });
     }
 
     permission_dialog_purpose_code=0;
+    permission_dialog_yes_clicked()
+    {
+        this.setState({
+            permission_dialog_open:false,
+        });
+        if(this.permission_dialog_purpose_code==1)
+        {   this.delete_node_type();}
+        else if(this.permission_dialog_purpose_code==2)
+        {
+            this.delete_relation_type();
+        }
+        this.permission_dialog_purpose_code=0;
+    }
+
     permission_dialog_options(option)
     {   
         if(option===1)
         {   
             if(this.permission_dialog_purpose_code==1)
             {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Node Type?"});}
+            else if(this.permission_dialog_purpose_code==2)
+            {this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Relation Type?"});}
         }
         else if(option===0)
         {   
@@ -433,6 +454,78 @@ class Main extends React.Component
                 node_type_data_list:data.node_type_list,
                 relation_type_data_list:data.relation_type_list
             });
+        }
+    }
+
+    delete_relation_type_id=-1;
+    delete_relation_type()
+    {
+        const relation_type_list=[...this.state.relation_type_data_list];
+        const new_relation_type_list=relation_type_list.filter(item=>item.id!=this.delete_relation_type_id);
+
+        var data={
+            'id':this.delete_relation_type_id,
+            'node_or_relation':1
+        }
+        window.ipcRenderer.send('delete_node_relation_type',data);
+        this.delete_relation_type_id=-1;
+        this.setState({
+            relation_type_data_list:new_relation_type_list
+        });
+    }
+
+    search_relation_type(data)
+    {
+        if(data.length>0)
+        {   this.setState({relation_type_search_close_button_visible:"block"});}
+        else
+        {   this.setState({relation_type_search_close_button_visible:"none"});}
+        
+        const relation_type_list=[...this.state.relation_type_data_list];
+        for(var a=0;a<relation_type_list.length;a++)
+        {
+            if(relation_type_list[a].relation_type.toUpperCase().includes(data.toUpperCase()))
+            {   relation_type_list[a].show=true;}
+            else
+            {   relation_type_list[a].show=false;}
+            this.setState({
+                relation_type_data_list:relation_type_list
+            });
+        }
+    }
+
+    add_relation_type()
+    {
+        const relation_type_list=[...this.state.relation_type_data_list];
+
+        var found=false;
+        for(var a=0;a<relation_type_list.length;a++)
+        {
+            if(relation_type_list[a].relation_type.toUpperCase().includes(this.state.relation_type_name.toUpperCase()))
+            {   found=true;break;}
+        }
+        if(!found)
+        {
+            var data={node_or_relation:1,type:this.state.relation_type_name,color_code:this.state.color_picker_hex_value};
+            window.ipcRenderer.send('add_node_relation_type',data);
+            const newData={
+                id:relation_type_list[relation_type_list.length-1].id+1,
+                relation_type:this.state.relation_type_name.toUpperCase(),
+                color_code:this.state.color_picker_hex_value,
+                show:true,
+            }
+            relation_type_list.push(newData);
+            this.search_relation_type("");
+            this.setState({
+                relation_type_data_list:relation_type_list
+            })
+        }
+        else
+        {
+            if(this.state.relation_type_name.length==0)
+            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Enter a relation type name!"});}
+            else
+            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Relation type already present!"});}
         }
     }
 
@@ -493,7 +586,7 @@ class Main extends React.Component
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={e=>{this.delete_node_type();}} color="primary">
+                        <Button onClick={e=>{this.permission_dialog_yes_clicked()}} color="primary">
                             Yes
                         </Button>
                         <Button onClick={e=>{this.permission_dialog_options(0);}} color="primary">
@@ -849,6 +942,10 @@ class Main extends React.Component
                                     variant='outlined' 
                                     size='small'                                          
                                     style={{ width: '100%' }}
+                                    value={this.state.relation_type_name}
+                                    onChange={
+                                        e=>{this.setState({relation_type_name:e.target.value});}
+                                    }
                                     InputLabelProps={
                                     {   className: this.props.classes.textfield_label}}
                                     InputProps={{
@@ -886,7 +983,10 @@ class Main extends React.Component
                                 </div>
                             </ListItem>
                             <ListItem>
-                            <Button variant="contained" size="small" color="primary" style={{width:'100%'}}>Add</Button>
+                            <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
+                            onClick={
+                                e=>{this.add_relation_type();}
+                            }>Add</Button>
                             </ListItem>
                             <ListItem>
                                 <Grid container direction="row" justify="center" alignItems="center">
@@ -895,6 +995,15 @@ class Main extends React.Component
                                     variant='outlined' 
                                     size='small'                                          
                                     style={{ width: '100%' }}
+                                    value={this.state.relation_type_search_text}
+                                    onChange={
+                                        e=>{
+                                            this.setState({
+                                                relation_type_search_text:e.target.value
+                                            });
+                                            this.search_relation_type(e.target.value);
+                                        }
+                                    }
                                     InputLabelProps={
                                     {   className: this.props.classes.textfield_label}}
                                     InputProps={{
@@ -903,13 +1012,49 @@ class Main extends React.Component
                                             root:this.props.classes.root,
                                             notchedOutline: this.props.classes.valueTextField,
                                             disabled: this.props.classes.valueTextField
-                                        }
+                                        },
+                                        endAdornment: 
+                                        (
+                                            <Box display={this.state.relation_type_search_close_button_visible}> 
+                                                <IconButton color='primary' size='small'
+                                                onClick={
+                                                    e=>{
+                                                        this.search_relation_type("");
+                                                        this.setState({relation_type_search_text:""})
+                                                    }
+                                                }>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </Box> 
+                                        ),
                                     }}/>
                                 </Grid>
                             </ListItem>
                             <ListItem>
                                 <List className={this.props.classes.properties_list_class}>
-
+                                {   
+                                    this.state.relation_type_data_list.map(item=>
+                                    {
+                                        if(item.show)
+                                        {
+                                            return(
+                                            <ListItem button key={item.id}>
+                                                <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} />
+                                                <IconButton color='primary' size='small'
+                                                 onClick={
+                                                    e=>{
+                                                        this.delete_relation_type_id=item.id;
+                                                        this.permission_dialog_purpose_code=2;
+                                                        this.permission_dialog_options(1);
+                                                    } 
+                                                 }>
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            </ListItem>
+                                            );
+                                        }
+                                    })
+                                }
                                 </List>
                             </ListItem>
                         </List>
