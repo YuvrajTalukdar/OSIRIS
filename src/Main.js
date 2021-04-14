@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Divider,List,ListItem} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Divider,List,ListItem,ListItemText,Box} from '@material-ui/core';
+import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import theme from './theme';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import SpeedIcon from '@material-ui/icons/Speed';
@@ -9,6 +10,8 @@ import SearchIcon from '@material-ui/icons/Search';
 import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import DeleteIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -238,6 +241,9 @@ const top100Films = [
     { title: 'Monty Python and the Holy Grail', year: 1975 },
   ];
 
+var main_window_data_request_sent=false;
+var type_data_added=false;
+
 class Main extends React.Component
 {
     constructor(props)
@@ -252,10 +258,29 @@ class Main extends React.Component
             relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
             collaborate_drawer_open:false,
-            color_picker_hex_value:"#03DAC5"
+            color_picker_hex_value:"#03DAC5",
+
+            node_type_data_list:[],
+            node_type_search_text:"",
+            node_type_search_close_button_visible:"none",
+            node_type_name:"",
+
+            relation_type_data_list:[],
+            relation_type_search_text:"",
+            relation_type_search_close_button_visible:"none",
+
+            permission_dialog_open:false,
+            permission_dialog_text:"",
+            alert_dialog_open:false,
+            alert_dialog_text:"",
         };
         this.handle_drawer=this.handle_drawer.bind(this);
         this.color_picker_handler=this.color_picker_handler.bind(this);
+        this.add_main_window_data=this.add_main_window_data.bind(this);
+        this.search_node_type=this.search_node_type.bind(this);
+        this.permission_dialog_options=this.permission_dialog_options.bind(this);
+        this.delete_node_type=this.delete_node_type.bind(this);
+        this.add_node_type=this.add_node_type.bind(this);
     }
 
     color_picker_handler(color)
@@ -303,18 +328,186 @@ class Main extends React.Component
         }
     }
 
+    add_node_type()
+    {
+        const node_type_list=[...this.state.node_type_data_list];
+        
+        var found=false;
+        for(var a=0;a<node_type_list.length;a++)
+        {
+            if(node_type_list[a].node_type.toUpperCase().includes(this.state.node_type_name.toUpperCase()))
+            {   found=true;break;}
+        }
+        if(!found)
+        {
+            var data={node_or_relation:0,type:this.state.node_type_name};
+            window.ipcRenderer.send('add_node_relation_type',data);
+            const newData={
+                id:node_type_list[node_type_list.length-1].id+1,
+                node_type:this.state.node_type_name.toUpperCase(),
+                show:true,
+            }
+            node_type_list.push(newData);
+            this.search_node_type("");
+            this.setState({
+                node_type_data_list:node_type_list
+            })
+        }
+        else
+        {
+            if(this.state.node_type_name.length==0)
+            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Enter a node type name!"});}
+            else
+            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Node type already present!"});}
+        }
+    }
+
+    delete_node_type_id=-1;
+    delete_node_type()
+    {
+        const node_type_list=[...this.state.node_type_data_list];
+        const new_node_type_list=node_type_list.filter(item=>item.id!=this.delete_node_type_id);
+        
+        var data={
+            'id':this.delete_node_type_id,
+            'node_or_relation':0
+        }
+        window.ipcRenderer.send('delete_node_relation_type',data);
+        this.delete_node_type_id=-1;
+        this.setState({
+            permission_dialog_open:false,
+            node_type_data_list:new_node_type_list
+        });
+    }
+
+    permission_dialog_purpose_code=0;
+    permission_dialog_options(option)
+    {   
+        if(option===1)
+        {   
+            if(this.permission_dialog_purpose_code==1)
+            {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Node Type?"});}
+        }
+        else if(option===0)
+        {   
+            if(this.permission_dialog_purpose_code==1)
+            {
+                this.delete_node_type_id=-1;
+                this.permission_dialog_purpose_code=0;
+            }
+            this.setState({permission_dialog_open:false,permission_dialog_text:""});
+        }
+    }
+
+    search_node_type(data)
+    {
+        if(data.length>0)
+        {   this.setState({node_type_search_close_button_visible:"block"});}
+        else
+        {   this.setState({node_type_search_close_button_visible:"none"});}
+
+        const node_type_list=[...this.state.node_type_data_list];
+        for(var a=0;a<node_type_list.length;a++)
+        {
+            if(node_type_list[a].node_type.toUpperCase().includes(data.toUpperCase()))
+            {   node_type_list[a].show=true;}
+            else
+            {   node_type_list[a].show=false;}
+            this.setState({
+                node_type_data_list:node_type_list
+            });
+        }
+    }
+
+    add_main_window_data(data)
+    {
+        if(!type_data_added)
+        {
+            type_data_added=true;
+            var a;
+            for(a=0;a<data.node_type_list.length;a++)
+            {   data.node_type_list[a].show=true;}
+            for(a=0;a<data.relation_type_list.length;a++)
+            {   data.relation_type_list[a].show=true;}
+            this.setState({
+                node_type_data_list:data.node_type_list,
+                relation_type_data_list:data.relation_type_list
+            });
+        }
+    }
+
     render()
     {
+        window.ipcRenderer.on('main_window_data_received',(event,data)=>
+        {   this.add_main_window_data(data);});
+        
+        if(!main_window_data_request_sent)
+        {
+            var dummy="";
+            window.ipcRenderer.send('get_main_window_data', dummy);
+            main_window_data_request_sent=true;
+        }
         return(
         <ThemeProvider theme={theme}>
             <header className="Settings-Style">
+                {/*-----------------------------------------Dialogs----------------------------------------------------- */ }
+                {/*Alert Dialog*/}
+                <Dialog
+                    open={this.state.alert_dialog_open}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                    PaperProps={{
+                        style:{
+                            backgroundColor:'#191919'
+                        }
+                    }}
+                >
+                    <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Alert</span></DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            <span style={{color: 'white'}}>{this.state.alert_dialog_text}</span>
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={e=>{this.setState({alert_dialog_open:false,alert_dialog_text:""});}} color="primary">
+                            Ok
+                        </Button>
+                    </DialogActions>
+                    
+                </Dialog>
+                {/*Permission Dialog*/}
+                <Dialog
+                    open={this.state.permission_dialog_open}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                    PaperProps={{
+                        style:{
+                            backgroundColor:'#191919'
+                        }
+                    }}
+                >
+                    <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Alert</span></DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            <span style={{color: 'white'}}>{this.state.permission_dialog_text}</span>
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={e=>{this.delete_node_type();}} color="primary">
+                            Yes
+                        </Button>
+                        <Button onClick={e=>{this.permission_dialog_options(0);}} color="primary">
+                            No
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 {/*-----------------------------------------App Bar--------------------------------------------------- */ }
                 <AppBar  style={{ background: '#242527',paddingLeft: 40 }} className={this.props.classes.appBar}>
                     <Toolbar variant="dense">
                         <Grid container direction="column"  spacing={2} xs={6} alignItems="left">
                             <TextField 
                                 id="SearchSettingsTextField" 
-                                label='Search Settings' 
+                                label='Search Nodes' 
                                 variant='filled' /*fullWidth*/ 
                                 style={{width:'100%',paddingLeft:'1px',paddingRight:'1px',borderRadius: 5}} 
                                 size='small'
@@ -546,6 +739,13 @@ class Main extends React.Component
                                     variant='outlined' 
                                     size='small'                                          
                                     style={{ width: '79%' }}
+                                    onChange={
+                                        e=>{
+                                            this.setState({
+                                                node_type_name:e.target.value
+                                            });
+                                        }
+                                    }
                                     InputLabelProps={
                                     {   className: this.props.classes.textfield_label}}
                                     InputProps={{
@@ -556,14 +756,79 @@ class Main extends React.Component
                                             disabled: this.props.classes.valueTextField
                                         }
                                     }}/>
-                                    <IconButton color='primary'>
+                                    <IconButton color='primary'
+                                     onClick={e=>{this.add_node_type();}}>
                                         <AddIcon/>
                                     </IconButton>
                                 </Grid>
                             </ListItem>
                             <ListItem>
+                                <Grid container direction="row" justify="center" alignItems="center">
+                                    <TextField         
+                                    label='Search Node Types' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '100%' }}
+                                    value={this.state.node_type_search_text}
+                                    onChange={
+                                        e=>{
+                                            this.setState({
+                                                node_type_search_text:e.target.value
+                                            });
+                                            this.search_node_type(e.target.value);
+                                        }
+                                    }
+                                    InputLabelProps={
+                                    {   className: this.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: this.props.classes.valueTextField,
+                                        classes:{
+                                            root:this.props.classes.root,
+                                            notchedOutline: this.props.classes.valueTextField,
+                                            disabled: this.props.classes.valueTextField
+                                        },
+                                        endAdornment: 
+                                        (
+                                            <Box display={this.state.node_type_search_close_button_visible}> 
+                                                <IconButton color='primary' size='small'
+                                                onClick={
+                                                    e=>{
+                                                        this.search_node_type("");
+                                                        this.setState({node_type_search_text:""})
+                                                    }
+                                                }>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </Box> 
+                                        ),
+                                    }}/>
+                                </Grid>
+                            </ListItem>
+                            <ListItem>
                                 <List className={this.props.classes.properties_list_class}>
-
+                                {
+                                    this.state.node_type_data_list.map(item=>
+                                    {
+                                        if(item.show)
+                                        {
+                                            return(
+                                            <ListItem button key={item.id}>
+                                                <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} />
+                                                <IconButton color='primary' size='small'
+                                                 onClick={
+                                                    e=>{
+                                                        this.delete_node_type_id=item.id;
+                                                        this.permission_dialog_purpose_code=1;
+                                                        this.permission_dialog_options(1);
+                                                    } 
+                                                 }>
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            </ListItem>
+                                            );
+                                        }
+                                    })
+                                }
                                 </List>
                             </ListItem>
                             <Divider light classes={{root:this.props.classes.divider}}/>
@@ -622,6 +887,25 @@ class Main extends React.Component
                             </ListItem>
                             <ListItem>
                             <Button variant="contained" size="small" color="primary" style={{width:'100%'}}>Add</Button>
+                            </ListItem>
+                            <ListItem>
+                                <Grid container direction="row" justify="center" alignItems="center">
+                                    <TextField         
+                                    label='Search Relation Types' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '100%' }}
+                                    InputLabelProps={
+                                    {   className: this.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: this.props.classes.valueTextField,
+                                        classes:{
+                                            root:this.props.classes.root,
+                                            notchedOutline: this.props.classes.valueTextField,
+                                            disabled: this.props.classes.valueTextField
+                                        }
+                                    }}/>
+                                </Grid>
                             </ListItem>
                             <ListItem>
                                 <List className={this.props.classes.properties_list_class}>

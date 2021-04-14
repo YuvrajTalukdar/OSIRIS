@@ -3,11 +3,11 @@
 void database_class::initialize_db()
 {   
     file_handler.load_db_settings();
-    /*file_handler.load_node_relation_type(0);
+    file_handler.load_node_relation_type(0);
     file_handler.load_node_relation_type(1);
-    file_handler.load_nodes();
+    /*file_handler.load_nodes();
     file_handler.load_relations();*/
-    cout<<"\n\ntesting from deep inside cpp\n";
+    //cout<<"\n\ntesting from deep inside cpp\n";
     /*struct dirent *de;
     DIR *dr=opendir(".");
     bool file_found=false;
@@ -56,15 +56,15 @@ void database_class::initialize_db()
     //file_handler.test6();
     //file_handler.test7();
     
-    //file_handler.add_node_relation_type("Blood",1);
-    //file_handler.add_node_relation_type("Financial",1);
+    //file_handler.add_node_relation_type("Place",0,"");
+    //file_handler.add_node_relation_type("Financial",1,"#FFAa00");
     
     //file_handler.delete_node_relation_type(1,1);//id, node_or_relation
     
 
     //file_handler.test3();
     
-    file_handler.test();
+    //file_handler.test();
     //file_handler.test2();
     //file_handler.test4();
     

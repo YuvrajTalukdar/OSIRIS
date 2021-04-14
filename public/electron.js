@@ -20,7 +20,10 @@ app.on('ready', () =>
         height:height,
         title:'OSIRIS',//nitle need to be changes in the html page. It is redundant here.
         webPreferences:
-        {   nodeIntegration:true}
+        {   nodeIntegration:true,
+            preload: path.join(__dirname, './preload.js'),
+            contextIsolation: false 
+        }
     });
     mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
     mainWindow.on('closed',()=>app.quit());
@@ -32,6 +35,25 @@ app.on('ready', () =>
     initialize_engine();
 })
 
+/*Main window functions*/
+ipcMain.on('get_main_window_data',(event,todo)=>{
+    let obj1=AvyuktaEngine.get_type_data();
+    var data={
+        'node_type_list':obj1.node_type_list,
+        'relation_type_list':obj1.relation_type_list
+    };
+    mainWindow.webContents.send('main_window_data_received',data);
+});
+
+ipcMain.on('delete_node_relation_type',(enent,data)=>{
+    AvyuktaEngine.delete_node_relation_type(data.id,data.node_or_relation);
+});
+
+ipcMain.on('add_node_relation_type',(enent,data)=>{
+    AvyuktaEngine.add_node_relation_type(data.type,data.node_or_relation,"");
+});
+
+/*Settings window functions and variables*/ 
 function startSettingsWindow()
 {   
     if(settingsWindow===null)
@@ -79,6 +101,7 @@ ipcMain.on('new_settings',(event,data)=>
     AvyuktaEngine.change_settings(data.nodes_in_one_nodefile,data.relation_in_one_file,data.percent_of_nodes_in_mem,data.encryption_status);
 });
 
+/*Menu stuff*/
 const mainmenuTemplate=[
     {
         label:'File',

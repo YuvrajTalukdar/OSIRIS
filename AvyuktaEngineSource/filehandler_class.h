@@ -70,7 +70,7 @@ class filehandler_class
     void delete_node(unsigned int node_id);//relation part need to be implemented
     //node relation type related functions
     void load_node_relation_type(int node_or_relation);//ok tested 0 means node 1 means relation.
-    void add_node_relation_type(string,int);//ok tested
+    void add_node_relation_type(string,int,string color_code);//ok tested
     void delete_node_relation_type(unsigned int id,int node_or_relation);//ok tested
     //relation related functions
     void load_relations();
@@ -123,7 +123,7 @@ class filehandler_class
         cout<<"relation type list:-\n";
         for(int a=0;a<relation_types.size();a++)
         {
-            cout<<"id="<<relation_types.at(a).id<<" type="<<relation_types.at(a).type_name<<endl;
+            cout<<"id="<<relation_types.at(a).id<<" type="<<relation_types.at(a).type_name<<" color="<<relation_types.at(a).color_code<<endl;
         }
     }
 

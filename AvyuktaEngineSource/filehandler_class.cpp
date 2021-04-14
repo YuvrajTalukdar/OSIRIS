@@ -680,6 +680,8 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
                         {   obj.id=stoi(word);}
                         else if(comma_count==1)
                         {   obj.type_name=word;}
+                        else if(comma_count==2 && node_or_relation==1)
+                        {   obj.color_code=word;}
                         comma_count++;
                         word="";
                     }
@@ -695,7 +697,7 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
     }
 }
 
-void filehandler_class::add_node_relation_type(string type,int node_or_relation)
+void filehandler_class::add_node_relation_type(string type,int node_or_relation,string color_code)
 {
     //check if file node_type_list.csv is present
     string dir,file_name;
@@ -737,13 +739,19 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation)
         if(node_or_relation==0)
         {   temp_data+="ID,NODE_TYPE,\n";}
         else if(node_or_relation==1)
-        {   temp_data+="ID,RELATION_TYPE,\n";}
+        {   temp_data+="ID,RELATION_TYPE,COLOR_CODE,\n";}
     }
     temp_data+=to_string(last_id+1);
     temp_data+=",";
     transform(type.begin(), type.end(), type.begin(), ::toupper);
     temp_data+=type;
     temp_data+=",";
+    if(node_or_relation==1)
+    {
+        transform(color_code.begin(),color_code.end(),color_code.begin(),::toupper);
+        temp_data+=color_code;
+        temp_data+=",";
+    }
     temp_data+="\n";
     ofstream out_file(dir,ios::out);
     out_file<<temp_data;

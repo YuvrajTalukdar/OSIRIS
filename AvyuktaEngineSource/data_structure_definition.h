@@ -35,7 +35,7 @@ struct data_node
 struct node_relation_type
 {
     unsigned int id;
-    string type_name;
+    string type_name,color_code;
 };
 
 struct file_info
