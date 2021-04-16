@@ -38,9 +38,12 @@ app.on('ready', () =>
 /*Main window functions*/
 ipcMain.on('get_main_window_data',(event,todo)=>{
     let obj1=AvyuktaEngine.get_type_data();
+    let obj2=AvyuktaEngine.get_node_relation_data();
     var data={
         'node_type_list':obj1.node_type_list,
-        'relation_type_list':obj1.relation_type_list
+        'relation_type_list':obj1.relation_type_list,
+        'node_list':obj2.node_list,
+        'relation_list':obj2.relation_list
     };
     mainWindow.webContents.send('main_window_data_received',data);
 });
@@ -51,6 +54,24 @@ ipcMain.on('delete_node_relation_type',(enent,data)=>{
 
 ipcMain.on('add_node_relation_type',(enent,data)=>{
     AvyuktaEngine.add_node_relation_type(data.type,data.node_or_relation,data.color_code);
+});
+
+ipcMain.on('add_new_node',(enent,data)=>{
+    AvyuktaEngine.add_new_node(data.node_name,data.node_type_id);
+    let obj=AvyuktaEngine.get_last_entered_node_data();
+    //send the data to top
+    var last_entered_node={
+        'node_id':obj.node_id,
+        'node_type_id':obj.node_type_id,
+        'node_name':obj.node_name,
+        'show':true,
+        'relation_id_list':obj.relation_id_list
+    }
+    mainWindow.webContents.send('last_entered_node',last_entered_node);
+});
+
+ipcMain.on('delete_node',(enent,data)=>{
+    AvyuktaEngine.delete_node(data);
 });
 
 /*Settings window functions and variables*/ 

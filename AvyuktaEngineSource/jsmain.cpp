@@ -50,6 +50,145 @@ void change_settings(const FunctionCallbackInfo<Value>& args)
     op_class.change_settings(db,no_of_nodes_in_one_file,no_of_relation_in_onefile,percent_of_nodes_in_mem,encryption_status);
 }
 
+void get_node_relation_data(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Object> ret_obj=Object::New(isolate);
+    v8::Local<v8::String> v8_name_string; 
+    int counter=0;
+
+    Local<Array> node_list=Array::New(isolate);
+    for(int a=0;a<db.file_handler.data_node_list.size();a++)
+    {
+        if(db.file_handler.data_node_list.at(a).node_name.compare("gap_node")!=0)
+        {
+            Local<Number> v8_node_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.data_node_list.at(a).node_id);
+            Local<Number> v8_node_type_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.data_node_list.at(a).node_type_id);
+            v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),db.file_handler.data_node_list.at(a).node_name.c_str()).ToLocal(&v8_name_string);
+            Local<Array> relation_id_list=Array::New(isolate);
+            for(int b=0;b<db.file_handler.data_node_list.at(a).relation_id_list.size();b++)
+            {
+                Local<Number> v8_relation_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.data_node_list.at(a).relation_id_list.at(b));
+                relation_id_list->Set(context,b,v8_relation_id);
+            }
+
+            Local<Object> node_obj=Object::New(isolate);
+            node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_id").ToLocalChecked(),v8_node_id).FromJust();
+            node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_type_id").ToLocalChecked(),v8_node_type_id).FromJust();
+            node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_name").ToLocalChecked(),v8_name_string).FromJust();
+            node_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id_list").ToLocalChecked(),relation_id_list).FromJust();
+
+            node_list->Set(context,counter,node_obj);
+            counter++;
+        }
+    }
+    ret_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_list").ToLocalChecked(),node_list).FromJust();
+
+    Local<Array> relation_list=Array::New(isolate);
+    v8::Local<v8::String> v8_temp_string; 
+    counter=0;
+    for(int a=0;a<db.file_handler.relation_list.size();a++)
+    {
+        if(!db.file_handler.relation_list.at(a).gap_relation)
+        {
+            Local<Number> v8_relation_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).relation_id);
+            Local<Number> v8_relation_type_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).relation_type_id);
+            Local<Number> v8_source_node_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).source_node_id);
+            Local<Number> v8_destination_node_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).destination_node_id);
+            Local<Number> v8_weight=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).weight);
+            
+            Local<Array> source_url_list=Array::New(isolate);
+            for(int b=0;b<db.file_handler.relation_list.at(a).source_url_list.size();b++)
+            {
+                v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).source_url_list.at(b).c_str()).ToLocal(&v8_temp_string);
+                source_url_list->Set(context,b,v8_temp_string);
+            }
+
+            Local<Array> source_local_list=Array::New(isolate);
+            for(int b=0;b<db.file_handler.relation_list.at(a).source_local.size();b++)
+            {
+                v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).source_local.at(b).c_str()).ToLocal(&v8_temp_string);
+                source_local_list->Set(context,b,v8_temp_string);
+            }
+
+            Local<Array> relation_id_list=Array::New(isolate);
+            for(int b=0;b<db.file_handler.relation_list.at(a).relation_id_list.size();b++)
+            {
+                Local<Number> v8_relation_id_single=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).relation_id_list.at(b));
+                relation_id_list->Set(context,b,v8_relation_id_single);   
+            }
+
+            Local<Array> grouped_relation_id_list=Array::New(isolate);
+            for(int b=0;b<db.file_handler.relation_list.at(a).grouped_relation_id_list.size();b++)
+            {
+                Local<Number> v8_grouped_relation=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_list.at(a).grouped_relation_id_list.at(b));
+                grouped_relation_id_list->Set(context,b,v8_grouped_relation);   
+            }  
+
+            Local<Object> relation_obj=Object::New(isolate);
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id").ToLocalChecked(),v8_relation_id).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_type_id").ToLocalChecked(),v8_relation_type_id).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"source_node_id").ToLocalChecked(),v8_source_node_id).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"destination_node_id").ToLocalChecked(),v8_destination_node_id).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"weight").ToLocalChecked(),v8_weight).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"source_url_list").ToLocalChecked(),source_url_list).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"source_local").ToLocalChecked(),source_local_list).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id_list").ToLocalChecked(),relation_id_list).FromJust();
+            relation_obj->Set(context,v8::String::NewFromUtf8(isolate,"grouped_relation_id_list").ToLocalChecked(),grouped_relation_id_list).FromJust();
+
+            relation_list->Set(context,counter,relation_obj);
+            counter++;
+        }
+    }
+    ret_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_list").ToLocalChecked(),relation_list).FromJust();
+
+    args.GetReturnValue().Set(ret_obj);
+}
+
+void get_last_entered_node_data(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Object> obj=Object::New(isolate);
+    v8::Local<v8::String> v8_node_name;
+
+    Local<Number> v8_node_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.last_entered_node.node_id);
+    Local<Number> v8_node_type_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.last_entered_node.node_type_id);
+    v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),db.file_handler.last_entered_node.node_name.c_str()).ToLocal(&v8_node_name);
+
+    Local<Array> relation_id_list=Array::New(isolate);
+    for(int b=0;b<db.file_handler.last_entered_node.relation_id_list.size();b++)
+    {
+        Local<Number> v8_relation_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.last_entered_node.relation_id_list.at(b));
+        relation_id_list->Set(context,b,v8_relation_id);
+    }
+
+    Local<Object> node_obj=Object::New(isolate);
+    node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_id").ToLocalChecked(),v8_node_id).FromJust();
+    node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_type_id").ToLocalChecked(),v8_node_type_id).FromJust();
+    node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_name").ToLocalChecked(),v8_node_name).FromJust();
+    node_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id_list").ToLocalChecked(),relation_id_list).FromJust();
+
+    args.GetReturnValue().Set(node_obj);
+}
+
+void add_new_node(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::String> v8_node_name=args[0].As<v8::String>();
+    v8::String::Utf8Value str(isolate, v8_node_name);
+    string node_name(*str);
+    int node_type_id = args[1].As<Number>()->Value();
+    op_class.add_new_node(db,node_name,node_type_id);
+}
+
+void delete_node(const FunctionCallbackInfo<Value>& args)
+{
+    int node_id=args[0].As<Number>()->Value();
+    op_class.delete_node(db,node_id);
+}
+
 void get_type_data(const FunctionCallbackInfo<Value>& args)
 {
     Isolate* isolate = args.GetIsolate();
@@ -119,6 +258,10 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"get_type_data",get_type_data);
     NODE_SET_METHOD(exports,"delete_node_relation_type",delete_node_relation_type);
     NODE_SET_METHOD(exports,"add_node_relation_type",add_node_relation_type);
+    NODE_SET_METHOD(exports,"get_node_relation_data",get_node_relation_data);
+    NODE_SET_METHOD(exports,"get_last_entered_node_data",get_last_entered_node_data);
+    NODE_SET_METHOD(exports,"add_new_node",add_new_node);
+    NODE_SET_METHOD(exports,"delete_node",delete_node);
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

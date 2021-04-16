@@ -138,109 +138,6 @@ const useStyles = (theme)=>
     },
 });
 
-const top100Films = [
-    { title: 'The Shawshank Redemption', year: 1994 },
-    { title: 'The Godfather', year: 1972 },
-    { title: 'The Godfather: Part II', year: 1974 },
-    { title: 'The Dark Knight', year: 2008 },
-    { title: '12 Angry Men', year: 1957 },
-    { title: "Schindler's List", year: 1993 },
-    { title: 'Pulp Fiction', year: 1994 },
-    { title: 'The Lord of the Rings: The Return of the King', year: 2003 },
-    { title: 'The Good, the Bad and the Ugly', year: 1966 },
-    { title: 'Fight Club', year: 1999 },
-    { title: 'The Lord of the Rings: The Fellowship of the Ring', year: 2001 },
-    { title: 'Star Wars: Episode V - The Empire Strikes Back', year: 1980 },
-    { title: 'Forrest Gump', year: 1994 },
-    { title: 'Inception', year: 2010 },
-    { title: 'The Lord of the Rings: The Two Towers', year: 2002 },
-    { title: "One Flew Over the Cuckoo's Nest", year: 1975 },
-    { title: 'Goodfellas', year: 1990 },
-    { title: 'The Matrix', year: 1999 },
-    { title: 'Seven Samurai', year: 1954 },
-    { title: 'Star Wars: Episode IV - A New Hope', year: 1977 },
-    { title: 'City of God', year: 2002 },
-    { title: 'Se7en', year: 1995 },
-    { title: 'The Silence of the Lambs', year: 1991 },
-    { title: "It's a Wonderful Life", year: 1946 },
-    { title: 'Life Is Beautiful', year: 1997 },
-    { title: 'The Usual Suspects', year: 1995 },
-    { title: 'Léon: The Professional', year: 1994 },
-    { title: 'Spirited Away', year: 2001 },
-    { title: 'Saving Private Ryan', year: 1998 },
-    { title: 'Once Upon a Time in the West', year: 1968 },
-    { title: 'American History X', year: 1998 },
-    { title: 'Interstellar', year: 2014 },
-    { title: 'Casablanca', year: 1942 },
-    { title: 'City Lights', year: 1931 },
-    { title: 'Psycho', year: 1960 },
-    { title: 'The Green Mile', year: 1999 },
-    { title: 'The Intouchables', year: 2011 },
-    { title: 'Modern Times', year: 1936 },
-    { title: 'Raiders of the Lost Ark', year: 1981 },
-    { title: 'Rear Window', year: 1954 },
-    { title: 'The Pianist', year: 2002 },
-    { title: 'The Departed', year: 2006 },
-    { title: 'Terminator 2: Judgment Day', year: 1991 },
-    { title: 'Back to the Future', year: 1985 },
-    { title: 'Whiplash', year: 2014 },
-    { title: 'Gladiator', year: 2000 },
-    { title: 'Memento', year: 2000 },
-    { title: 'The Prestige', year: 2006 },
-    { title: 'The Lion King', year: 1994 },
-    { title: 'Apocalypse Now', year: 1979 },
-    { title: 'Alien', year: 1979 },
-    { title: 'Sunset Boulevard', year: 1950 },
-    { title: 'Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb', year: 1964 },
-    { title: 'The Great Dictator', year: 1940 },
-    { title: 'Cinema Paradiso', year: 1988 },
-    { title: 'The Lives of Others', year: 2006 },
-    { title: 'Grave of the Fireflies', year: 1988 },
-    { title: 'Paths of Glory', year: 1957 },
-    { title: 'Django Unchained', year: 2012 },
-    { title: 'The Shining', year: 1980 },
-    { title: 'WALL·E', year: 2008 },
-    { title: 'American Beauty', year: 1999 },
-    { title: 'The Dark Knight Rises', year: 2012 },
-    { title: 'Princess Mononoke', year: 1997 },
-    { title: 'Aliens', year: 1986 },
-    { title: 'Oldboy', year: 2003 },
-    { title: 'Once Upon a Time in America', year: 1984 },
-    { title: 'Witness for the Prosecution', year: 1957 },
-    { title: 'Das Boot', year: 1981 },
-    { title: 'Citizen Kane', year: 1941 },
-    { title: 'North by Northwest', year: 1959 },
-    { title: 'Vertigo', year: 1958 },
-    { title: 'Star Wars: Episode VI - Return of the Jedi', year: 1983 },
-    { title: 'Reservoir Dogs', year: 1992 },
-    { title: 'Braveheart', year: 1995 },
-    { title: 'M', year: 1931 },
-    { title: 'Requiem for a Dream', year: 2000 },
-    { title: 'Amélie', year: 2001 },
-    { title: 'A Clockwork Orange', year: 1971 },
-    { title: 'Like Stars on Earth', year: 2007 },
-    { title: 'Taxi Driver', year: 1976 },
-    { title: 'Lawrence of Arabia', year: 1962 },
-    { title: 'Double Indemnity', year: 1944 },
-    { title: 'Eternal Sunshine of the Spotless Mind', year: 2004 },
-    { title: 'Amadeus', year: 1984 },
-    { title: 'To Kill a Mockingbird', year: 1962 },
-    { title: 'Toy Story 3', year: 2010 },
-    { title: 'Logan', year: 2017 },
-    { title: 'Full Metal Jacket', year: 1987 },
-    { title: 'Dangal', year: 2016 },
-    { title: 'The Sting', year: 1973 },
-    { title: '2001: A Space Odyssey', year: 1968 },
-    { title: "Singin' in the Rain", year: 1952 },
-    { title: 'Toy Story', year: 1995 },
-    { title: 'Bicycle Thieves', year: 1948 },
-    { title: 'The Kid', year: 1921 },
-    { title: 'Inglourious Basterds', year: 2009 },
-    { title: 'Snatch', year: 2000 },
-    { title: '3 Idiots', year: 2009 },
-    { title: 'Monty Python and the Holy Grail', year: 1975 },
-  ];
-
 var main_window_data_request_sent=false;
 var type_data_added=false;
 
@@ -251,26 +148,35 @@ class Main extends React.Component
         super(props);
         this.state=
         {
-            add_drawer_open:false,
+            /*Drawer Settings*/
+            add_drawer_open:true,
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
             relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
-            collaborate_drawer_open:false,
-
             color_picker_hex_value:"#03DAC5",
-
+            collaborate_drawer_open:false,
+            
+            /*Node data */
+            node_data_list:[],
+            new_node_name:"",
+            new_node_name_close_button_visible:'none',
+            new_node_type:"",
+            /*Relation Data*/
+            relation_data_list:[],
+            /*type data */
+            /*Node Type */
             node_type_data_list:[],
             node_type_search_text:"",
             node_type_search_close_button_visible:"none",
             node_type_name:"",
-
+            /*Relation Type */
             relation_type_data_list:[],
             relation_type_search_text:"",
             relation_type_search_close_button_visible:"none",
             relation_type_name:"",
-
+            /*Dialog Box Settings*/
             permission_dialog_open:false,
             permission_dialog_text:"",
             alert_dialog_open:false,
@@ -279,14 +185,30 @@ class Main extends React.Component
         this.handle_drawer=this.handle_drawer.bind(this);
         this.color_picker_handler=this.color_picker_handler.bind(this);
         this.add_main_window_data=this.add_main_window_data.bind(this);
-        this.search_node_type=this.search_node_type.bind(this);
+        
         this.permission_dialog_options=this.permission_dialog_options.bind(this);
         this.permission_dialog_yes_clicked=this.permission_dialog_yes_clicked.bind(this);
+        
         this.delete_node_type=this.delete_node_type.bind(this);
         this.add_node_type=this.add_node_type.bind(this);
+        this.search_node_type=this.search_node_type.bind(this);
+
         this.add_relation_type=this.add_relation_type.bind(this);
         this.search_relation_type=this.search_relation_type.bind(this);
         this.delete_relation_type=this.delete_relation_type.bind(this);
+
+        this.rgbToHex=this.rgbToHex.bind(this);
+        this.getRndInteger=this.getRndInteger.bind(this);
+
+        this.add_new_node=this.add_new_node.bind(this);
+        this.add_new_node_body=this.add_new_node_body.bind(this);
+        this.search_node_name=this.search_node_name.bind(this);
+        this.delete_node=this.delete_node.bind(this);
+
+        this.add_new_relation=this.add_new_relation.bind(this);
+
+        this.listeners=this.listeners.bind(this);
+        this.listeners();
     }
 
     color_picker_handler(color)
@@ -295,6 +217,11 @@ class Main extends React.Component
             color_picker_hex_value:color
         });
     }
+
+    rgbToHex(r, g, b) 
+    {   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);}
+    getRndInteger(min, max) 
+    {   return Math.floor(Math.random() * (max - min) ) + min;}
 
     handle_drawer(drawer_id)
     {
@@ -329,7 +256,9 @@ class Main extends React.Component
                 operation_drawer_open:false,
                 relation_node_properties_drawer_open:!this.state.relation_node_properties_drawer_open,
                 relation_node_properties_icon_color:color,
-                collaborate_drawer_open:false
+                collaborate_drawer_open:false,
+
+                color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))
             });
         }
     }
@@ -341,7 +270,7 @@ class Main extends React.Component
         var found=false;
         for(var a=0;a<node_type_list.length;a++)
         {
-            if(node_type_list[a].node_type.toUpperCase().includes(this.state.node_type_name.toUpperCase()))
+            if(node_type_list[a].node_type.toUpperCase().localeCompare(this.state.node_type_name.toUpperCase())==0)
             {   found=true;break;}
         }
         if(!found)
@@ -369,6 +298,7 @@ class Main extends React.Component
     }
 
     delete_node_type_id=-1;
+    delete_node_type_name="";
     delete_node_type()
     {
         const node_type_list=[...this.state.node_type_data_list];
@@ -380,6 +310,7 @@ class Main extends React.Component
         }
         window.ipcRenderer.send('delete_node_relation_type',data);
         this.delete_node_type_id=-1;
+        this.delete_node_type_name="";
         this.setState({
             node_type_data_list:new_node_type_list
         });
@@ -394,9 +325,9 @@ class Main extends React.Component
         if(this.permission_dialog_purpose_code==1)
         {   this.delete_node_type();}
         else if(this.permission_dialog_purpose_code==2)
-        {
-            this.delete_relation_type();
-        }
+        {   this.delete_relation_type();}
+        else if(this.permission_dialog_purpose_code==3)
+        {   this.delete_node();}
         this.permission_dialog_purpose_code=0;
     }
 
@@ -405,17 +336,30 @@ class Main extends React.Component
         if(option===1)
         {   
             if(this.permission_dialog_purpose_code==1)
-            {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Node Type?"});}
+            {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Node Type '"+this.delete_node_type_name+"' ?"});}
             else if(this.permission_dialog_purpose_code==2)
-            {this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Relation Type?"});}
+            {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Relation Type '"+this.delete_relation_type_name+"' ?"});}
+            else if(this.permission_dialog_purpose_code==3)
+            {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Node '"+this.delete_node_name+"' ?"});}
         }
         else if(option===0)
         {   
             if(this.permission_dialog_purpose_code==1)
             {
                 this.delete_node_type_id=-1;
-                this.permission_dialog_purpose_code=0;
+                this.delete_node_type_name="";
             }
+            else if(this.permission_dialog_purpose_code==2)
+            {
+                this.delete_relation_type_id=-1;
+                this.delete_relation_type_name="";
+            }
+            else if(this.permission_dialog_purpose_code==3)
+            {
+                this.delete_node_id=-1;
+                this.delete_node_name="";
+            }
+            this.permission_dialog_purpose_code=0;
             this.setState({permission_dialog_open:false,permission_dialog_text:""});
         }
     }
@@ -450,14 +394,21 @@ class Main extends React.Component
             {   data.node_type_list[a].show=true;}
             for(a=0;a<data.relation_type_list.length;a++)
             {   data.relation_type_list[a].show=true;}
+
+            for(a=0;a<data.node_list.length;a++)
+            {   data.node_list[a].show=true;}
+            
             this.setState({
                 node_type_data_list:data.node_type_list,
-                relation_type_data_list:data.relation_type_list
+                relation_type_data_list:data.relation_type_list,
+                node_data_list:data.node_list,
+                relation_data_list:data.relation_list
             });
         }
     }
 
     delete_relation_type_id=-1;
+    delete_relation_type_name="";
     delete_relation_type()
     {
         const relation_type_list=[...this.state.relation_type_data_list];
@@ -468,7 +419,8 @@ class Main extends React.Component
             'node_or_relation':1
         }
         window.ipcRenderer.send('delete_node_relation_type',data);
-        this.delete_relation_type_id=-1;
+        this.delete_relation_type_id=-1
+        this.delete_relation_type_name="";
         this.setState({
             relation_type_data_list:new_relation_type_list
         });
@@ -501,7 +453,7 @@ class Main extends React.Component
         var found=false;
         for(var a=0;a<relation_type_list.length;a++)
         {
-            if(relation_type_list[a].relation_type.toUpperCase().includes(this.state.relation_type_name.toUpperCase()))
+            if(relation_type_list[a].relation_type.toUpperCase().localeCompare(this.state.relation_type_name.toUpperCase())==0)
             {   found=true;break;}
         }
         if(!found)
@@ -529,11 +481,112 @@ class Main extends React.Component
         }
     }
 
+    delete_node_id=-1;
+    delete_node_name="";
+    delete_node()
+    {
+        const node_data_list=[...this.state.node_data_list];
+        const new_node_data_list=node_data_list.filter(item=>item.node_id!=this.delete_node_id);
+
+        window.ipcRenderer.send('delete_node',this.delete_node_id);
+
+        this.delete_node_id=-1;
+        this.delete_node_name="";
+
+        this.setState({
+            node_data_list:new_node_data_list
+        });
+    }
+
+    search_node_name(data)
+    {
+        if(data.length>0)
+        {   this.setState({new_node_name_close_button_visible:"block"});}
+        else
+        {   this.setState({new_node_name_close_button_visible:"none"});}
+
+        const node_data_list=[...this.state.node_data_list];
+        for(var a=0;a<node_data_list.length;a++)
+        {
+            if(node_data_list[a].node_name.toUpperCase().includes(data.toUpperCase()))
+            {   node_data_list[a].show=true;}
+            else
+            {   node_data_list[a].show=false;}
+            this.setState({
+                node_data_list:node_data_list
+            });
+        }
+    }
+
+    add_new_node_body(last_entered_node)
+    {
+        const node_data_list=[...this.state.node_data_list];
+        node_data_list.push(last_entered_node);
+        this.setState({
+            node_data_list:node_data_list
+        });
+    }
+
+    add_new_node()
+    {
+        if(this.state.new_node_name.length==0)
+        {
+            this.setState({
+                alert_dialog_text:"Node Name not entered!",
+                alert_dialog_open:true
+            });
+        }
+        else if(typeof this.state.new_node_type.node_type=='undefined')
+        {
+            this.setState({
+                alert_dialog_text:"Node Type not selected!",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {   
+            const node_data_list=[...this.state.node_data_list];
+            var found=false;
+            for(var a=0;a<node_data_list.length;a++)
+            {
+                if(node_data_list[a].node_name.toUpperCase().localeCompare(this.state.new_node_name.toUpperCase())==0)
+                {   found=true;break;}
+            }
+            if(found)
+            {   
+                this.setState({
+                    alert_dialog_text:"Node Name "+this.state.new_node_name+" already present!",
+                    alert_dialog_open:true
+                })
+            }
+            else
+            {   
+                var new_node={
+                    'node_type_id':this.state.new_node_type.id,
+                    'node_name':this.state.new_node_name
+                };
+                window.ipcRenderer.send('add_new_node',new_node);
+            }
+        
+        }
+    }
+
+    add_new_relation()
+    {
+        
+    }
+
+    listeners()
+    {
+        window.ipcRenderer.on('last_entered_node',(event,data)=>
+        {   this.add_new_node_body(data);});
+    }
+
     render()
     {
         window.ipcRenderer.on('main_window_data_received',(event,data)=>
         {   this.add_main_window_data(data);});
-        
+
         if(!main_window_data_request_sent)
         {
             var dummy="";
@@ -659,33 +712,80 @@ class Main extends React.Component
                                 </Typography>
                             </Grid>
                             <ListItem>
-                                <Autocomplete
-                                    size="small"
-                                    classes={this.props.classes}
-                                    options={top100Films}
-                                    getOptionLabel={(option) => option.title}
-                                    style={{ width: 300 }}
-                                    renderInput=
+                                <TextField 
+                                label='New Node Name'
+                                variant='outlined' 
+                                size='small' 
+                                value={this.state.new_node_name}
+                                onChange={
+                                    e => {
+                                        this.setState({new_node_name:e.target.value});
+                                        this.search_node_name(e.target.value);
+                                    }}                                            
+                                style={{width:300}} 
+                                InputLabelProps={
+                                {   className: this.props.classes.textfield_label}}
+                                InputProps={{
+                                    className: this.props.classes.valueTextField,
+                                    classes:{
+                                        root:this.props.classes.root,
+                                        notchedOutline: this.props.classes.valueTextField,
+                                        disabled: this.props.classes.valueTextField
+                                    },
+                                    endAdornment: 
+                                    (
+                                        <Box display={this.state.new_node_name_close_button_visible}> 
+                                            <IconButton color='primary' size='small'
+                                            onClick={
+                                                e=>{
+                                                    this.search_node_name("");
+                                                    this.setState({new_node_name:""})
+                                                }
+                                            }>
+                                                <CloseIcon/>
+                                            </IconButton>
+                                        </Box> 
+                                    ),
+                                }}/>
+                            </ListItem>
+                            <ListItem>
+                                <List className={this.props.classes.properties_list_class}>
+                                {
+                                    this.state.node_data_list.map(item=>
                                     {
-                                        (params) => 
-                                            <TextField 
-                                            {...params} label="New Node Name" variant="outlined" 
-                                            InputLabelProps=
-                                            {{   
-                                                    ...params.InputLabelProps,
-                                                    className: this.props.classes.textfield_label
-                                            }}
-                                            />
-                                    }
-                                />
+                                        if(item.show)
+                                        {
+                                            return(
+                                                <ListItem button key={item.node_id}>
+                                                    <ListItemText primary={<Typography type="body2" style={{ color:'#FFFFFF'}}>{item.node_name}</Typography>} />
+                                                    <IconButton color='primary' size='small'
+                                                    onClick={
+                                                        e=>{
+                                                            this.delete_node_id=item.node_id;
+                                                            this.delete_node_name=item.node_name;
+                                                            this.permission_dialog_purpose_code=3;
+                                                            this.permission_dialog_options(1);
+                                                        } 
+                                                    }>
+                                                        <DeleteIcon/>
+                                                    </IconButton>
+                                                </ListItem>
+                                            )
+                                        }
+                                    })
+                                }
+                                </List>
                             </ListItem>
                             <ListItem>
                                 <Autocomplete
                                 size="small"
                                 classes={this.props.classes}
-                                options={top100Films}
-                                getOptionLabel={(option) => option.title}
+                                options={this.state.node_type_data_list}
+                                getOptionLabel={(option) => option.node_type}
                                 style={{ width: 300 }}
+                                value={this.state.new_node_type}
+                                onChange={(event,value)=>
+                                    {this.setState({new_node_type:value,});}}
                                 renderInput=
                                 {
                                     (params) => 
@@ -701,7 +801,8 @@ class Main extends React.Component
                                 />
                             </ListItem>
                             <ListItem>
-                                <Button variant="contained" size="small" color="primary" style={{width:'100%'}}>Add</Button>
+                                <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
+                                 onClick={e=>{this.add_new_node();}}>Add</Button>
                             </ListItem>
                             <Divider light classes={{root:this.props.classes.divider}}/>
                             <ListItem>
@@ -727,8 +828,8 @@ class Main extends React.Component
                                     id="combo-box-demo"
                                     classes={this.props.classes}
                                     size="small"
-                                    options={top100Films}
-                                    getOptionLabel={(option) => option.title}
+                                    options={this.state.node_data_list}
+                                    getOptionLabel={(option) => option.node_name}
                                     style={{ width: '85%' }}
                                     renderInput=
                                     {
@@ -756,8 +857,8 @@ class Main extends React.Component
                                     id="combo-box-demo"
                                     classes={this.props.classes}
                                     size="small"
-                                    options={top100Films}
-                                    getOptionLabel={(option) => option.title}
+                                    options={this.state.node_data_list}
+                                    getOptionLabel={(option) => option.node_name}
                                     style={{ width: '85%' }}
                                     renderInput=
                                     {
@@ -785,8 +886,8 @@ class Main extends React.Component
                                     id="combo-box-demo"
                                     classes={this.props.classes}
                                     size="small"
-                                    options={top100Films}
-                                    getOptionLabel={(option) => option.title}
+                                    options={this.state.relation_type_data_list}
+                                    getOptionLabel={(option) => option.relation_type}
                                     style={{ width: '85%' }}
                                     renderInput=
                                     {
@@ -911,6 +1012,7 @@ class Main extends React.Component
                                                  onClick={
                                                     e=>{
                                                         this.delete_node_type_id=item.id;
+                                                        this.delete_node_type_name=item.node_type;
                                                         this.permission_dialog_purpose_code=1;
                                                         this.permission_dialog_options(1);
                                                     } 
@@ -1044,6 +1146,7 @@ class Main extends React.Component
                                                  onClick={
                                                     e=>{
                                                         this.delete_relation_type_id=item.id;
+                                                        this.delete_relation_type_name=item.relation_type;
                                                         this.permission_dialog_purpose_code=2;
                                                         this.permission_dialog_options(1);
                                                     } 

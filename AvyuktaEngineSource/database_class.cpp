@@ -3,18 +3,13 @@
 void database_class::initialize_db()
 {   
     file_handler.load_db_settings();
+
     file_handler.load_node_relation_type(0);
     file_handler.load_node_relation_type(1);
-    /*file_handler.load_nodes();
-    file_handler.load_relations();*/
-    //cout<<"\n\ntesting from deep inside cpp\n";
-    /*struct dirent *de;
-    DIR *dr=opendir(".");
-    bool file_found=false;
-    while((de=readdir(dr))!=NULL)
-    {
-        cout<<de->d_name<<endl;
-    }*/
+    
+    file_handler.load_nodes();
+    file_handler.load_relations();
+    
     //file_handler.test3();
     
     data_node obj1;
@@ -54,6 +49,7 @@ void database_class::initialize_db()
     //for(int a=0;a<6;a++)
     //file_handler.delete_relation(a);
     //file_handler.test6();
+    
     //file_handler.test7();
     
     //file_handler.add_node_relation_type("Place",0,"");

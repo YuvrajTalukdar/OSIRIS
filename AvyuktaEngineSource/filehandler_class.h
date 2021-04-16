@@ -22,11 +22,8 @@ class filehandler_class
     string node_type_file_dir="./database/node_type_list.csv";
     //node related data
     vector<file_info> node_file_list;
-    vector<data_node> data_node_list;
-    multimap<string,int> node_meta_list;//nodename, file_list index. This is used for fast search.
     vector<unsigned int> gap_node_id_list;
     //relation related data
-    vector<relation> relation_list;
     vector<unsigned int> gap_relation_id_list;
     vector<file_info> relation_file_list;
 
@@ -44,8 +41,17 @@ class filehandler_class
     void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//ok tested
 
     public:
-    string settings_file_dir="./database/settings.csv";
+    //type related data
+    vector<node_relation_type> node_types;
+    vector<node_relation_type> relation_types;
+    //node related data
+    vector<data_node> data_node_list;
+    multimap<string,int> node_meta_list;//nodename, file_list index. This is used for fast search.
+    data_node last_entered_node;
+    //relation related data
+    vector<relation> relation_list;
     //settings data
+    string settings_file_dir="./database/settings.csv";
     unsigned int total_no_of_nodes;
     unsigned int total_no_of_nodefile;
     float percent_of_node_in_memory;
@@ -55,12 +61,10 @@ class filehandler_class
     unsigned int total_no_of_relations;
     unsigned int total_on_of_relationfile;
     unsigned int no_of_relation_in_one_file;
+    const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
     //file related data
     bool encryption;
 
-    const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
-    vector<node_relation_type> node_types;
-    vector<node_relation_type> relation_types;
     //settings related functions
     void change_settings(string file_dir,string settings_name,string settings_value);//ok tested, Function for changing individual settings of a file.
     void load_db_settings();//ok tested
@@ -154,23 +158,26 @@ class filehandler_class
         cout<<"\nRelation:-";
         for(int a=0;a<relation_list.size();a++)
         {
-            cout<<"\n\nid="<<relation_list.at(a).relation_id;
-            cout<<"\ntype id="<<relation_list[a].relation_type_id;
-            cout<<"\nsource node="<<relation_list[a].source_node_id;
-            cout<<"\ndest node="<<relation_list[a].destination_node_id;
-            cout<<"\nweight="<<relation_list[a].weight;
-            cout<<"\nRELATION ID LIST:";
-            for(int b=0;b<relation_list[a].relation_id_list.size();b++)
-            {   cout<<","<<relation_list[a].relation_id_list[b];}
-            cout<<"\nGROUPED RELATION ID LIST:";
-            for(int b=0;b<relation_list[a].grouped_relation_id_list.size();b++)
-            {   cout<<","<<relation_list[a].grouped_relation_id_list[b];}
-            cout<<"\nURL LIST:";
-            for(int b=0;b<relation_list[a].source_url_list.size();b++)
-            {   cout<<"\n"<<relation_list[a].source_url_list[b];}
-            cout<<"\nLOCAL LIST4:";
-            for(int b=0;b<relation_list[a].source_local.size();b++)
-            {   cout<<"\n"<<relation_list[a].source_local[b];}
+            if(!relation_list.at(a).gap_relation)
+            {
+                cout<<"\n\nid="<<relation_list.at(a).relation_id;
+                cout<<"\ntype id="<<relation_list[a].relation_type_id;
+                cout<<"\nsource node="<<relation_list[a].source_node_id;
+                cout<<"\ndest node="<<relation_list[a].destination_node_id;
+                cout<<"\nweight="<<relation_list[a].weight;
+                cout<<"\nRELATION ID LIST:";
+                for(int b=0;b<relation_list[a].relation_id_list.size();b++)
+                {   cout<<","<<relation_list[a].relation_id_list[b];}
+                cout<<"\nGROUPED RELATION ID LIST:";
+                for(int b=0;b<relation_list[a].grouped_relation_id_list.size();b++)
+                {   cout<<","<<relation_list[a].grouped_relation_id_list[b];}
+                cout<<"\nURL LIST:";
+                for(int b=0;b<relation_list[a].source_url_list.size();b++)
+                {   cout<<"\n"<<relation_list[a].source_url_list[b];}
+                cout<<"\nLOCAL LIST4:";
+                for(int b=0;b<relation_list[a].source_local.size();b++)
+                {   cout<<"\n"<<relation_list[a].source_local[b];}
+            }
         }
         cout<<"\n\ngap relation:-";
         for(int a=0;a<gap_relation_id_list.size();a++)

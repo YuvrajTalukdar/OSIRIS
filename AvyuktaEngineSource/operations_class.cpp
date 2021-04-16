@@ -26,3 +26,32 @@ void operation_class::change_settings(database_class &db,int nodes_in_one_file,i
         {   db.file_handler.change_settings(db.file_handler.settings_file_dir,"ENCRYPTION","false");}
     }
 }
+
+void operation_class::change_node(database_class &db,data_node &new_node)
+{
+    db.file_handler.delete_node(new_node.node_id);
+    db.file_handler.add_new_node(new_node);
+}
+
+void operation_class::change_relation(database_class &db,relation &new_relation)
+{
+    db.file_handler.delete_relation(new_relation.relation_id);
+    db.file_handler.add_new_relation(new_relation);
+}
+
+void operation_class::add_new_node(database_class &db,string node_name,unsigned int node_type_id)
+{
+    data_node new_node;
+    
+    new_node.node_name=node_name;
+    new_node.node_type_id=node_type_id;
+    vector<unsigned int> relation_id_list;
+    new_node.relation_id_list=relation_id_list;
+
+    db.file_handler.add_new_node(new_node);
+}
+
+void operation_class::delete_node(database_class &db,unsigned int node_id)
+{
+    db.file_handler.delete_node(node_id);
+}

@@ -428,8 +428,8 @@ void filehandler_class::add_new_node(data_node &node)
         {   new_file.file_full=true;}
         else
         {   new_file.file_full=false;}
-        add_new_data_to_node_filelist(new_file);
         no_of_nodes_in_current_file=write_nodedata_to_file(new_file.file_name,node);
+        add_new_data_to_node_filelist(new_file);
         current_file_id=0;
     }
     else if(gap_node_id_list.size()>0)//if gap present.
@@ -451,15 +451,15 @@ void filehandler_class::add_new_node(data_node &node)
         file_info new_file;
         new_file.file_id=node_file_list.at(node_file_list.size()-1).file_id+1;
         new_file.file_name="nf"+to_string(new_file.file_id);
-        node.node_id=node_file_list.at(node_file_list.size()-1).end_id+1;
+        //node.node_id=node_file_list.at(node_file_list.size()-1).end_id+1;
         new_file.start_id=total_no_of_nodes;
         new_file.end_id=total_no_of_nodes;
         if(no_of_nodes_in_one_node_file==1)
         {   new_file.file_full=true;}
         else
         {   new_file.file_full=false;}
-        add_new_data_to_node_filelist(new_file);
         no_of_nodes_in_current_file=write_nodedata_to_file(new_file.file_name,node);
+        add_new_data_to_node_filelist(new_file);
         current_file_id=node_file_list.size()-1;
     }
     else//if file available and file not full. 
@@ -477,6 +477,8 @@ void filehandler_class::add_new_node(data_node &node)
     }
     if(no_of_nodes_in_current_file==no_of_nodes_in_one_node_file)//for turning the file full value to true in node_file_list.csv. 
     {   set_file_full_status(current_file_id,true,0);}
+
+    last_entered_node=node;
 }
 
 void filehandler_class::set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation)
