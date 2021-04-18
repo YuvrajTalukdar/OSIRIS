@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Divider,List,ListItem,ListItemText,Box} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import theme from './theme';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
@@ -10,14 +10,9 @@ import SearchIcon from '@material-ui/icons/Search';
 import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import DeleteIcon from '@material-ui/icons/Delete';
-import CloseIcon from '@material-ui/icons/Close';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import ColorPicker from "material-ui-color-picker";
+
+import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
+import {add_add_panel_func,add_panel} from './add_panel.js'
 
 const useStyles = (theme)=>
 ({
@@ -165,6 +160,13 @@ class Main extends React.Component
             new_node_type:"",
             /*Relation Data*/
             relation_data_list:[],
+            source_node:"",
+            destination_node:"",
+            new_relation_type:"",
+            source_url:"",
+            source_url_close_button_visible:'none',
+            source_url_list:[],
+
             /*type data */
             /*Node Type */
             node_type_data_list:[],
@@ -188,28 +190,26 @@ class Main extends React.Component
         
         this.permission_dialog_options=this.permission_dialog_options.bind(this);
         this.permission_dialog_yes_clicked=this.permission_dialog_yes_clicked.bind(this);
-        
-        this.delete_node_type=this.delete_node_type.bind(this);
-        this.add_node_type=this.add_node_type.bind(this);
-        this.search_node_type=this.search_node_type.bind(this);
-
-        this.add_relation_type=this.add_relation_type.bind(this);
-        this.search_relation_type=this.search_relation_type.bind(this);
-        this.delete_relation_type=this.delete_relation_type.bind(this);
 
         this.rgbToHex=this.rgbToHex.bind(this);
         this.getRndInteger=this.getRndInteger.bind(this);
 
-        this.add_new_node=this.add_new_node.bind(this);
-        this.add_new_node_body=this.add_new_node_body.bind(this);
-        this.search_node_name=this.search_node_name.bind(this);
-        this.delete_node=this.delete_node.bind(this);
-
-        this.add_new_relation=this.add_new_relation.bind(this);
-
         this.listeners=this.listeners.bind(this);
+
+        add_node_relation_props_func(Main);
+        add_add_panel_func(Main);
+
         this.listeners();
     }
+    
+    delete_node_type_id=-1;
+    delete_node_type_name="";
+
+    delete_relation_type_id=-1;
+    delete_relation_type_name="";
+    
+    delete_node_id=-1;
+    delete_node_name="";
 
     color_picker_handler(color)
     {
@@ -220,6 +220,7 @@ class Main extends React.Component
 
     rgbToHex(r, g, b) 
     {   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);}
+
     getRndInteger(min, max) 
     {   return Math.floor(Math.random() * (max - min) ) + min;}
 
@@ -261,59 +262,6 @@ class Main extends React.Component
                 color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))
             });
         }
-    }
-
-    add_node_type()
-    {
-        const node_type_list=[...this.state.node_type_data_list];
-        
-        var found=false;
-        for(var a=0;a<node_type_list.length;a++)
-        {
-            if(node_type_list[a].node_type.toUpperCase().localeCompare(this.state.node_type_name.toUpperCase())==0)
-            {   found=true;break;}
-        }
-        if(!found)
-        {
-            var data={node_or_relation:0,type:this.state.node_type_name,color_code:""};
-            window.ipcRenderer.send('add_node_relation_type',data);
-            const newData={
-                id:node_type_list[node_type_list.length-1].id+1,
-                node_type:this.state.node_type_name.toUpperCase(),
-                show:true,
-            }
-            node_type_list.push(newData);
-            this.search_node_type("");
-            this.setState({
-                node_type_data_list:node_type_list
-            })
-        }
-        else
-        {
-            if(this.state.node_type_name.length==0)
-            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Enter a node type name!"});}
-            else
-            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Node type already present!"});}
-        }
-    }
-
-    delete_node_type_id=-1;
-    delete_node_type_name="";
-    delete_node_type()
-    {
-        const node_type_list=[...this.state.node_type_data_list];
-        const new_node_type_list=node_type_list.filter(item=>item.id!=this.delete_node_type_id);
-        
-        var data={
-            'id':this.delete_node_type_id,
-            'node_or_relation':0
-        }
-        window.ipcRenderer.send('delete_node_relation_type',data);
-        this.delete_node_type_id=-1;
-        this.delete_node_type_name="";
-        this.setState({
-            node_type_data_list:new_node_type_list
-        });
     }
 
     permission_dialog_purpose_code=0;
@@ -364,26 +312,6 @@ class Main extends React.Component
         }
     }
 
-    search_node_type(data)
-    {
-        if(data.length>0)
-        {   this.setState({node_type_search_close_button_visible:"block"});}
-        else
-        {   this.setState({node_type_search_close_button_visible:"none"});}
-
-        const node_type_list=[...this.state.node_type_data_list];
-        for(var a=0;a<node_type_list.length;a++)
-        {
-            if(node_type_list[a].node_type.toUpperCase().includes(data.toUpperCase()))
-            {   node_type_list[a].show=true;}
-            else
-            {   node_type_list[a].show=false;}
-            this.setState({
-                node_type_data_list:node_type_list
-            });
-        }
-    }
-
     add_main_window_data(data)
     {
         if(!type_data_added)
@@ -405,175 +333,6 @@ class Main extends React.Component
                 relation_data_list:data.relation_list
             });
         }
-    }
-
-    delete_relation_type_id=-1;
-    delete_relation_type_name="";
-    delete_relation_type()
-    {
-        const relation_type_list=[...this.state.relation_type_data_list];
-        const new_relation_type_list=relation_type_list.filter(item=>item.id!=this.delete_relation_type_id);
-
-        var data={
-            'id':this.delete_relation_type_id,
-            'node_or_relation':1
-        }
-        window.ipcRenderer.send('delete_node_relation_type',data);
-        this.delete_relation_type_id=-1
-        this.delete_relation_type_name="";
-        this.setState({
-            relation_type_data_list:new_relation_type_list
-        });
-    }
-
-    search_relation_type(data)
-    {
-        if(data.length>0)
-        {   this.setState({relation_type_search_close_button_visible:"block"});}
-        else
-        {   this.setState({relation_type_search_close_button_visible:"none"});}
-        
-        const relation_type_list=[...this.state.relation_type_data_list];
-        for(var a=0;a<relation_type_list.length;a++)
-        {
-            if(relation_type_list[a].relation_type.toUpperCase().includes(data.toUpperCase()))
-            {   relation_type_list[a].show=true;}
-            else
-            {   relation_type_list[a].show=false;}
-            this.setState({
-                relation_type_data_list:relation_type_list
-            });
-        }
-    }
-
-    add_relation_type()
-    {
-        const relation_type_list=[...this.state.relation_type_data_list];
-
-        var found=false;
-        for(var a=0;a<relation_type_list.length;a++)
-        {
-            if(relation_type_list[a].relation_type.toUpperCase().localeCompare(this.state.relation_type_name.toUpperCase())==0)
-            {   found=true;break;}
-        }
-        if(!found)
-        {
-            var data={node_or_relation:1,type:this.state.relation_type_name,color_code:this.state.color_picker_hex_value};
-            window.ipcRenderer.send('add_node_relation_type',data);
-            const newData={
-                id:relation_type_list[relation_type_list.length-1].id+1,
-                relation_type:this.state.relation_type_name.toUpperCase(),
-                color_code:this.state.color_picker_hex_value,
-                show:true,
-            }
-            relation_type_list.push(newData);
-            this.search_relation_type("");
-            this.setState({
-                relation_type_data_list:relation_type_list
-            })
-        }
-        else
-        {
-            if(this.state.relation_type_name.length==0)
-            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Enter a relation type name!"});}
-            else
-            {   this.setState({alert_dialog_open:true,alert_dialog_text:"Relation type already present!"});}
-        }
-    }
-
-    delete_node_id=-1;
-    delete_node_name="";
-    delete_node()
-    {
-        const node_data_list=[...this.state.node_data_list];
-        const new_node_data_list=node_data_list.filter(item=>item.node_id!=this.delete_node_id);
-
-        window.ipcRenderer.send('delete_node',this.delete_node_id);
-
-        this.delete_node_id=-1;
-        this.delete_node_name="";
-
-        this.setState({
-            node_data_list:new_node_data_list
-        });
-    }
-
-    search_node_name(data)
-    {
-        if(data.length>0)
-        {   this.setState({new_node_name_close_button_visible:"block"});}
-        else
-        {   this.setState({new_node_name_close_button_visible:"none"});}
-
-        const node_data_list=[...this.state.node_data_list];
-        for(var a=0;a<node_data_list.length;a++)
-        {
-            if(node_data_list[a].node_name.toUpperCase().includes(data.toUpperCase()))
-            {   node_data_list[a].show=true;}
-            else
-            {   node_data_list[a].show=false;}
-            this.setState({
-                node_data_list:node_data_list
-            });
-        }
-    }
-
-    add_new_node_body(last_entered_node)
-    {
-        const node_data_list=[...this.state.node_data_list];
-        node_data_list.push(last_entered_node);
-        this.setState({
-            node_data_list:node_data_list
-        });
-    }
-
-    add_new_node()
-    {
-        if(this.state.new_node_name.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Node Name not entered!",
-                alert_dialog_open:true
-            });
-        }
-        else if(typeof this.state.new_node_type.node_type=='undefined')
-        {
-            this.setState({
-                alert_dialog_text:"Node Type not selected!",
-                alert_dialog_open:true
-            });
-        }
-        else
-        {   
-            const node_data_list=[...this.state.node_data_list];
-            var found=false;
-            for(var a=0;a<node_data_list.length;a++)
-            {
-                if(node_data_list[a].node_name.toUpperCase().localeCompare(this.state.new_node_name.toUpperCase())==0)
-                {   found=true;break;}
-            }
-            if(found)
-            {   
-                this.setState({
-                    alert_dialog_text:"Node Name "+this.state.new_node_name+" already present!",
-                    alert_dialog_open:true
-                })
-            }
-            else
-            {   
-                var new_node={
-                    'node_type_id':this.state.new_node_type.id,
-                    'node_name':this.state.new_node_name
-                };
-                window.ipcRenderer.send('add_new_node',new_node);
-            }
-        
-        }
-    }
-
-    add_new_relation()
-    {
-        
     }
 
     listeners()
@@ -694,475 +453,9 @@ class Main extends React.Component
                     </Toolbar>
                 </AppBar>
                 {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
-                <Drawer variant="persistent"
-                 anchor="left"
-                 open={this.state.add_drawer_open}
-                 className={this.props.classes.drawer}
-                 classes={{paper: this.props.classes.drawerPaper2,}}>
-                    <Toolbar variant="dense"/>
-             
-                    <Grid container direction="column" className={this.props.classes.gridDrawer} xs={12} alignItems="flex-start" justify="flex-start">
-                        <List className={this.props.classes.list_class}> 
-                            <Grid container direction="row" justify="center" alignItems="center">
-                                <Typography
-                                color="primary"
-                                display="block"
-                                variant="caption">
-                                New Node
-                                </Typography>
-                            </Grid>
-                            <ListItem>
-                                <TextField 
-                                label='New Node Name'
-                                variant='outlined' 
-                                size='small' 
-                                value={this.state.new_node_name}
-                                onChange={
-                                    e => {
-                                        this.setState({new_node_name:e.target.value});
-                                        this.search_node_name(e.target.value);
-                                    }}                                            
-                                style={{width:300}} 
-                                InputLabelProps={
-                                {   className: this.props.classes.textfield_label}}
-                                InputProps={{
-                                    className: this.props.classes.valueTextField,
-                                    classes:{
-                                        root:this.props.classes.root,
-                                        notchedOutline: this.props.classes.valueTextField,
-                                        disabled: this.props.classes.valueTextField
-                                    },
-                                    endAdornment: 
-                                    (
-                                        <Box display={this.state.new_node_name_close_button_visible}> 
-                                            <IconButton color='primary' size='small'
-                                            onClick={
-                                                e=>{
-                                                    this.search_node_name("");
-                                                    this.setState({new_node_name:""})
-                                                }
-                                            }>
-                                                <CloseIcon/>
-                                            </IconButton>
-                                        </Box> 
-                                    ),
-                                }}/>
-                            </ListItem>
-                            <ListItem>
-                                <List className={this.props.classes.properties_list_class}>
-                                {
-                                    this.state.node_data_list.map(item=>
-                                    {
-                                        if(item.show)
-                                        {
-                                            return(
-                                                <ListItem button key={item.node_id}>
-                                                    <ListItemText primary={<Typography type="body2" style={{ color:'#FFFFFF'}}>{item.node_name}</Typography>} />
-                                                    <IconButton color='primary' size='small'
-                                                    onClick={
-                                                        e=>{
-                                                            this.delete_node_id=item.node_id;
-                                                            this.delete_node_name=item.node_name;
-                                                            this.permission_dialog_purpose_code=3;
-                                                            this.permission_dialog_options(1);
-                                                        } 
-                                                    }>
-                                                        <DeleteIcon/>
-                                                    </IconButton>
-                                                </ListItem>
-                                            )
-                                        }
-                                    })
-                                }
-                                </List>
-                            </ListItem>
-                            <ListItem>
-                                <Autocomplete
-                                size="small"
-                                classes={this.props.classes}
-                                options={this.state.node_type_data_list}
-                                getOptionLabel={(option) => option.node_type}
-                                style={{ width: 300 }}
-                                value={this.state.new_node_type}
-                                onChange={(event,value)=>
-                                    {this.setState({new_node_type:value,});}}
-                                renderInput=
-                                {
-                                    (params) => 
-                                        <TextField 
-                                        {...params} label="Node Type.." variant="outlined" 
-                                        InputLabelProps=
-                                        {{   
-                                                ...params.InputLabelProps,
-                                                className: this.props.classes.textfield_label
-                                        }}
-                                        />
-                                }
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                                 onClick={e=>{this.add_new_node();}}>Add</Button>
-                            </ListItem>
-                            <Divider light classes={{root:this.props.classes.divider}}/>
-                            <ListItem>
-                                <Grid container direction="row" justify="center" alignItems="center">
-                                    <Typography
-                                    color="primary"
-                                    display="block"
-                                    variant="caption"
-                                    >
-                                    New Relation
-                                    </Typography>
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <Grid container direction="row" justify="space-between" alignItems="center">
-                                    <Typography
-                                        color="primary"
-                                        display="block"
-                                        variant="caption">
-                                        From:
-                                    </Typography>
-                                    <Autocomplete
-                                    id="combo-box-demo"
-                                    classes={this.props.classes}
-                                    size="small"
-                                    options={this.state.node_data_list}
-                                    getOptionLabel={(option) => option.node_name}
-                                    style={{ width: '85%' }}
-                                    renderInput=
-                                    {
-                                        (params) => 
-                                            <TextField {...params} label="Source Node.." variant="outlined" 
-                                            InputLabelProps=
-                                            {{   
-                                                    ...params.InputLabelProps,
-                                                    className: this.props.classes.textfield_label
-                                            }}
-                                            />
-                                    }
-                                    />
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <Grid container direction="row" justify="space-between" alignItems="center">
-                                    <Typography
-                                        color="primary"
-                                        display="block"
-                                        variant="caption">
-                                        To:
-                                    </Typography>
-                                    <Autocomplete
-                                    id="combo-box-demo"
-                                    classes={this.props.classes}
-                                    size="small"
-                                    options={this.state.node_data_list}
-                                    getOptionLabel={(option) => option.node_name}
-                                    style={{ width: '85%' }}
-                                    renderInput=
-                                    {
-                                        (params) => 
-                                            <TextField {...params} label="Destination Node.." variant="outlined" 
-                                            InputLabelProps=
-                                            {{   
-                                                    ...params.InputLabelProps,
-                                                    className: this.props.classes.textfield_label
-                                            }}
-                                            />
-                                    }
-                                    />
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <Grid container direction="row" justify="space-between" alignItems="center">
-                                    <Typography
-                                        color="primary"
-                                        display="block"
-                                        variant="caption">
-                                        Type:
-                                    </Typography>
-                                    <Autocomplete
-                                    id="combo-box-demo"
-                                    classes={this.props.classes}
-                                    size="small"
-                                    options={this.state.relation_type_data_list}
-                                    getOptionLabel={(option) => option.relation_type}
-                                    style={{ width: '85%' }}
-                                    renderInput=
-                                    {
-                                        (params) => 
-                                            <TextField {...params} label="Relation Type.." variant="outlined" 
-                                            InputLabelProps=
-                                            {{   
-                                                    ...params.InputLabelProps,
-                                                    className: this.props.classes.textfield_label
-                                            }}
-                                            />
-                                    }
-                                    />
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <Button variant="contained" size="small" color="primary" style={{width:'100%'}}>Add</Button>
-                            </ListItem>
-                        </List>
-                    </Grid>
-                </Drawer>
+                {add_panel(this)}
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
-                <Drawer variant="persistent"
-                 anchor="left"
-                 open={this.state.relation_node_properties_drawer_open}
-                 className={this.props.classes.drawer}
-                 classes={{paper: this.props.classes.drawerPaper2,}}>
-                    <Toolbar variant="dense"/>
-                    <Grid container direction="column" className={this.props.classes.gridDrawer} xs={12} alignItems="flex-start" justify="flex-start">
-                        <List className={this.props.classes.list_class}> 
-                            <Grid container direction="row" justify="center" alignItems="center">
-                                <Typography
-                                color="primary"
-                                display="block"
-                                variant="caption">
-                                Node Type
-                                </Typography>
-                            </Grid>
-                            <ListItem>
-                                <Grid container direction="row" justify="center" alignItems="center">
-                                    <TextField         
-                                    label='Node Type' 
-                                    variant='outlined' 
-                                    size='small'                                          
-                                    style={{ width: '79%' }}
-                                    onChange={
-                                        e=>{
-                                            this.setState({
-                                                node_type_name:e.target.value
-                                            });
-                                        }
-                                    }
-                                    InputLabelProps={
-                                    {   className: this.props.classes.textfield_label}}
-                                    InputProps={{
-                                        className: this.props.classes.valueTextField,
-                                        classes:{
-                                            root:this.props.classes.root,
-                                            notchedOutline: this.props.classes.valueTextField,
-                                            disabled: this.props.classes.valueTextField
-                                        }
-                                    }}/>
-                                    <IconButton color='primary'
-                                     onClick={e=>{this.add_node_type();}}>
-                                        <AddIcon/>
-                                    </IconButton>
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <Grid container direction="row" justify="center" alignItems="center">
-                                    <TextField         
-                                    label='Search Node Types' 
-                                    variant='outlined' 
-                                    size='small'                                          
-                                    style={{ width: '100%' }}
-                                    value={this.state.node_type_search_text}
-                                    onChange={
-                                        e=>{
-                                            this.setState({
-                                                node_type_search_text:e.target.value
-                                            });
-                                            this.search_node_type(e.target.value);
-                                        }
-                                    }
-                                    InputLabelProps={
-                                    {   className: this.props.classes.textfield_label}}
-                                    InputProps={{
-                                        className: this.props.classes.valueTextField,
-                                        classes:{
-                                            root:this.props.classes.root,
-                                            notchedOutline: this.props.classes.valueTextField,
-                                            disabled: this.props.classes.valueTextField
-                                        },
-                                        endAdornment: 
-                                        (
-                                            <Box display={this.state.node_type_search_close_button_visible}> 
-                                                <IconButton color='primary' size='small'
-                                                onClick={
-                                                    e=>{
-                                                        this.search_node_type("");
-                                                        this.setState({node_type_search_text:""})
-                                                    }
-                                                }>
-                                                    <CloseIcon/>
-                                                </IconButton>
-                                            </Box> 
-                                        ),
-                                    }}/>
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <List className={this.props.classes.properties_list_class}>
-                                {
-                                    this.state.node_type_data_list.map(item=>
-                                    {
-                                        if(item.show)
-                                        {
-                                            return(
-                                            <ListItem button key={item.id}>
-                                                <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} />
-                                                <IconButton color='primary' size='small'
-                                                 onClick={
-                                                    e=>{
-                                                        this.delete_node_type_id=item.id;
-                                                        this.delete_node_type_name=item.node_type;
-                                                        this.permission_dialog_purpose_code=1;
-                                                        this.permission_dialog_options(1);
-                                                    } 
-                                                 }>
-                                                    <DeleteIcon/>
-                                                </IconButton>
-                                            </ListItem>
-                                            );
-                                        }
-                                    })
-                                }
-                                </List>
-                            </ListItem>
-                            <Divider light classes={{root:this.props.classes.divider}}/>
-                            <ListItem>
-                                <Grid container direction="row" justify="center" alignItems="center">
-                                    <Typography
-                                    color="primary"
-                                    display="block"
-                                    variant="caption">
-                                    Relation Properties
-                                    </Typography>
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <Grid container direction="row" justify="center" alignItems="center">
-                                    <TextField         
-                                    label='Relation Type' 
-                                    variant='outlined' 
-                                    size='small'                                          
-                                    style={{ width: '100%' }}
-                                    value={this.state.relation_type_name}
-                                    onChange={
-                                        e=>{this.setState({relation_type_name:e.target.value});}
-                                    }
-                                    InputLabelProps={
-                                    {   className: this.props.classes.textfield_label}}
-                                    InputProps={{
-                                        className: this.props.classes.valueTextField,
-                                        classes:{
-                                            root:this.props.classes.root,
-                                            notchedOutline: this.props.classes.valueTextField,
-                                            disabled: this.props.classes.valueTextField
-                                        }
-                                    }}/>
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <div className="colorPickerStyle">
-                                    <ColorPicker
-                                        name="color"
-                                        variant='outlined' 
-                                        size="small"
-                                        onChange={color => 
-                                            {
-                                                console.log(color);
-                                                this.color_picker_handler(color);
-                                            }}
-                                        InputProps={{
-                                            value:this.state.color_picker_hex_value, 
-                                            style:{color:this.state.color_picker_hex_value},
-                                            classes:{
-                                                root:this.props.classes.root,
-                                                notchedOutline: this.props.classes.valueTextField,
-                                                disabled: this.props.classes.valueTextField
-                                            }
-                                        }}
-                                        value={this.state.color_picker_hex_value}
-                                    />
-                                </div>
-                            </ListItem>
-                            <ListItem>
-                            <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                            onClick={
-                                e=>{this.add_relation_type();}
-                            }>Add</Button>
-                            </ListItem>
-                            <ListItem>
-                                <Grid container direction="row" justify="center" alignItems="center">
-                                    <TextField         
-                                    label='Search Relation Types' 
-                                    variant='outlined' 
-                                    size='small'                                          
-                                    style={{ width: '100%' }}
-                                    value={this.state.relation_type_search_text}
-                                    onChange={
-                                        e=>{
-                                            this.setState({
-                                                relation_type_search_text:e.target.value
-                                            });
-                                            this.search_relation_type(e.target.value);
-                                        }
-                                    }
-                                    InputLabelProps={
-                                    {   className: this.props.classes.textfield_label}}
-                                    InputProps={{
-                                        className: this.props.classes.valueTextField,
-                                        classes:{
-                                            root:this.props.classes.root,
-                                            notchedOutline: this.props.classes.valueTextField,
-                                            disabled: this.props.classes.valueTextField
-                                        },
-                                        endAdornment: 
-                                        (
-                                            <Box display={this.state.relation_type_search_close_button_visible}> 
-                                                <IconButton color='primary' size='small'
-                                                onClick={
-                                                    e=>{
-                                                        this.search_relation_type("");
-                                                        this.setState({relation_type_search_text:""})
-                                                    }
-                                                }>
-                                                    <CloseIcon/>
-                                                </IconButton>
-                                            </Box> 
-                                        ),
-                                    }}/>
-                                </Grid>
-                            </ListItem>
-                            <ListItem>
-                                <List className={this.props.classes.properties_list_class}>
-                                {   
-                                    this.state.relation_type_data_list.map(item=>
-                                    {
-                                        if(item.show)
-                                        {
-                                            return(
-                                            <ListItem button key={item.id}>
-                                                <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} />
-                                                <IconButton color='primary' size='small'
-                                                 onClick={
-                                                    e=>{
-                                                        this.delete_relation_type_id=item.id;
-                                                        this.delete_relation_type_name=item.relation_type;
-                                                        this.permission_dialog_purpose_code=2;
-                                                        this.permission_dialog_options(1);
-                                                    } 
-                                                 }>
-                                                    <DeleteIcon/>
-                                                </IconButton>
-                                            </ListItem>
-                                            );
-                                        }
-                                    })
-                                }
-                                </List>
-                            </ListItem>
-                        </List>
-                    </Grid>
-                </Drawer>
+                {relation_node_properties_panel(this)}
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
                 <Drawer variant="permanent" className={this.props.classes.drawer}
                  classes={{paper: this.props.classes.drawerPaper,}}>
