@@ -1,8 +1,9 @@
-import {Button,Toolbar,Typography,TextField,Grid,IconButton,Drawer,Divider,List,ListItem,ListItemText,Box} from '@material-ui/core';
+import {Tooltip,Button,Toolbar,Typography,TextField,Grid,IconButton,Drawer,Divider,List,ListItem,ListItemText,Box} from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
+import NoteAddIcon from '@material-ui/icons/NoteAdd';
 
 export function add_add_panel_func(CLASS)
 {
@@ -12,6 +13,13 @@ export function add_add_panel_func(CLASS)
     CLASS.prototype.add_new_node = add_new_node;
 
     CLASS.prototype.add_new_relation = add_new_relation;
+    CLASS.prototype.search_source_url = search_source_url;
+    CLASS.prototype.add_source_url_to_list = add_source_url_to_list;
+    CLASS.prototype.delete_source_url_from_list = delete_source_url_from_list;
+    CLASS.prototype.add_file_dir = add_file_dir; 
+    CLASS.prototype.remove_dir_from_file_dir_list = remove_dir_from_file_dir_list;  
+    CLASS.prototype.add_new_relation_body = add_new_relation_body;
+    CLASS.prototype.search_grouped_relation = search_grouped_relation;//will be used later   
 }
 
 function delete_node()
@@ -102,6 +110,15 @@ function add_new_node()
     }
 }
 
+function add_new_relation_body(last_entered_relation)
+{
+    const relation_data_list=[...this.state.relation_data_list];
+    relation_data_list.push(last_entered_relation);
+    this.setState({
+        relation_data_list:relation_data_list
+    });
+}
+
 function add_new_relation()
 {
     if(this.state.source_node==null || typeof this.state.source_node.node_name=='undefined')
@@ -158,11 +175,118 @@ function add_new_relation()
         }
         else
         {
-
-            alert("source="+this.state.source_node.node_name+" dest="+this.state.destination_node.node_name+" type="+this.state.new_relation_type.relation_type);
+            var url_list=[];
+            for(var a=0;a<this.state.source_url_list.length;a++)
+            {   url_list.push(this.state.source_url_list[a].url);}
+            var relation={
+                "source_node_id":this.state.source_node.node_id,
+                "destination_node_id":this.state.destination_node.node_id,
+                "relation_type_id":this.state.new_relation_type.id,
+                "source_url_list":url_list,
+                "source_local":this.state.file_dir_list
+            }
+            window.ipcRenderer.send('add_new_relation',relation);
+            this.setState({
+                source_node:"",
+                destination_node:"",
+                new_relation_type:"",
+                source_url:"",
+                source_url_close_button_visible:'none',
+                source_url_list:[],
+                file_dir:"",
+                file_dir_list:[],
+            });
         }
-
     }
+}
+
+function add_source_url_to_list()
+{
+    if(this.state.source_url.length==0)
+    {
+        this.setState({
+            alert_dialog_text:"Enter the source url first !",
+            alert_dialog_open:true
+        });
+    }
+    else
+    {
+        var found=false;
+        var a=0;
+        const url_list=[...this.state.source_url_list];
+        for(a=0;a<url_list.length;a++)
+        {
+            if(url_list[a].url.localeCompare(this.state.source_url)==0)
+            {   found=true;}
+            url_list[a].show=true;
+        }
+        if(found)
+        {
+            this.setState({
+                alert_dialog_text:"URL '"+this.state.source_url+"' is already present on the list.",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {
+            var url={
+                'id':url_list.length,
+                'url':this.state.source_url,
+                'show':true
+            }
+            url_list.push(url);
+            this.setState({source_url_list:url_list,source_url:"",source_url_close_button_visible:"none"});
+        }
+    }
+}
+
+function delete_source_url_from_list(id)
+{
+    const url_list=[...this.state.source_url_list];
+    const new_url_list=url_list.filter(item=>item.id!=id);
+    this.setState({source_url_list:new_url_list});
+}
+
+function search_source_url(data)
+{
+    if(data.length>0)
+    {   this.setState({source_url_close_button_visible:"block"});}
+    else
+    {   this.setState({source_url_close_button_visible:"none"});}
+    const source_url_list=[...this.state.source_url_list];
+    for(var a=0;a<source_url_list.length;a++)
+    {
+        if(source_url_list[a].url.toUpperCase().includes(data.toUpperCase()))
+        {   source_url_list[a].show=true;}
+        else
+        {   source_url_list[a].show=false;}
+    }
+    this.setState({source_url_list:source_url_list});
+}
+
+function add_file_dir(data)
+{
+    const file_dir_list=[...this.state.file_dir_list];
+    var data={
+        'id':file_dir_list.length,
+        'file_name':data.file_name,
+        'new_file_dir':data.new_file_dir,
+        'file_dir':""+data.file_dir
+    };
+    file_dir_list.push(data);
+    this.setState({file_dir_list});
+}
+
+function remove_dir_from_file_dir_list(id)
+{
+    const file_dir_list=[...this.state.file_dir_list];
+    const new_file_dir_list=file_dir_list.filter(item=>item.id!=id);
+    this.setState({file_dir_list:new_file_dir_list});
+}
+
+function search_grouped_relation(type)//will be used later
+{
+   
 }
 
 export function add_panel(THIS)
@@ -388,8 +512,8 @@ export function add_panel(THIS)
                     </ListItem>
                     <ListItem>
                         <Grid container direction="row" justify="center" alignItems="center">
-                        <IconButton color='primary' size="small"
-                                onClick={e=>{}}>
+                            <IconButton color='primary' size="small"
+                                onClick={e=>{THIS.add_source_url_to_list();}}>
                                 <AddIcon/>
                             </IconButton>
                             <TextField         
@@ -397,11 +521,13 @@ export function add_panel(THIS)
                             variant='outlined' 
                             size='small'                                          
                             style={{ width: '85%' }}
+                            value={THIS.state.source_url}
                             onChange={
                                 e=>{
                                     THIS.setState({
                                         source_url:e.target.value
                                     });
+                                    THIS.search_source_url(e.target.value);
                                 }
                             }
                             InputLabelProps={
@@ -419,8 +545,8 @@ export function add_panel(THIS)
                                         <IconButton color='primary' size='small'
                                         onClick={
                                             e=>{
-                                                THIS.search_node_type("");
-                                                THIS.setState({node_type_search_text:""})
+                                                THIS.search_source_url("");
+                                                THIS.setState({source_url:""})
                                             }
                                         }>
                                             <CloseIcon/>
@@ -431,8 +557,89 @@ export function add_panel(THIS)
                             
                         </Grid>
                     </ListItem>
-                    <ListItem>
+                    <ListItem> 
+                        <List className={THIS.props.classes.properties_list_class}> 
+                        {
+                            THIS.state.source_url_list.map(item=>
+                            {
+                                if(item.show)
+                                {
+                                    return(
+                                        <ListItem button key={item.id}>
+                                            <TextField         
+                                            variant='outlined' 
+                                            size='small'                                          
+                                            style={{ width: '85%' }}
+                                            value={item.url}
+                                            InputLabelProps={
+                                            {   className: THIS.props.classes.textfield_label}}
+                                            InputProps={{
+                                                className: THIS.props.classes.valueTextField,
+                                                classes:{
+                                                    root:THIS.props.classes.root,
+                                                    notchedOutline: THIS.props.classes.valueTextField,
+                                                    disabled: THIS.props.classes.valueTextField
+                                                }
+                                            }}/>
 
+                                            <IconButton color='primary' size='small'
+                                            onClick={e=>{THIS.delete_source_url_from_list(item.id);}}>
+                                                <DeleteIcon/>
+                                            </IconButton>
+                                        </ListItem>
+                                    )
+                                }
+                            })
+                        }
+                        </List>
+                    </ListItem>
+                    <ListItem>
+                        <Grid container direction="row" justify="center" alignItems="center">
+                            <Typography
+                                color="primary"
+                                display="block"
+                                variant="caption">
+                                Attached Files:
+                            </Typography>
+                            <IconButton color='primary' 
+                            onClick={e=>{window.ipcRenderer.send("open_file_picker","");}}>
+                                <NoteAddIcon/>
+                            </IconButton>  
+                        </Grid>
+                    </ListItem>
+                    <ListItem>
+                        <List className={THIS.props.classes.properties_list_class}> 
+                        {
+                            THIS.state.file_dir_list.map(item=>
+                            {
+                                return(
+                                    <ListItem button key={item.id}>
+                                        <Tooltip title={item.file_dir}>
+                                        <TextField         
+                                        variant='outlined' 
+                                        size='small'                                          
+                                        style={{ width: '85%' }}
+                                        value={item.file_name}
+                                        InputLabelProps={
+                                        {   className: THIS.props.classes.textfield_label}}
+                                        InputProps={{
+                                            className: THIS.props.classes.valueTextField,
+                                            classes:{
+                                                root:THIS.props.classes.root,
+                                                notchedOutline: THIS.props.classes.valueTextField,
+                                                disabled: THIS.props.classes.valueTextField
+                                            }
+                                        }}/>
+                                        </Tooltip>
+                                        <IconButton color='primary' size='small'
+                                        onClick={e=>{THIS.remove_dir_from_file_dir_list(item.id)}}>
+                                            <DeleteIcon/>
+                                        </IconButton>
+                                    </ListItem>
+                                )
+                            })
+                        }
+                        </List>
                     </ListItem>
                     <ListItem>
                         <Button variant="contained" size="small" color="primary" style={{width:'100%'}}

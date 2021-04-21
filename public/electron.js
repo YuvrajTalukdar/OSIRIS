@@ -3,7 +3,8 @@ const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
 const electron = require('electron')
 const path=require('path');
 const is_dev=require('electron-is-dev');
-const {app,BrowserWindow,Menu,ipcMain,screen} = electron;
+const {app,BrowserWindow,Menu,ipcMain,screen,dialog} = electron;
+const fs = require('fs');
 
 let mainWindow;
 let settingsWindow=null;
@@ -72,6 +73,62 @@ ipcMain.on('add_new_node',(enent,data)=>{
 
 ipcMain.on('delete_node',(enent,data)=>{
     AvyuktaEngine.delete_node(data);
+});
+
+function get_filename_from_path(path)
+{
+    var file_name="";
+    for(var a=path.length-1;a>=0;a--)
+    {
+        if(path[a].localeCompare("/")!=0)
+        {   file_name=path[a]+file_name;}
+        else
+        {   break;}
+    }
+    return file_name;
+}
+function copy_files(source_path,destination_path)
+{
+    fs.copyFile(source_path,destination_path, 
+    fs.constants.COPYFILE_EXCL, (err) => {
+        if(err) 
+        {   console.log("Copy Error Found:", err);}
+        else 
+        {}
+    });
+}
+ipcMain.on('add_new_relation',(event,data)=>{
+    var source_local=[];
+    for(var a=0;a<data.source_local.length;a++)
+    {   
+        copy_files(data.source_local[a].file_dir,data.source_local[a].new_file_dir);
+        source_local.push(data.source_local[a].new_file_dir);
+    }
+    AvyuktaEngine.add_new_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local);
+    let obj=AvyuktaEngine.get_last_entered_relation_data();
+    mainWindow.webContents.send('last_entered_relation',obj);
+});
+ipcMain.on('open_file_picker',(event,todo)=>{
+    dialog.showOpenDialog({
+        properties: ['openFile', 'multiSelections']
+    },
+    ).then(function (response) 
+    {   
+        if (!response.canceled) 
+        {
+            for(var a=0;a<response.filePaths.length;a++)    
+            {
+                var file_name=get_filename_from_path(response.filePaths[a]);
+                var new_file_dir="database/documents/"+file_name
+                var data={
+                    'file_name':file_name,
+                    'new_file_dir':new_file_dir,
+                    'file_dir':response.filePaths[a]
+                }
+                mainWindow.webContents.send('add_file_dir',data);
+            }
+        } 
+    });
 });
 
 /*Settings window functions and variables*/ 

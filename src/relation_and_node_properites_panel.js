@@ -80,10 +80,10 @@ function search_node_type(data)
         {   node_type_list[a].show=true;}
         else
         {   node_type_list[a].show=false;}
-        this.setState({
-            node_type_data_list:node_type_list
-        });
     }
+    this.setState({
+        node_type_data_list:node_type_list
+    });
 }
 
 function delete_relation_type()

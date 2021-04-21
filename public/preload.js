@@ -1,10 +1,9 @@
 const { ipcRenderer } = require('electron');
 const electron = require('electron');
+//const {dialog} = require('electron').remote;
 
 process.once('loaded', () => 
-{
-    //global.ipcRenderer = electron.ipcRenderer;
-  
+{ 
     window.addEventListener('message', event => 
     {
         const message = event.data;

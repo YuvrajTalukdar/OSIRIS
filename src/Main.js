@@ -55,7 +55,7 @@ const useStyles = (theme)=>
         overflow: 'auto',
     },
     properties_list_class:{
-        height: "35vh",
+        height: "25vh",
         width: '100%',
         position: 'relative',
         overflow: 'auto',
@@ -144,7 +144,7 @@ class Main extends React.Component
         this.state=
         {
             /*Drawer Settings*/
-            add_drawer_open:true,
+            add_drawer_open:false,
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
@@ -166,14 +166,16 @@ class Main extends React.Component
             source_url:"",
             source_url_close_button_visible:'none',
             source_url_list:[],
-
+            file_dir:"",
+            file_dir_list:[],
+            grouped_relation_search:"",//will bw used later
             /*type data */
-            /*Node Type */
+                /*Node Type */
             node_type_data_list:[],
             node_type_search_text:"",
             node_type_search_close_button_visible:"none",
             node_type_name:"",
-            /*Relation Type */
+                /*Relation Type */
             relation_type_data_list:[],
             relation_type_search_text:"",
             relation_type_search_close_button_visible:"none",
@@ -337,8 +339,14 @@ class Main extends React.Component
 
     listeners()
     {
+        window.ipcRenderer.on('last_entered_relation',(event,data)=>
+        {   this.add_new_relation_body(data);});
+
         window.ipcRenderer.on('last_entered_node',(event,data)=>
         {   this.add_new_node_body(data);});
+
+        window.ipcRenderer.on('add_file_dir',(event,data)=>
+        {   this.add_file_dir(data);});
     }
 
     render()

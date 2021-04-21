@@ -50,6 +50,7 @@ class filehandler_class
     data_node last_entered_node;
     //relation related data
     vector<relation> relation_list;
+    relation last_entered_relation;
     //settings data
     string settings_file_dir="./database/settings.csv";
     unsigned int total_no_of_nodes;

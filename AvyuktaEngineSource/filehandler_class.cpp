@@ -1056,6 +1056,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
     ofstream out_file(file_name,ios::out);
     out_file<<temp_data;
     out_file.close();
+    last_entered_relation=relation;
     return no_of_relation_in_this_file;
 }
 
