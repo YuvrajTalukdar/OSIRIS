@@ -32,6 +32,13 @@
     color: white;
   }
 
+.Main_Style
+{
+    background-color: #000000;
+    min-height: 100vh;
+    min-width: 100%;
+}
+
 .App-link {
   color: #61dafb;
 }
@@ -66,3 +73,19 @@
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover 
 {   background: #04695f;}
+
+/*max-width: 100%;
+max-height: 100%;*/
+.net 
+{
+    min-height: 100vh;
+    min-width: 100%;
+    background-color: rgb(0, 0, 0);
+}
+
+.net_grid
+{
+    background-color: #000000;
+    min-height: 100vh;
+    min-width: 100%;
+} 

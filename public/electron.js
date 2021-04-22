@@ -34,7 +34,7 @@ app.on('ready', () =>
     Menu.setApplicationMenu(mainMenu);
 
     initialize_engine();
-})
+});
 
 /*Main window functions*/
 ipcMain.on('get_main_window_data',(event,todo)=>{

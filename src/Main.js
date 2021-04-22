@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{createRef} from 'react';
 import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import theme from './theme';
@@ -10,9 +10,34 @@ import SearchIcon from '@material-ui/icons/Search';
 import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import { Network } from "vis-network/peer/esm/vis-network";
+import { DataSet } from "vis-data/peer/esm/vis-data"
 
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
+
+var nodes = new DataSet([
+    {id: 1, label: 'Node 1'},
+    {id: 2, label: 'Node 2'},
+    {id: 3, label: 'Node 3'},
+    {id: 4, label: 'Node 4'},
+    {id: 5, label: 'Node 5'}
+]);
+
+// create an array with edges
+var edges = new DataSet([
+    {from: 1, to: 3},
+    {from: 1, to: 2},
+    {from: 2, to: 4},
+    {from: 2, to: 5}
+]);
+
+// provide the data in the vis format
+var data = {
+    nodes: nodes,
+    edges: edges
+};
+var options = {autoResize: true,height:'100%',width:'100%'};
 
 const useStyles = (theme)=>
 ({
@@ -185,7 +210,11 @@ class Main extends React.Component
             permission_dialog_text:"",
             alert_dialog_open:false,
             alert_dialog_text:"",
+
+            net_ref:createRef(),
         };
+        this.network = {};
+
         this.handle_drawer=this.handle_drawer.bind(this);
         this.color_picker_handler=this.color_picker_handler.bind(this);
         this.add_main_window_data=this.add_main_window_data.bind(this);
@@ -348,7 +377,14 @@ class Main extends React.Component
         window.ipcRenderer.on('add_file_dir',(event,data)=>
         {   this.add_file_dir(data);});
     }
-
+    
+    componentDidMount() 
+    {
+        this.network = new Network(this.state.net_ref.current,data,options);
+        var height = Math.round(window.innerHeight * 0.00) + 'px';
+        this.state.net_ref.current.style.height = height;    
+    }
+    
     render()
     {
         window.ipcRenderer.on('main_window_data_received',(event,data)=>
@@ -362,7 +398,7 @@ class Main extends React.Component
         }
         return(
         <ThemeProvider theme={theme}>
-            <header className="Settings-Style">
+            <header className="Main_Style">
                 {/*-----------------------------------------Dialogs----------------------------------------------------- */ }
                 {/*Alert Dialog*/}
                 <Dialog
@@ -495,7 +531,10 @@ class Main extends React.Component
                             </IconButton>
                         </Tooltip>
                     </Grid>
-                </Drawer>       
+                </Drawer>   
+                <Grid container direction="row" xs={12} alignItems="center" justify="center">
+                    <div id="net" ref={this.state.net_ref} className="net"></div>  
+                </Grid> 
             </header>
         </ThemeProvider>
         );

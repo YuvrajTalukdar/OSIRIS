@@ -1,6 +1,5 @@
 const { ipcRenderer } = require('electron');
 const electron = require('electron');
-//const {dialog} = require('electron').remote;
 
 process.once('loaded', () => 
 { 
