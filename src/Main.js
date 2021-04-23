@@ -10,34 +10,10 @@ import SearchIcon from '@material-ui/icons/Search';
 import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import { Network } from "vis-network/peer/esm/vis-network";
-import { DataSet } from "vis-data/peer/esm/vis-data"
 
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
-
-var nodes = new DataSet([
-    {id: 1, label: 'Node 1'},
-    {id: 2, label: 'Node 2'},
-    {id: 3, label: 'Node 3'},
-    {id: 4, label: 'Node 4'},
-    {id: 5, label: 'Node 5'}
-]);
-
-// create an array with edges
-var edges = new DataSet([
-    {from: 1, to: 3},
-    {from: 1, to: 2},
-    {from: 2, to: 4},
-    {from: 2, to: 5}
-]);
-
-// provide the data in the vis format
-var data = {
-    nodes: nodes,
-    edges: edges
-};
-var options = {autoResize: true,height:'100%',width:'100%'};
+import {add_network_func,add_network} from './network.js';
 
 const useStyles = (theme)=>
 ({
@@ -225,12 +201,9 @@ class Main extends React.Component
         this.rgbToHex=this.rgbToHex.bind(this);
         this.getRndInteger=this.getRndInteger.bind(this);
 
-        this.listeners=this.listeners.bind(this);
-
         add_node_relation_props_func(Main);
         add_add_panel_func(Main);
-
-        this.listeners();
+        add_network_func(Main);
     }
     
     delete_node_type_id=-1;
@@ -363,11 +336,25 @@ class Main extends React.Component
                 node_data_list:data.node_list,
                 relation_data_list:data.relation_list
             });
+            this.create_full_network();
         }
     }
+    
+    componentDidMount() 
+    {  
+        window.ipcRenderer.on('test_upper',(event,data)=>
+        {   
+            var a=0;
+            var text="";
+            for(a=0;a<this.state.relation_data_list.length;a++)
+            {
+                text+=("id="+this.state.relation_data_list[a].relation_id+" s="+this.state.relation_data_list[a].source_node_id+" d="+this.state.relation_data_list[a].destination_node_id+"\n")
+            }
+            alert(text);
+            alert("fin="+this.state.relation_data_list.length)
 
-    listeners()
-    {
+        });
+
         window.ipcRenderer.on('last_entered_relation',(event,data)=>
         {   this.add_new_relation_body(data);});
 
@@ -376,13 +363,8 @@ class Main extends React.Component
 
         window.ipcRenderer.on('add_file_dir',(event,data)=>
         {   this.add_file_dir(data);});
-    }
-    
-    componentDidMount() 
-    {
-        this.network = new Network(this.state.net_ref.current,data,options);
-        var height = Math.round(window.innerHeight * 0.00) + 'px';
-        this.state.net_ref.current.style.height = height;    
+
+        this.init_network();
     }
     
     render()
@@ -487,7 +469,12 @@ class Main extends React.Component
                             />
                         </Grid>
                         <Grid container direction="row" spacing={2} xs={6} alignItems="center" justify="flex-end">
-                            <IconButton color="primary">
+                            <IconButton color="primary"
+                            onClick={
+                                e=>{
+                                    window.ipcRenderer.send('test_lower',"");
+                                }
+                            }>
                                 <CenterFocusStrongIcon/>
                             </IconButton>
                             <IconButton color="primary">
@@ -532,9 +519,7 @@ class Main extends React.Component
                         </Tooltip>
                     </Grid>
                 </Drawer>   
-                <Grid container direction="row" xs={12} alignItems="center" justify="center">
-                    <div id="net" ref={this.state.net_ref} className="net"></div>  
-                </Grid> 
+                {add_network(this)}
             </header>
         </ThemeProvider>
         );

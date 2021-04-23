@@ -131,6 +131,11 @@ ipcMain.on('open_file_picker',(event,todo)=>{
     });
 });
 
+ipcMain.on('test_lower',(event,data)=>{
+    //console.log("test_lower");
+    mainWindow.webContents.send('test_upper',"check67");
+});
+
 /*Settings window functions and variables*/ 
 function startSettingsWindow()
 {   

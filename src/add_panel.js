@@ -28,6 +28,7 @@ function delete_node()
     const new_node_data_list=node_data_list.filter(item=>item.node_id!=this.delete_node_id);
 
     window.ipcRenderer.send('delete_node',this.delete_node_id);
+    this.delete_node_from_network(this.delete_node_id);
 
     this.delete_node_id=-1;
     this.delete_node_name="";
@@ -64,6 +65,8 @@ function add_new_node_body(last_entered_node)
     this.setState({
         node_data_list:node_data_list
     });
+    //alert("name="+last_entered_node.node_name+" id="+last_entered_node.node_id+" size="+this.state.node_data_list.length);
+    this.add_node_to_network(last_entered_node);
 }
 
 function add_new_node()
@@ -117,6 +120,7 @@ function add_new_relation_body(last_entered_relation)
     this.setState({
         relation_data_list:relation_data_list
     });
+    this.add_relation_to_network(last_entered_relation);
 }
 
 function add_new_relation()
