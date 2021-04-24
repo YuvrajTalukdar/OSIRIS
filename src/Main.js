@@ -352,7 +352,6 @@ class Main extends React.Component
             }
             alert(text);
             alert("fin="+this.state.relation_data_list.length)
-
         });
 
         window.ipcRenderer.on('last_entered_relation',(event,data)=>
@@ -469,15 +468,20 @@ class Main extends React.Component
                             />
                         </Grid>
                         <Grid container direction="row" spacing={2} xs={6} alignItems="center" justify="flex-end">
+                            <Tooltip title="Center Focus">
+                                <IconButton color="primary"
+                                onClick={
+                                    e=>{this.center_focus();}
+                                }>
+                                    <CenterFocusStrongIcon/>
+                                </IconButton>
+                            </Tooltip>
                             <IconButton color="primary"
                             onClick={
                                 e=>{
                                     window.ipcRenderer.send('test_lower',"");
                                 }
                             }>
-                                <CenterFocusStrongIcon/>
-                            </IconButton>
-                            <IconButton color="primary">
                                 <SpeedIcon/>
                             </IconButton>
                         </Grid>
