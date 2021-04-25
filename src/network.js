@@ -1,4 +1,4 @@
-import {Grid} from '@material-ui/core';
+import {Grid,Popover,Typography} from '@material-ui/core';
 import {Network} from 'vis-network/standalone';
 import {DataSet} from "vis-data/peer/esm/vis-data";
 
@@ -12,6 +12,7 @@ export function add_network_func(CLASS)
     CLASS.prototype.add_relation_to_network = add_relation_to_network;
     CLASS.prototype.delete_relation_from_network = delete_relation_from_network;
     CLASS.prototype.center_focus = center_focus;
+    CLASS.prototype.get_node_type = get_node_type;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -49,12 +50,15 @@ var options = {autoResize: true,height:'100%',width:'100%',
         {
             node:function(values, id, selected, hovering)
             {
-                values.shadow=true;
-                values.borderColor='#00FFE8';
                 if(selected)
                 {
                     values.borderColor='orange';
                     values.shadowColor='orange';
+                }
+                else
+                {
+                    values.shadow=true;
+                    values.borderColor='#00FFE8';
                 }
             }
         },
@@ -78,18 +82,17 @@ function add_relation_to_network(relation)
 {
     try
     {
-        //const div = document.createElement("div");
-        //div.className="tooltip";
-        //div.parentNode.className="tooltip";
         var relation_type=this.get_relation_type(relation.relation_type_id);
-        //div.innerText=relation_type.relation_type;
+        const div = document.createElement("div");
+        div.className="tooltip";
+        div.innerText=relation_type.relation_type;
         var edge={
             id:relation.relation_id,
             from:relation.source_node_id,
             to:relation.destination_node_id,
             width:1,
             color:relation_type.color_code,
-            title:relation_type.relation_type
+            title:div
         };
         edges.add(edge);
     }
@@ -102,12 +105,29 @@ function delete_relation_from_network(relation_id)
 
 }
 
+function get_node_type(node_type_id)
+{
+    var a=0;
+    var node_type;
+    for(a=0;a<this.state.node_type_data_list.length;a++)
+    {
+        if(this.state.node_type_data_list[a].id==node_type_id)
+        {   node_type=this.state.node_type_data_list[a];break;}
+    }
+    return node_type;
+}
+
 function add_node_to_network(node)
 {   try{
+        var node_type=this.get_node_type(node.node_type_id);
+        const div = document.createElement("div");
+        div.className="tooltip";
+        div.innerText=node_type.node_type;
         var node={
             id:node.node_id,
             label:node.node_name,
             shape:'circle',
+            title:div,
         };
         nodes.add(node);
     }
@@ -145,7 +165,23 @@ function init_network()
     this.network = new Network(this.state.net_ref.current,data,options);
     var height = Math.round(window.innerHeight * 0.00) + 'px';
     this.state.net_ref.current.style.height = height;
-    this.center_focus();   
+    this.center_focus(); 
+    this.network.on('oncontext',(values)=>{
+        if(this.hover_node_id!=-1)
+        {   
+            this.setState({
+                open_network_popup:true,
+                network_popup_top:values.pointer.DOM.y,
+                network_popup_bottom:values.pointer.DOM.x,
+            });
+        }
+    }) 
+    this.network.on('hoverNode',(values)=>{
+        this.hover_node_id=values.node;
+    }) 
+    this.network.on('blurNode',(values)=>{
+        this.hover_node_id=-1;
+    })
 }
 //------------------------------Network Focus Functions-------------------------------
 function center_focus()
@@ -160,7 +196,7 @@ function center_focus()
         } 
     }
     this.network.fit(fit_options);
-    
+
     //this.network.focus(3,{scale: '5%', offset:{x: -(6/3)}});
     //var scaleOption = { scale : 0.5 };
     //this.network.moveTo(scaleOption);
@@ -171,11 +207,25 @@ function center_focus()
     })*/
 }
 
-export function add_network(THIS)
+export function Add_Network(THIS)
 {
     return(
-        <Grid container direction="row" xs={12} alignItems="center" justify="center">
-            <div id="net" ref={THIS.state.net_ref} className="net"></div>  
-        </Grid> 
+        <div>
+            <Grid container direction="row" xs={12} alignItems="center" justify="center">
+                <div id="net" ref={THIS.state.net_ref} className="net"></div>  
+            </Grid>
+            <Popover
+            id={'id'}
+            open={THIS.state.open_network_popup}
+            anchorReference="anchorPosition"
+            anchorPosition={{top:THIS.state.network_popup_top,left:THIS.state.network_popup_bottom}}
+            onClose={e=>{THIS.setState({open_network_popup:false});}}>
+                <div className="tooltip">
+                <Typography className={THIS.props.classes.typography}>
+                    The content of the Popover.
+                </Typography>
+                </div>
+            </Popover>
+        </div> 
     );
 }

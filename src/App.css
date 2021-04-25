@@ -39,11 +39,12 @@
     min-width: 100%;
 }
 
-.tooltip {
-  color: #03c5e7;
-  min-height: 100vh;
-  min-width: 100%;
-  background-color: #000000;
+.tooltip 
+{
+    color: #ffffff;
+    background-color: #242527;
+    border-color: #000000;
+    border: 10px;
 }
 
 @keyframes App-logo-spin {
@@ -92,22 +93,3 @@ max-height: 100%;*/
     min-height: 100vh;
     min-width: 100%;
 } 
-
-::ng-deep div.vis-tooltip {
-    position: absolute;
-    visibility: hidden;
-    padding: 5px;
-    white-space: nowrap;
-    color: #000000;
-    background-color: #000000;
-  
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
-    border: 1px solid #000000;
-  
-    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-  
-    z-index: 5;
-  }

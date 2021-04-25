@@ -13,14 +13,12 @@ import AccountTreeIcon from '@material-ui/icons/AccountTree';
 
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
-import {add_network_func,add_network} from './network.js';
+import {add_network_func,Add_Network} from './network.js';
 
 const useStyles = (theme)=>
 ({
     gridDrawer:
     {
-        //width:'100%',
-        //margin:'50px',
         paddingLeft:'52px',
         paddingRight:'2px',
         paddingTop:'2px'
@@ -132,6 +130,9 @@ const useStyles = (theme)=>
     popupIndicator: {
         color: "#03DAC5"
     },
+    typography: {
+        padding: theme.spacing(2)
+    }
 });
 
 var main_window_data_request_sent=false;
@@ -188,8 +189,12 @@ class Main extends React.Component
             alert_dialog_text:"",
 
             net_ref:createRef(),
+            open_network_popup:false,
+            network_popup_top:100,
+            network_popup_bottom:100,
         };
         this.network = {};
+        this.hover_node_id=-1;
 
         this.handle_drawer=this.handle_drawer.bind(this);
         this.color_picker_handler=this.color_picker_handler.bind(this);
@@ -523,7 +528,7 @@ class Main extends React.Component
                         </Tooltip>
                     </Grid>
                 </Drawer>   
-                {add_network(this)}
+                {Add_Network(this)}
             </header>
         </ThemeProvider>
         );
