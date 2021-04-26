@@ -47,6 +47,15 @@
     border: 10px;
 }
 
+.contextMenu 
+{
+    color: #ffffff;
+    background-color: #242527;
+    border-color: #000000;
+    
+    max-width: 200px;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

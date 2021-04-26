@@ -1,6 +1,8 @@
-import {Grid,Popover,Typography} from '@material-ui/core';
+import {Grid,Popover,Typography,List,ListItem} from '@material-ui/core';
 import {Network} from 'vis-network/standalone';
 import {DataSet} from "vis-data/peer/esm/vis-data";
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
 
 export function add_network_func(CLASS)
 {
@@ -101,9 +103,7 @@ function add_relation_to_network(relation)
 }
 
 function delete_relation_from_network(relation_id)
-{
-
-}
+{   edges.remove(relation_id);}
 
 function get_node_type(node_type_id)
 {
@@ -167,7 +167,7 @@ function init_network()
     this.state.net_ref.current.style.height = height;
     this.center_focus(); 
     this.network.on('oncontext',(values)=>{
-        if(this.hover_node_id!=-1)
+        if(this.state.hover_node_id!=-1)
         {   
             this.setState({
                 open_network_popup:true,
@@ -175,13 +175,67 @@ function init_network()
                 network_popup_bottom:values.pointer.DOM.x,
             });
         }
+        if(this.state.hover_edge_id!=-1)
+        {
+            this.setState({
+                open_network_popup:true,
+                network_popup_top:values.pointer.DOM.y,
+                network_popup_bottom:values.pointer.DOM.x,
+            }); 
+        }
     }) 
+    //context menu handling
     this.network.on('hoverNode',(values)=>{
-        this.hover_node_id=values.node;
-    }) 
+        this.setState({
+                hover_node_id:values.node,
+                hover_node_name:nodes.get(values.node).label
+            });
+    }); 
     this.network.on('blurNode',(values)=>{
-        this.hover_node_id=-1;
-    })
+        this.setState({
+            hover_node_id:-1,
+            hover_node_name:""
+        });
+    });
+    this.network.on('hoverEdge',(values)=>{
+
+        this.setState({
+            hover_edge_id:values.edge,
+            source_node_name:nodes.get(edges.get(values.edge).from).label,
+            destination_node_name:nodes.get(edges.get(values.edge).to).label,
+        });
+    }); 
+    this.network.on('blurEdge',(values)=>{
+        this.setState({
+            hover_edge_id:-1,
+            source_node_name:'',
+            destination_node_name:'',
+        });
+    });
+    var context_menu_list=[];
+    var menuItem1={
+        'id':0,
+        'text':'Edit',
+        'icon':EditIcon
+    }  
+    var menuItem2={
+        'id':1,
+        'text':'Delete',
+        'icon':DeleteIcon
+    }  
+    context_menu_list.push(menuItem1);
+    context_menu_list.push(menuItem2);
+    this.setState({context_menu_list});
+    /*this.network.on('click',(values)=>{
+        if(this.state.hover_node_id!=-1)
+        {   
+            
+        }
+        if(this.state.hover_edge_id!=-1)
+        {
+            
+        }
+    });*/
 }
 //------------------------------Network Focus Functions-------------------------------
 function center_focus()
@@ -220,10 +274,64 @@ export function Add_Network(THIS)
             anchorReference="anchorPosition"
             anchorPosition={{top:THIS.state.network_popup_top,left:THIS.state.network_popup_bottom}}
             onClose={e=>{THIS.setState({open_network_popup:false});}}>
-                <div className="tooltip">
-                <Typography className={THIS.props.classes.typography}>
-                    The content of the Popover.
-                </Typography>
+                <div className="contextMenu">
+                    <List>
+                    {
+                        THIS.state.context_menu_list.map(item=>
+                        {
+                            return(
+                                <ListItem button
+                                onClick={
+                                    e=>
+                                    {
+                                        THIS.setState({open_network_popup:false});
+                                        if(THIS.state.hover_node_id!=-1)
+                                        {
+                                            if(item.id==0)
+                                            {   //alert('node edit')
+                                                THIS.handle_drawer(0);
+                                            }
+                                            else if(item.id==1)
+                                            {   
+                                                THIS.delete_node_id=THIS.state.hover_node_id;
+                                                THIS.delete_node_name=THIS.state.hover_node_name;
+                                                THIS.permission_dialog_purpose_code=3;
+                                                THIS.permission_dialog_options(1);
+                                            }
+                                        }
+                                        else if(THIS.state.hover_edge_id!=-1)
+                                        {
+                                            if(item.id==0)
+                                            {   alert('edge edit')}
+                                            else if(item.id==1)
+                                            {   
+                                                THIS.delete_relation_id=THIS.state.hover_edge_id;
+                                                THIS.delete_relation_source_node_name=THIS.state.source_node_name;
+                                                THIS.delete_relation_destination_node=THIS.state.destination_node_name;
+                                                var a=0;
+                                                var relation_type_id;
+                                                for(a=0;a<THIS.state.relation_data_list.length;a++)
+                                                {
+                                                    if(THIS.state.relation_data_list[a].relation_id==THIS.delete_relation_id)
+                                                    {   relation_type_id=THIS.state.relation_data_list[a].relation_type_id;break;}
+                                                }
+                                                var relation_type=THIS.get_relation_type(relation_type_id);
+                                                THIS.delete_relation_type=relation_type.relation_type;
+                                                THIS.permission_dialog_purpose_code=4;
+                                                THIS.permission_dialog_options(1);
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <item.icon/>
+                                    <Typography className={THIS.props.classes.typography}>
+                                        {item.text}
+                                    </Typography>
+                                </ListItem>
+                            );
+                        })
+                    }   
+                    </List>
                 </div>
             </Popover>
         </div> 

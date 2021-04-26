@@ -18,4 +18,6 @@ class operation_class
     void delete_node(database_class &db,unsigned int node_id);
 
     void add_relation(database_class &db,unsigned int source_node_id,unsigned int destination_node_id,unsigned int relation_type_id,vector<string>& source_url_list,vector<string>& source_local);
+
+    void delete_relation(database_class &db,unsigned int relation_id);
 };

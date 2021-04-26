@@ -75,6 +75,10 @@ ipcMain.on('delete_node',(enent,data)=>{
     AvyuktaEngine.delete_node(data);
 });
 
+ipcMain.on('delete_relation',(enent,data)=>{
+    AvyuktaEngine.delete_relation(data);
+});
+
 function get_filename_from_path(path)
 {
     var file_name="";
@@ -131,6 +135,7 @@ ipcMain.on('open_file_picker',(event,todo)=>{
     });
 });
 
+/*Testing functions*/
 ipcMain.on('test_lower',(event,data)=>{
     //console.log("test_lower");
     mainWindow.webContents.send('test_upper',"check67");

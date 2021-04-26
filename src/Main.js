@@ -131,7 +131,7 @@ const useStyles = (theme)=>
         color: "#03DAC5"
     },
     typography: {
-        padding: theme.spacing(2)
+        paddingLeft:'10px'
     }
 });
 
@@ -192,9 +192,16 @@ class Main extends React.Component
             open_network_popup:false,
             network_popup_top:100,
             network_popup_bottom:100,
+            hover_node_id:-1,
+            hover_node_name:"",
+            hover_edge_id:-1,
+            source_node_name:"",
+            destination_node_name:"",
+
+            context_menu_list:[],
         };
         this.network = {};
-        this.hover_node_id=-1;
+        //this.ctrlKey=false;
 
         this.handle_drawer=this.handle_drawer.bind(this);
         this.color_picker_handler=this.color_picker_handler.bind(this);
@@ -219,6 +226,11 @@ class Main extends React.Component
     
     delete_node_id=-1;
     delete_node_name="";
+
+    delete_relation_id=-1;
+    delete_relation_source_node_name="";
+    delete_relation_destination_node="";
+    delete_relation_type="";
 
     color_picker_handler(color)
     {
@@ -285,6 +297,8 @@ class Main extends React.Component
         {   this.delete_relation_type();}
         else if(this.permission_dialog_purpose_code==3)
         {   this.delete_node();}
+        else if(this.permission_dialog_purpose_code==4)
+        {   this.delete_relation();}
         this.permission_dialog_purpose_code=0;
     }
 
@@ -298,6 +312,8 @@ class Main extends React.Component
             {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Relation Type '"+this.delete_relation_type_name+"' ?"});}
             else if(this.permission_dialog_purpose_code==3)
             {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the Node '"+this.delete_node_name+"' ?"});}
+            else if(this.permission_dialog_purpose_code==4)
+            {   this.setState({permission_dialog_open:true,permission_dialog_text:"Do you want to delete the relation '"+this.delete_relation_source_node_name+"' to '"+this.delete_relation_destination_node+"' of type: '"+this.delete_relation_type+"' ?"});}
         }
         else if(option===0)
         {   
@@ -315,6 +331,13 @@ class Main extends React.Component
             {
                 this.delete_node_id=-1;
                 this.delete_node_name="";
+            }
+            else if(this.permission_dialog_purpose_code==4)
+            {
+                this.delete_relation_id=-1;
+                this.delete_relation_source_node_name="";
+                this.delete_relation_destination_node="";
+                this.delete_relation_type="";
             }
             this.permission_dialog_purpose_code=0;
             this.setState({permission_dialog_open:false,permission_dialog_text:""});
@@ -369,6 +392,15 @@ class Main extends React.Component
         {   this.add_file_dir(data);});
 
         this.init_network();
+
+        /*document.onkeydown=function(e){
+            if(e.ctrlkey==true && this.ctrlKey==false)
+            {   this.ctrlKey=true;}
+        }
+        document.onkeyup=function(e){
+            if(e.key.localeCompare("Control")==0 && this.ctrlKey==true)
+            {   this.ctrlKey=false;}
+        }*/
     }
     
     render()

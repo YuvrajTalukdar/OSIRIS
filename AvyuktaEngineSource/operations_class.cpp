@@ -67,3 +67,8 @@ void operation_class::add_relation(database_class &db,unsigned int source_node_i
     r1.source_local=source_local;
     db.file_handler.add_new_relation(r1);
 }
+
+void operation_class::delete_relation(database_class &db,unsigned int relation_id)
+{
+    db.file_handler.delete_relation(relation_id);
+}

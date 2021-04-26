@@ -230,6 +230,12 @@ void get_last_entered_relation_data(const FunctionCallbackInfo<Value>& args)
     args.GetReturnValue().Set(relation_obj);
 }
 
+void delete_relation(const FunctionCallbackInfo<Value>& args)
+{
+    int relation_id=args[0].As<Number>()->Value();
+    op_class.delete_relation(db,relation_id);
+}
+
 void get_last_entered_node_data(const FunctionCallbackInfo<Value>& args)
 {
     Isolate* isolate = args.GetIsolate();
@@ -348,6 +354,7 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"delete_node",delete_node);
     NODE_SET_METHOD(exports,"add_new_relation",add_new_relation);
     NODE_SET_METHOD(exports,"get_last_entered_relation_data",get_last_entered_relation_data);
+    NODE_SET_METHOD(exports,"delete_relation",delete_relation);
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

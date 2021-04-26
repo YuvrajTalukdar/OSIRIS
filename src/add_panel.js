@@ -4,6 +4,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
+import { Alert } from '@material-ui/lab';
 
 export function add_add_panel_func(CLASS)
 {
@@ -11,7 +12,7 @@ export function add_add_panel_func(CLASS)
     CLASS.prototype.search_node_name = search_node_name;
     CLASS.prototype.add_new_node_body = add_new_node_body;
     CLASS.prototype.add_new_node = add_new_node;
-
+    CLASS.prototype.delete_relation = delete_relation;
     CLASS.prototype.add_new_relation = add_new_relation;
     CLASS.prototype.search_source_url = search_source_url;
     CLASS.prototype.add_source_url_to_list = add_source_url_to_list;
@@ -20,6 +21,24 @@ export function add_add_panel_func(CLASS)
     CLASS.prototype.remove_dir_from_file_dir_list = remove_dir_from_file_dir_list;  
     CLASS.prototype.add_new_relation_body = add_new_relation_body;
     CLASS.prototype.search_grouped_relation = search_grouped_relation;//will be used later   
+}
+
+function delete_relation()
+{
+    const relation_data_list=[...this.state.relation_data_list];
+    const new_relation_data_list=relation_data_list.filter(item=>item.relation_id!=this.delete_relation_id);
+
+    window.ipcRenderer.send('delete_relation',this.delete_relation_id);
+    this.delete_relation_from_network(this.delete_relation_id);
+
+    this.setState({
+        relation_data_list:new_relation_data_list
+    });
+
+    this.delete_relation_id=-1;
+    this.delete_relation_source_node_name="";
+    this.delete_relation_destination_node="";
+    this.delete_relation_type="";
 }
 
 function delete_node()
