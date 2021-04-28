@@ -167,51 +167,31 @@ function init_network()
     this.state.net_ref.current.style.height = height;
     this.center_focus(); 
     this.network.on('oncontext',(values)=>{
-        if(this.state.hover_node_id!=-1)
-        {   
+        var node=this.network.getNodeAt(values.pointer.DOM);
+        if(node!=undefined)
+        {
+            this.context_node_id=node;
+            this.context_node_name=nodes.get(node).label;
             this.setState({
                 open_network_popup:true,
                 network_popup_top:values.pointer.DOM.y,
                 network_popup_bottom:values.pointer.DOM.x,
             });
         }
-        if(this.state.hover_edge_id!=-1)
+        var edge=this.network.getEdgeAt(values.pointer.DOM);
+        if(edge!=undefined && node==undefined)
         {
+            this.context_edge_id=edge;
+            this.source_node_name=nodes.get(edges.get(edge).from).label;
+            this.destination_node_name=nodes.get(edges.get(edge).to).label;
             this.setState({
                 open_network_popup:true,
                 network_popup_top:values.pointer.DOM.y,
                 network_popup_bottom:values.pointer.DOM.x,
             }); 
         }
-    }) 
+    }); 
     //context menu handling
-    this.network.on('hoverNode',(values)=>{
-        this.setState({
-                hover_node_id:values.node,
-                hover_node_name:nodes.get(values.node).label
-            });
-    }); 
-    this.network.on('blurNode',(values)=>{
-        this.setState({
-            hover_node_id:-1,
-            hover_node_name:""
-        });
-    });
-    this.network.on('hoverEdge',(values)=>{
-
-        this.setState({
-            hover_edge_id:values.edge,
-            source_node_name:nodes.get(edges.get(values.edge).from).label,
-            destination_node_name:nodes.get(edges.get(values.edge).to).label,
-        });
-    }); 
-    this.network.on('blurEdge',(values)=>{
-        this.setState({
-            hover_edge_id:-1,
-            source_node_name:'',
-            destination_node_name:'',
-        });
-    });
     var context_menu_list=[];
     var menuItem1={
         'id':0,
@@ -226,16 +206,6 @@ function init_network()
     context_menu_list.push(menuItem1);
     context_menu_list.push(menuItem2);
     this.setState({context_menu_list});
-    /*this.network.on('click',(values)=>{
-        if(this.state.hover_node_id!=-1)
-        {   
-            
-        }
-        if(this.state.hover_edge_id!=-1)
-        {
-            
-        }
-    });*/
 }
 //------------------------------Network Focus Functions-------------------------------
 function center_focus()
@@ -273,7 +243,12 @@ export function Add_Network(THIS)
             open={THIS.state.open_network_popup}
             anchorReference="anchorPosition"
             anchorPosition={{top:THIS.state.network_popup_top,left:THIS.state.network_popup_bottom}}
-            onClose={e=>{THIS.setState({open_network_popup:false});}}>
+            onClose={
+                e=>
+                {
+                    THIS.setState({open_network_popup:false});
+                    THIS.reset_context_menu_settings();
+                }}>
                 <div className="contextMenu">
                     <List>
                     {
@@ -285,29 +260,35 @@ export function Add_Network(THIS)
                                     e=>
                                     {
                                         THIS.setState({open_network_popup:false});
-                                        if(THIS.state.hover_node_id!=-1)
-                                        {
+                                        if(THIS.context_node_id!=-1)
+                                        {   
                                             if(item.id==0)
-                                            {   //alert('node edit')
-                                                THIS.handle_drawer(0);
+                                            {   
+                                                THIS.sleep(1).then(() => {
+                                                    THIS.scroll_to_location(0,0);
+                                                });
                                             }
                                             else if(item.id==1)
                                             {   
-                                                THIS.delete_node_id=THIS.state.hover_node_id;
-                                                THIS.delete_node_name=THIS.state.hover_node_name;
+                                                THIS.delete_node_id=THIS.context_node_id;
+                                                THIS.delete_node_name=THIS.context_node_name;
                                                 THIS.permission_dialog_purpose_code=3;
                                                 THIS.permission_dialog_options(1);
                                             }
                                         }
-                                        else if(THIS.state.hover_edge_id!=-1)
-                                        {
+                                        else if(THIS.context_edge_id!=-1)
+                                        {   
                                             if(item.id==0)
-                                            {   alert('edge edit')}
+                                            {    
+                                                THIS.sleep(1).then(() => {
+                                                    THIS.scroll_to_location(0,1);
+                                                });
+                                            }
                                             else if(item.id==1)
                                             {   
-                                                THIS.delete_relation_id=THIS.state.hover_edge_id;
-                                                THIS.delete_relation_source_node_name=THIS.state.source_node_name;
-                                                THIS.delete_relation_destination_node=THIS.state.destination_node_name;
+                                                THIS.delete_relation_id=THIS.context_edge_id;
+                                                THIS.delete_relation_source_node_name=THIS.source_node_name;
+                                                THIS.delete_relation_destination_node=THIS.destination_node_name;
                                                 var a=0;
                                                 var relation_type_id;
                                                 for(a=0;a<THIS.state.relation_data_list.length;a++)

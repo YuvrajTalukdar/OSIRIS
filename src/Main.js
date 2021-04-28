@@ -192,15 +192,18 @@ class Main extends React.Component
             open_network_popup:false,
             network_popup_top:100,
             network_popup_bottom:100,
-            hover_node_id:-1,
-            hover_node_name:"",
-            hover_edge_id:-1,
-            source_node_name:"",
-            destination_node_name:"",
 
             context_menu_list:[],
         };
         this.network = {};
+
+        this.context_node_id=-1;
+        this.context_node_name="";
+
+        this.context_edge_id=-1;
+        this.source_node_name="";
+        this.destination_node_name="";
+        
         //this.ctrlKey=false;
 
         this.handle_drawer=this.handle_drawer.bind(this);
@@ -217,6 +220,9 @@ class Main extends React.Component
         add_add_panel_func(Main);
         add_network_func(Main);
     }
+
+    add_relation_ref=createRef();
+    add_node_ref=createRef();
     
     delete_node_type_id=-1;
     delete_node_type_name="";
@@ -232,6 +238,40 @@ class Main extends React.Component
     delete_relation_destination_node="";
     delete_relation_type="";
 
+    reset_context_menu_settings()
+    {
+        this.context_node_id=-1;
+        this.context_node_name="";
+
+        this.context_edge_id=-1;
+        this.source_node_name="";
+        this.destination_node_name="";
+    }
+
+    sleep(time) 
+    {   return new Promise((resolve) => setTimeout(resolve, time));}
+
+    scroll_to_location(drawer_id,section_id)
+    {   
+        if(!this.check_if_drawer_is_open(drawer_id))
+        {   this.handle_drawer(drawer_id);}
+        if(section_id==0)
+        {
+            this.add_node_ref.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+        else if(section_id==1)
+        {
+            this.add_relation_ref.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+        this.reset_context_menu_settings();
+    }
+
     color_picker_handler(color)
     {
         this.setState({
@@ -244,6 +284,20 @@ class Main extends React.Component
 
     getRndInteger(min, max) 
     {   return Math.floor(Math.random() * (max - min) ) + min;}
+
+    check_if_drawer_is_open(drawer_id)
+    {
+        if(drawer_id==0)
+        {   return this.state.add_drawer_open;}
+        else if(drawer_id==1)
+        {   return this.state.search_drawer_open;}
+        else if(drawer_id==2)
+        {   return this.state.operation_drawer_open;}
+        else if(drawer_id==3)
+        {   return this.state.relation_node_properties_drawer_open;}
+        else if(drawer_id==4)
+        {   return this.state.collaborate_drawer_open;}
+    }
 
     handle_drawer(drawer_id)
     {
@@ -516,7 +570,7 @@ class Main extends React.Component
                             <IconButton color="primary"
                             onClick={
                                 e=>{
-                                    window.ipcRenderer.send('test_lower',"");
+                                    //window.ipcRenderer.send('test_lower',"");
                                 }
                             }>
                                 <SpeedIcon/>

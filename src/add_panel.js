@@ -39,6 +39,7 @@ function delete_relation()
     this.delete_relation_source_node_name="";
     this.delete_relation_destination_node="";
     this.delete_relation_type="";
+    this.reset_context_menu_settings();
 }
 
 function delete_node()
@@ -51,6 +52,7 @@ function delete_node()
 
     this.delete_node_id=-1;
     this.delete_node_name="";
+    this.reset_context_menu_settings();
 
     this.setState({
         node_data_list:new_node_data_list
@@ -320,10 +322,10 @@ export function add_panel(THIS)
             open={THIS.state.add_drawer_open}
             className={THIS.props.classes.drawer}
             classes={{paper: THIS.props.classes.drawerPaper2,}}>
-            <Toolbar variant="dense"/>
+            <Toolbar variant="dense" ref={THIS.add_node_ref}/>
         
             <Grid container direction="column" className={THIS.props.classes.gridDrawer} xs={12} alignItems="flex-start" justify="flex-start">
-                <List className={THIS.props.classes.list_class}> 
+                <List className={THIS.props.classes.list_class} > 
                     <Grid container direction="row" justify="center" alignItems="center">
                         <Typography
                         color="primary"
@@ -421,7 +423,7 @@ export function add_panel(THIS)
                         }
                         />
                     </ListItem>
-                    <ListItem>
+                    <ListItem ref={THIS.add_relation_ref}>
                         <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
                             onClick={e=>{THIS.add_new_node();}}>Add</Button>
                     </ListItem>
