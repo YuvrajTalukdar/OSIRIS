@@ -3,6 +3,7 @@ import {Network} from 'vis-network/standalone';
 import {DataSet} from "vis-data/peer/esm/vis-data";
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+import { network } from 'vis-network';
 
 export function add_network_func(CLASS)
 {
@@ -35,11 +36,7 @@ var options = {autoResize: true,height:'100%',width:'100%',
                 scaleFactor: 0.5,
                 type: "arrow"
             },
-        },/*
-        physics: {
-            "enabled": true
-        }*/
-        //chosen:true,
+        },
     },
     interaction: {
         hover: true
@@ -136,7 +133,11 @@ function add_node_to_network(node)
 }
 
 function delete_node_from_network(node_id)
-{   nodes.remove(node_id);}
+{   
+    var edgeIds=this.network.getConnectedEdges(node_id);
+    nodes.remove(node_id);
+    return edgeIds;
+}
 
 function get_relation_type(relation_type_id)
 {

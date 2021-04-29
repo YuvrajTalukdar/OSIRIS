@@ -263,6 +263,17 @@ void get_last_entered_node_data(const FunctionCallbackInfo<Value>& args)
     args.GetReturnValue().Set(node_obj);
 }
 
+void edit_node(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    int node_id = args[0].As<Number>()->Value();
+    int node_type_id = args[1].As<Number>()->Value();
+    v8::Local<v8::String> v8_node_name=args[2].As<v8::String>();
+    v8::String::Utf8Value str(isolate, v8_node_name);
+    string node_name(*str);
+    op_class.edit_node(db,node_id,node_type_id,node_name);
+}
+
 void add_new_node(const FunctionCallbackInfo<Value>& args)
 {
     Isolate* isolate = args.GetIsolate();
@@ -355,6 +366,7 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"add_new_relation",add_new_relation);
     NODE_SET_METHOD(exports,"get_last_entered_relation_data",get_last_entered_relation_data);
     NODE_SET_METHOD(exports,"delete_relation",delete_relation);
+    NODE_SET_METHOD(exports,"edit_node",edit_node);
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

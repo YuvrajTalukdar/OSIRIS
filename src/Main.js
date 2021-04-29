@@ -160,6 +160,12 @@ class Main extends React.Component
             new_node_name:"",
             new_node_name_close_button_visible:'none',
             new_node_type:"",
+            add_button_text:'Add',
+            disable_add_button:false,
+            matched_node:undefined,
+            edit_node_name_box_visible:'none',
+            edit_node_name:'',
+
             /*Relation Data*/
             relation_data_list:[],
             source_node:"",
@@ -238,6 +244,8 @@ class Main extends React.Component
     delete_relation_destination_node="";
     delete_relation_type="";
 
+    match_found_at=-1;
+
     reset_context_menu_settings()
     {
         this.context_node_id=-1;
@@ -261,6 +269,8 @@ class Main extends React.Component
                 behavior: 'smooth',
                 block: 'start',
             });
+            this.search_node_name(this.context_node_name);
+            this.setState({new_node_name:this.context_node_name});
         }
         else if(section_id==1)
         {

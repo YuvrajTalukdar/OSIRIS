@@ -4,7 +4,6 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import { Alert } from '@material-ui/lab';
 
 export function add_add_panel_func(CLASS)
 {
@@ -48,15 +47,22 @@ function delete_node()
     const new_node_data_list=node_data_list.filter(item=>item.node_id!=this.delete_node_id);
 
     window.ipcRenderer.send('delete_node',this.delete_node_id);
-    this.delete_node_from_network(this.delete_node_id);
+    var edgeIds=this.delete_node_from_network(this.delete_node_id);
 
-    this.delete_node_id=-1;
-    this.delete_node_name="";
-    this.reset_context_menu_settings();
+    var a=0;
+    for(a=0;a<edgeIds.length;a++)
+    {
+        this.delete_relation_id=edgeIds[a];
+        this.delete_relation();
+    }
 
     this.setState({
         node_data_list:new_node_data_list
     });
+
+    this.delete_node_id=-1;
+    this.delete_node_name="";
+    this.reset_context_menu_settings();
 }
 
 function search_node_name(data)
@@ -67,16 +73,49 @@ function search_node_name(data)
     {   this.setState({new_node_name_close_button_visible:"none"});}
 
     const node_data_list=[...this.state.node_data_list];
+    var no_of_match=0;
+    var matched_node;
     for(var a=0;a<node_data_list.length;a++)
     {
         if(node_data_list[a].node_name.toUpperCase().includes(data.toUpperCase()))
-        {   node_data_list[a].show=true;}
+        {   
+            node_data_list[a].show=true;
+            matched_node=node_data_list[a];
+            this.match_found_at=a;
+            no_of_match++;
+        }
         else
         {   node_data_list[a].show=false;}
+    }
+    if(no_of_match==1)
+    {   
+        var a;
+        for(a=0;a<this.state.node_type_data_list.length;a++)
+        {
+            if(this.state.node_type_data_list[a].id==matched_node.node_type_id)
+            {break;}
+        }
         this.setState({
-            node_data_list:node_data_list
+            add_button_text:'Save Changes',
+            new_node_type:this.state.node_type_data_list[a],
+            disable_add_button:true,
+            matched_node:matched_node,
+            edit_node_name_box_visible:'block',
+            edit_node_name:matched_node.node_name
         });
     }
+    else
+    {   
+        this.setState({
+            add_button_text:'Add',
+            new_node_type:'',
+            disable_add_button:false,
+            matched_node:undefined,
+            edit_node_name_box_visible:'none',
+            edit_node_name:''
+        });
+    }
+    this.setState({node_data_list:node_data_list});
 }
 
 function add_new_node_body(last_entered_node)
@@ -86,7 +125,6 @@ function add_new_node_body(last_entered_node)
     this.setState({
         node_data_list:node_data_list
     });
-    //alert("name="+last_entered_node.node_name+" id="+last_entered_node.node_id+" size="+this.state.node_data_list.length);
     this.add_node_to_network(last_entered_node);
 }
 
@@ -108,19 +146,21 @@ function add_new_node()
     }
     else
     {   
-        const node_data_list=[...this.state.node_data_list];
-        var found=false;
-        for(var a=0;a<node_data_list.length;a++)
-        {
-            if(node_data_list[a].node_name.toUpperCase().localeCompare(this.state.new_node_name.toUpperCase())==0)
-            {   found=true;break;}
-        }
-        if(found)
+        if(this.state.matched_node!=undefined)
         {   
-            this.setState({
-                alert_dialog_text:"Node Name "+this.state.new_node_name+" already present!",
-                alert_dialog_open:true
-            })
+            //edit node handler:-
+            var edited_node={
+                'node_id':this.state.matched_node.node_id,
+                'node_type_id':this.state.new_node_type.id,
+                'node_name':this.state.edit_node_name
+            };
+            const node_data_list=[...this.state.node_data_list];
+            node_data_list[this.match_found_at].node_type_id=this.state.new_node_type.id;
+            node_data_list[this.match_found_at].node_name=this.state.edit_node_name;
+            this.delete_node_from_network(this.state.matched_node.node_id);
+            this.add_node_to_network(edited_node);
+
+            window.ipcRenderer.send('edit_node',edited_node);
         }
         else
         {   
@@ -130,7 +170,8 @@ function add_new_node()
             };
             window.ipcRenderer.send('add_new_node',new_node);
         }
-    
+        this.setState({new_node_name:""});
+        this.search_node_name("");
     }
 }
 
@@ -336,7 +377,7 @@ export function add_panel(THIS)
                     </Grid>
                     <ListItem>
                         <TextField 
-                        label='New Node Name'
+                        label='Node Name'
                         variant='outlined' 
                         size='small' 
                         value={THIS.state.new_node_name}
@@ -400,6 +441,36 @@ export function add_panel(THIS)
                         </List>
                     </ListItem>
                     <ListItem>
+                        <Box display={THIS.state.edit_node_name_box_visible} style={{width:300}}> 
+                            <TextField 
+                            label='New Node Name'
+                            variant='outlined' 
+                            size='small' 
+                            value={THIS.state.edit_node_name}
+                            onChange={
+                                e => {THIS.setState({edit_node_name:e.target.value});}}
+                            InputLabelProps={
+                            {   className: THIS.props.classes.textfield_label}}
+                            InputProps={{
+                                className: THIS.props.classes.valueTextField,
+                                classes:{
+                                    root:THIS.props.classes.root,
+                                    notchedOutline: THIS.props.classes.valueTextField,
+                                    disabled: THIS.props.classes.valueTextField
+                                },
+                                endAdornment: 
+                                (
+                                    <Box display={THIS.state.new_node_name_close_button_visible}> 
+                                        <IconButton color='primary' size='small'
+                                        onClick={e=>{THIS.setState({edit_node_name:""})}}>
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Box> 
+                                ),
+                            }}/>
+                        </Box>                
+                    </ListItem>
+                    <ListItem>
                         <Autocomplete
                         size="small"
                         classes={THIS.props.classes}
@@ -408,7 +479,16 @@ export function add_panel(THIS)
                         style={{ width: 300 }}
                         value={THIS.state.new_node_type}
                         onChange={(event,value)=>
-                            {THIS.setState({new_node_type:value,});}}
+                            {
+                                THIS.setState({new_node_type:value});
+                                if(THIS.state.matched_node!=undefined)
+                                {
+                                    var found=false;
+                                    if(value.id==THIS.state.matched_node.node_type_id)
+                                    {found=true;}
+                                    THIS.setState({disable_add_button:found});
+                                }
+                            }}
                         renderInput=
                         {
                             (params) => 
@@ -425,7 +505,9 @@ export function add_panel(THIS)
                     </ListItem>
                     <ListItem ref={THIS.add_relation_ref}>
                         <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                            onClick={e=>{THIS.add_new_node();}}>Add</Button>
+                            onClick={e=>{THIS.add_new_node();}}
+                            classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
+                            disabled={THIS.state.disable_add_button}>{THIS.state.add_button_text}</Button>
                     </ListItem>
                     <Divider light classes={{root:THIS.props.classes.divider}}/>
                     <ListItem>

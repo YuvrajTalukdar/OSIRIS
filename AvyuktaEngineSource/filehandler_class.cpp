@@ -624,10 +624,10 @@ void filehandler_class::delete_node(unsigned int node_id)
             //change the particular node to gap node
             
             data_node_list.at(node_id).node_name="gap_node";
-            for(int a=0;a<data_node_list.at(node_id).relation_id_list.size();a++)
+            /*for(int a=0;a<data_node_list.at(node_id).relation_id_list.size();a++)
             {   //delete the relations. Enable the line below when dealing with actual data.
                 //delete_relation(data_node_list.at(node_id).relation_id_list.at(a));
-            }
+            }*/
             data_node_list.at(node_id).relation_id_list.clear();
             if(gap_node_id_list.size()==0)
             {   gap_node_id_list.push_back(node_id);}
@@ -648,6 +648,67 @@ void filehandler_class::delete_node(unsigned int node_id)
     {
         cout<<"ERROR!: Index not matching with id.";
     }
+}
+
+void filehandler_class::edit_node(data_node &node)
+{
+    //editing the multimap
+    multimap<string,int>::iterator it=node_meta_list.find(data_node_list.at(node.node_id).node_name);
+    node_meta_list.insert(make_pair(node.node_name,it->second));
+    node_meta_list.erase(it);
+    //editing data_node_list
+    data_node_list.at(node.node_id).node_name=node.node_name;
+    data_node_list.at(node.node_id).node_type_id=node.node_type_id;
+    data_node_list.at(node.node_id).relation_id_list=node.relation_id_list;
+    //edit the node file
+    string node_file_name=database_dir+node_file_list.at(node.node_id/no_of_nodes_in_one_node_file).file_name;
+    ifstream in_file(node_file_name,ios::in);
+    string line,word,new_data;
+    int line_count=0,comma_count=0;
+    bool found=false;
+    while(in_file)
+    {   
+        getline(in_file,line);
+        if(in_file.eof())
+        {   break;}
+        found=false;
+        if(line_count>1)
+        {
+            word="";
+            comma_count=0;
+            for(int a=0;a<line.length();a++)
+            {
+                if(line.at(a)!=',')
+                {   word.push_back(line.at(a));}
+                else
+                {  
+                    if(stoi(word)==node.node_id)
+                    {   
+                        line="";
+                        line+=(to_string(node.node_id)+",");
+                        line+=(node.node_name+",");
+                        line+=(to_string(node.node_type_id)+",");
+                        for(int b=0;b<node.relation_id_list.size();b++)
+                        {   line+=(to_string(node.relation_id_list.at(a))+",");}
+                        line+="\n";
+                        new_data+=line;
+                        found=true;
+                    }
+                    break;
+                }
+            }
+        }
+        if(!found)
+        {
+            new_data+=line;
+            new_data+='\n';
+        }
+        line_count++;
+    }
+    in_file.close();
+    ofstream out_file(node_file_name,ios::out);
+    out_file<<new_data;
+    out_file.close();
 }
 
 void filehandler_class::load_node_relation_type(int node_or_relation)

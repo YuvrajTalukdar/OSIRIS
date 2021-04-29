@@ -72,3 +72,12 @@ void operation_class::delete_relation(database_class &db,unsigned int relation_i
 {
     db.file_handler.delete_relation(relation_id);
 }
+
+void operation_class::edit_node(database_class &db,unsigned int node_id,unsigned int node_type_id,string node_name)
+{
+    data_node node;
+    node.node_id=node_id;
+    node.node_type_id=node_type_id;
+    node.node_name=node_name;
+    db.file_handler.edit_node(node);
+}

@@ -73,6 +73,7 @@ class filehandler_class
     void add_new_node(data_node&);//ok tested
     void load_nodes();//ok tested
     void delete_node(unsigned int node_id);//relation part need to be implemented
+    void edit_node(data_node &node);
     //node relation type related functions
     void load_node_relation_type(int node_or_relation);//ok tested 0 means node 1 means relation.
     void add_node_relation_type(string,int,string color_code);//ok tested
