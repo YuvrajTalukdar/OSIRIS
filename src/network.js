@@ -3,7 +3,7 @@ import {Network} from 'vis-network/standalone';
 import {DataSet} from "vis-data/peer/esm/vis-data";
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
-import { network } from 'vis-network';
+
 
 export function add_network_func(CLASS)
 {
@@ -16,6 +16,8 @@ export function add_network_func(CLASS)
     CLASS.prototype.delete_relation_from_network = delete_relation_from_network;
     CLASS.prototype.center_focus = center_focus;
     CLASS.prototype.get_node_type = get_node_type;
+    CLASS.prototype.check_if_relation_is_already_present = check_if_relation_is_already_present;
+    CLASS.prototype.get_node_indexes_from_edge_id = get_node_indexes_from_edge_id;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -77,7 +79,51 @@ var options = {autoResize: true,height:'100%',width:'100%',
     }
 };
 
-function add_relation_to_network(relation)
+function get_node_indexes_from_edge_id(edge_id)
+{
+    var edge=edges.get(edge_id);
+    var to_node=nodes.get(edge.to);
+    var from_node=nodes.get(edge.from);
+    var obj={
+        to_node_index:to_node.js_index,
+        from_node_index:from_node.js_index,
+        relation_type:this.get_relation_type(edge.relation_type_id)
+    }
+    return obj;
+}
+
+function check_if_relation_is_already_present(node1_id,node2_id,relation_type_id)
+{
+    var relation_found=false;
+    var node1_edge_ids=this.network.getConnectedEdges(node1_id);
+    var a=0;
+    var edge_between_nodes=[];
+    for(a=0;a<node1_edge_ids.length;a++)
+    {
+        var edge=edges.get(node1_edge_ids[a]);
+        if((edge.from==node2_id && edge.to==node1_id)||(edge.to==node2_id && edge.from==node1_id))
+        {   edge_between_nodes.push(edge);}
+    }
+    var relation_id,js_index;
+    for(a=0;a<edge_between_nodes.length;a++)
+    {   
+        if(edge_between_nodes[a].relation_type_id==relation_type_id)
+        {   
+            relation_found=true;
+            relation_id=edge_between_nodes[a].id;
+            js_index=edge_between_nodes[a].js_index;
+            break;
+        }
+    }
+    var obj={
+        relation_id:relation_id,
+        relation_found:relation_found,
+        js_index:js_index,
+    }
+    return obj;
+}
+
+function add_relation_to_network(relation,js_index)
 {
     try
     {
@@ -91,7 +137,9 @@ function add_relation_to_network(relation)
             to:relation.destination_node_id,
             width:1,
             color:relation_type.color_code,
-            title:div
+            title:div,
+            relation_type_id:relation.relation_type_id,//used in my finctions
+            js_index:js_index//used in my finctions
         };
         edges.add(edge);
     }
@@ -114,7 +162,7 @@ function get_node_type(node_type_id)
     return node_type;
 }
 
-function add_node_to_network(node)
+function add_node_to_network(node,js_index)
 {   try{
         var node_type=this.get_node_type(node.node_type_id);
         const div = document.createElement("div");
@@ -125,6 +173,7 @@ function add_node_to_network(node)
             label:node.node_name,
             shape:'circle',
             title:div,
+            js_index:js_index
         };
         nodes.add(node);
     }
@@ -155,9 +204,9 @@ function create_full_network()
 {
     var a=0;
     for(a=0;a<this.state.node_data_list.length;a++)
-    {   this.add_node_to_network(this.state.node_data_list[a]);}
+    {   this.add_node_to_network(this.state.node_data_list[a],a);}
     for(a=0;a<this.state.relation_data_list.length;a++)
-    {   this.add_relation_to_network(this.state.relation_data_list[a]);}
+    {   this.add_relation_to_network(this.state.relation_data_list[a],a);}
 }
 
 function init_network()

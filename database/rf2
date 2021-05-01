@@ -27,5 +27,10 @@ WEIGHT:,1.100000,
 RELATION_ID_LIST:,
 GROUPED_RELATION_ID_LIST:,
 SOURCE_URL_LIST:,
+url1
+url2
+url3
 LOCAL_SOURCE_LIST:,
+database/documents/songs.xspf
+database/documents/COAP 2021_IB-v2.pdf
 #END

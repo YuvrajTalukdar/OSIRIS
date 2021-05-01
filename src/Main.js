@@ -132,10 +132,15 @@ const useStyles = (theme)=>
     },
     typography: {
         paddingLeft:'10px'
-    }
+    },
+    track: {
+        border: `1px solid ${theme.palette.grey[400]}`,
+        backgroundColor: theme.palette.grey[50],
+        opacity: 1,
+        transition: theme.transitions.create(['background-color', 'border']),
+    },
 });
 
-var main_window_data_request_sent=false;
 var type_data_added=false;
 
 class Main extends React.Component
@@ -146,7 +151,7 @@ class Main extends React.Component
         this.state=
         {
             /*Drawer Settings*/
-            add_drawer_open:false,
+            add_drawer_open:true,
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
@@ -177,6 +182,10 @@ class Main extends React.Component
             file_dir:"",
             file_dir_list:[],
             grouped_relation_search:"",//will bw used later
+            edit_relation_id:'',
+            edit_mode_on:false,
+            relation_add_button_text:'Add',
+            disable_relation_add_button:false,
             /*type data */
                 /*Node Type */
             node_type_data_list:[],
@@ -246,6 +255,12 @@ class Main extends React.Component
 
     match_found_at=-1;
 
+    source_node_id=-1;
+    destination_node_id=-1;
+    relation_type_id=-1;
+    url_list=[];
+    source_local=[];
+
     reset_context_menu_settings()
     {
         this.context_node_id=-1;
@@ -270,7 +285,13 @@ class Main extends React.Component
                 block: 'start',
             });
             this.search_node_name(this.context_node_name);
-            this.setState({new_node_name:this.context_node_name});
+            this.setState({
+                new_node_name:this.context_node_name,
+                source_node:'',
+                destination_node:'',
+                new_relation_type:''
+            });
+            this.edit_relation_switch_toggle(false);
         }
         else if(section_id==1)
         {
@@ -278,6 +299,16 @@ class Main extends React.Component
                 behavior: 'smooth',
                 block: 'start',
             });
+            this.search_node_name("");
+            var obj=this.get_node_indexes_from_edge_id(this.context_edge_id);
+
+            this.setState({
+                new_node_name:"",
+                source_node:this.state.node_data_list[obj.from_node_index],
+                destination_node:this.state.node_data_list[obj.to_node_index],
+                new_relation_type:obj.relation_type
+            });
+            this.edit_relation_switch_toggle(true);   
         }
         this.reset_context_menu_settings();
     }
@@ -472,12 +503,9 @@ class Main extends React.Component
         window.ipcRenderer.on('main_window_data_received',(event,data)=>
         {   this.add_main_window_data(data);});
 
-        if(!main_window_data_request_sent)
-        {
-            var dummy="";
-            window.ipcRenderer.send('get_main_window_data', dummy);
-            main_window_data_request_sent=true;
-        }
+        var dummy="";
+        window.ipcRenderer.send('get_main_window_data', dummy);
+        
         return(
         <ThemeProvider theme={theme}>
             <header className="Main_Style">

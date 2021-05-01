@@ -4,6 +4,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
+import Switch from '@material-ui/core/Switch';
 
 export function add_add_panel_func(CLASS)
 {
@@ -20,6 +21,119 @@ export function add_add_panel_func(CLASS)
     CLASS.prototype.remove_dir_from_file_dir_list = remove_dir_from_file_dir_list;  
     CLASS.prototype.add_new_relation_body = add_new_relation_body;
     CLASS.prototype.search_grouped_relation = search_grouped_relation;//will be used later   
+    CLASS.prototype.edit_relation_switch_toggle = edit_relation_switch_toggle;
+    CLASS.prototype.get_filename_from_path = get_filename_from_path;
+    CLASS.prototype.enable_disable_save_relation_button = enable_disable_save_relation_button;
+
+}
+
+function enable_disable_save_relation_button()
+{
+    var disabled=true;
+    if((this.source_node_id!=this.state.source_node.node_id)||
+       (this.destination_node_id!=this.state.destination_node.node_id)||
+       (this.relation_type_id!=this.state.new_relation_type.id))
+    {   disabled=false;}
+    var a=0;
+    if(disabled)
+    {
+        if(this.url_list.length==this.state.source_url_list.length)
+        {
+            for(a=0;a<this.url_list.length;a++)
+            {
+                if(this.url_list[a].url.localeCompare(this.state.source_url_list[a].url)!=0)
+                {   disabled=false;break;}
+            }
+        }
+        else
+        {   disabled=false;}
+    }
+    if(disabled)
+    {   
+        if(this.source_local.length==this.state.file_dir_list.length)
+        {
+            for(a=0;a<this.source_local.length;a++)
+            {
+                if(this.source_local[a].new_file_dir.localeCompare(this.state.file_dir_list[a].new_file_dir)!=0)
+                {   disabled=false;break;}
+            }
+        }
+        else
+        {   disabled=false;}
+    }
+    this.setState({disable_relation_add_button:disabled});
+}
+
+function get_filename_from_path(path)
+{
+    var file_name="";
+    for(var a=path.length-1;a>=0;a--)
+    {
+        if(path[a].localeCompare("/")!=0)
+        {   file_name=path[a]+file_name;}
+        else
+        {   break;}
+    }
+    return file_name;
+}
+
+function edit_relation_switch_toggle(switch_on)
+{   
+    if(switch_on)
+    {
+        var obj=this.check_if_relation_is_already_present(this.state.destination_node.node_id,this.state.source_node.node_id,this.state.new_relation_type.id);
+        
+        if(obj.relation_found)
+        {
+            var a=0;
+            var url_list=[];
+            for(a=0;a<this.state.relation_data_list[obj.js_index].source_url_list.length;a++)
+            {
+                var url={
+                    'id':url_list.length,
+                    'url':this.state.relation_data_list[obj.js_index].source_url_list[a],
+                    'show':true
+                }
+                url_list.push(url);
+            }
+            var file_dir_list=[];
+            for(a=0;a<this.state.relation_data_list[obj.js_index].source_local.length;a++)
+            {
+                var data={
+                    'id':file_dir_list.length,
+                    'file_name':this.get_filename_from_path(this.state.relation_data_list[obj.js_index].source_local[a]),
+                    'new_file_dir':this.state.relation_data_list[obj.js_index].source_local[a],
+                    'file_dir':""+this.state.relation_data_list[obj.js_index].source_local[a]
+                };
+                file_dir_list.push(data);
+            }
+            this.setState({
+                edit_mode_on:switch_on,
+                edit_relation_id:obj.relation_id,
+                file_dir_list:file_dir_list,
+                source_url_list:url_list,
+                relation_add_button_text:'Save Changes',
+            });
+            this.source_node_id=this.state.source_node.node_id;
+            this.destination_node_id=this.state.destination_node.node_id;
+            this.relation_type_id=this.state.new_relation_type.id;
+            this.url_list=url_list;
+            this.source_local=file_dir_list;
+        }
+    }
+    else
+    {
+        this.setState({
+            edit_mode_on:switch_on,
+            edit_relation_id:'',
+            file_dir_list:[],
+            source_url_list:[],
+            relation_add_button_text:'Add',
+        });
+    }
+    this.sleep(1).then(() => {
+        this.enable_disable_save_relation_button();
+    });
 }
 
 function delete_relation()
@@ -231,37 +345,43 @@ function add_new_relation()
             if(source_found && destination_found && relation_type_found)
             {   break;}
         }
-
-        if(source_found && destination_found && relation_type_found)
+        if(!this.state.edit_mode_on)
         {
-            this.setState({
-                alert_dialog_text:"This relation is already present !",
-                alert_dialog_open:true
-            });
+            if(source_found && destination_found && relation_type_found)
+            {
+                this.setState({
+                    alert_dialog_text:"This relation is already present !",
+                    alert_dialog_open:true
+                });
+            }
+            else
+            {
+                var url_list=[];
+                for(var a=0;a<this.state.source_url_list.length;a++)
+                {   url_list.push(this.state.source_url_list[a].url);}
+                var relation={
+                    "source_node_id":this.state.source_node.node_id,
+                    "destination_node_id":this.state.destination_node.node_id,
+                    "relation_type_id":this.state.new_relation_type.id,
+                    "source_url_list":url_list,
+                    "source_local":this.state.file_dir_list
+                }
+                window.ipcRenderer.send('add_new_relation',relation);
+                this.setState({
+                    source_node:"",
+                    destination_node:"",
+                    new_relation_type:"",
+                    source_url:"",
+                    source_url_close_button_visible:'none',
+                    source_url_list:[],
+                    file_dir:"",
+                    file_dir_list:[],
+                });
+            }
         }
         else
         {
-            var url_list=[];
-            for(var a=0;a<this.state.source_url_list.length;a++)
-            {   url_list.push(this.state.source_url_list[a].url);}
-            var relation={
-                "source_node_id":this.state.source_node.node_id,
-                "destination_node_id":this.state.destination_node.node_id,
-                "relation_type_id":this.state.new_relation_type.id,
-                "source_url_list":url_list,
-                "source_local":this.state.file_dir_list
-            }
-            window.ipcRenderer.send('add_new_relation',relation);
-            this.setState({
-                source_node:"",
-                destination_node:"",
-                new_relation_type:"",
-                source_url:"",
-                source_url_close_button_visible:'none',
-                source_url_list:[],
-                file_dir:"",
-                file_dir_list:[],
-            });
+            alert('edit mode');
         }
     }
 }
@@ -302,6 +422,9 @@ function add_source_url_to_list()
             }
             url_list.push(url);
             this.setState({source_url_list:url_list,source_url:"",source_url_close_button_visible:"none"});
+            this.sleep(1).then(() => {
+                this.enable_disable_save_relation_button();
+            });
         }
     }
 }
@@ -311,6 +434,9 @@ function delete_source_url_from_list(id)
     const url_list=[...this.state.source_url_list];
     const new_url_list=url_list.filter(item=>item.id!=id);
     this.setState({source_url_list:new_url_list});
+    this.sleep(1).then(() => {
+        this.enable_disable_save_relation_button();
+    });
 }
 
 function search_source_url(data)
@@ -341,6 +467,9 @@ function add_file_dir(data)
     };
     file_dir_list.push(data);
     this.setState({file_dir_list});
+    this.sleep(1).then(() => {
+        this.enable_disable_save_relation_button();
+    });
 }
 
 function remove_dir_from_file_dir_list(id)
@@ -348,6 +477,9 @@ function remove_dir_from_file_dir_list(id)
     const file_dir_list=[...this.state.file_dir_list];
     const new_file_dir_list=file_dir_list.filter(item=>item.id!=id);
     this.setState({file_dir_list:new_file_dir_list});
+    this.sleep(1).then(() => {
+        this.enable_disable_save_relation_button();
+    });
 }
 
 function search_grouped_relation(type)//will be used later
@@ -403,7 +535,7 @@ export function add_panel(THIS)
                                     onClick={
                                         e=>{
                                             THIS.search_node_name("");
-                                            THIS.setState({new_node_name:""})
+                                            THIS.setState({new_node_name:""});
                                         }
                                     }>
                                         <CloseIcon/>
@@ -448,7 +580,18 @@ export function add_panel(THIS)
                             size='small' 
                             value={THIS.state.edit_node_name}
                             onChange={
-                                e => {THIS.setState({edit_node_name:e.target.value});}}
+                                e => 
+                                {
+                                    var disable_add_button;
+                                    if(e.target.value.toUpperCase().localeCompare(THIS.state.new_node_name.toUpperCase())==0)
+                                    {   disable_add_button=true;}
+                                    else
+                                    {   disable_add_button=false;}
+                                    THIS.setState({
+                                        edit_node_name:e.target.value,
+                                        disable_add_button:disable_add_button
+                                    });
+                                }}
                             InputLabelProps={
                             {   className: THIS.props.classes.textfield_label}}
                             InputProps={{
@@ -526,6 +669,45 @@ export function add_panel(THIS)
                             <Typography
                                 color="primary"
                                 display="block"
+                                variant="caption"
+                                >
+                                ID:
+                            </Typography>
+                            <TextField 
+                            variant='outlined' 
+                            size='small' 
+                            value={THIS.state.edit_relation_id}
+                            style={{width:'34%'}} 
+                            InputLabelProps={
+                            {   className: THIS.props.classes.textfield_label}}
+                            InputProps={{
+                                className: THIS.props.classes.valueTextField,
+                                classes:{
+                                    root:THIS.props.classes.root,
+                                    notchedOutline: THIS.props.classes.valueTextField,
+                                    disabled: THIS.props.classes.valueTextField
+                                },
+                            }}/>
+                            <Typography
+                                color="primary"
+                                display="block"
+                                variant="caption"
+                                >
+                                Edit:
+                            </Typography>
+                            <Switch
+                            color='primary'
+                            classes={{track:THIS.props.classes.track,}}
+                            checked={THIS.state.edit_mode_on}
+                            onClick={()=>{  THIS.edit_relation_switch_toggle(!THIS.state.edit_mode_on);}}
+                            />
+                        </Grid>
+                    </ListItem>
+                    <ListItem>
+                        <Grid container direction="row" justify="space-between" alignItems="center">
+                            <Typography
+                                color="primary"
+                                display="block"
                                 variant="caption">
                                 From:
                             </Typography>
@@ -538,7 +720,12 @@ export function add_panel(THIS)
                             style={{ width: '85%' }}
                             value={THIS.state.source_node}
                             onChange={(event,value)=>
-                                {THIS.setState({source_node:value});}}
+                                {
+                                    THIS.setState({source_node:value});
+                                    THIS.sleep(1).then(() => {
+                                        THIS.enable_disable_save_relation_button();
+                                    });
+                                }}
                             renderInput=
                             {
                                 (params) => 
@@ -570,7 +757,12 @@ export function add_panel(THIS)
                             style={{ width: '85%' }}
                             value={THIS.state.destination_node}
                             onChange={(event,value)=>
-                                {THIS.setState({destination_node:value});}}
+                                {
+                                    THIS.setState({destination_node:value});
+                                    THIS.sleep(1).then(() => {
+                                        THIS.enable_disable_save_relation_button();
+                                    });
+                                }}
                             renderInput=
                             {
                                 (params) => 
@@ -602,7 +794,12 @@ export function add_panel(THIS)
                             style={{ width: '85%' }}
                             value={THIS.state.new_relation_type}
                             onChange={(event,value)=>
-                                {THIS.setState({new_relation_type:value});}}
+                                {
+                                    THIS.setState({new_relation_type:value});
+                                    THIS.sleep(1).then(() => {
+                                        THIS.enable_disable_save_relation_button();
+                                    });
+                                }}
                             renderInput=
                             {
                                 (params) => 
@@ -750,7 +947,9 @@ export function add_panel(THIS)
                     </ListItem>
                     <ListItem>
                         <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                        onClick={e=>{THIS.add_new_relation();}}>Add</Button>
+                        classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
+                        disabled={THIS.state.disable_relation_add_button}
+                        onClick={e=>{THIS.add_new_relation();}}>{THIS.state.relation_add_button_text}</Button>
                     </ListItem>
                 </List>
             </Grid>
