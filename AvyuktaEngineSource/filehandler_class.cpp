@@ -1336,6 +1336,6 @@ void filehandler_class::delete_relation(unsigned int relation_id)
     }
     else
     {
-        cout<<"ERROR!: Insex not matching.";
+        cout<<"ERROR!: Insex not matching."<<relation_id;
     }
 }

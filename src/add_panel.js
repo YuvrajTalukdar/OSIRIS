@@ -61,6 +61,8 @@ function enable_disable_save_relation_button()
         else
         {   disabled=false;}
     }
+    if(!this.state.edit_mode_on)
+    {   disabled=false;}
     this.setState({disable_relation_add_button:disabled});
 }
 
@@ -165,7 +167,7 @@ function delete_node()
 
     var a=0;
     for(a=0;a<edgeIds.length;a++)
-    {
+    {   console.log('id='+edgeIds[a]);
         this.delete_relation_id=edgeIds[a];
         this.delete_relation();
     }
@@ -296,7 +298,7 @@ function add_new_relation_body(last_entered_relation)
     this.setState({
         relation_data_list:relation_data_list
     });
-    this.add_relation_to_network(last_entered_relation);
+    this.add_relation_to_network(last_entered_relation,relation_data_list.length-1);
 }
 
 function add_new_relation()
@@ -345,27 +347,27 @@ function add_new_relation()
             if(source_found && destination_found && relation_type_found)
             {   break;}
         }
-        if(!this.state.edit_mode_on)
+        if(source_found && destination_found && relation_type_found && !this.state.edit_mode_on)
         {
-            if(source_found && destination_found && relation_type_found)
-            {
-                this.setState({
-                    alert_dialog_text:"This relation is already present !",
-                    alert_dialog_open:true
-                });
+            this.setState({
+                alert_dialog_text:"This relation is already present !",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {
+            var url_list=[];
+            for(var a=0;a<this.state.source_url_list.length;a++)
+            {   url_list.push(this.state.source_url_list[a].url);}
+            var relation={
+                "source_node_id":this.state.source_node.node_id,
+                "destination_node_id":this.state.destination_node.node_id,
+                "relation_type_id":this.state.new_relation_type.id,
+                "source_url_list":url_list,
+                "source_local":this.state.file_dir_list
             }
-            else
+            if(!this.state.edit_mode_on)
             {
-                var url_list=[];
-                for(var a=0;a<this.state.source_url_list.length;a++)
-                {   url_list.push(this.state.source_url_list[a].url);}
-                var relation={
-                    "source_node_id":this.state.source_node.node_id,
-                    "destination_node_id":this.state.destination_node.node_id,
-                    "relation_type_id":this.state.new_relation_type.id,
-                    "source_url_list":url_list,
-                    "source_local":this.state.file_dir_list
-                }
                 window.ipcRenderer.send('add_new_relation',relation);
                 this.setState({
                     source_node:"",
@@ -378,10 +380,10 @@ function add_new_relation()
                     file_dir_list:[],
                 });
             }
-        }
-        else
-        {
-            alert('edit mode');
+            else
+            {
+                alert('edit mode');
+            }
         }
     }
 }
