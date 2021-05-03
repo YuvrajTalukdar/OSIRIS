@@ -167,7 +167,7 @@ function delete_node()
 
     var a=0;
     for(a=0;a<edgeIds.length;a++)
-    {   console.log('id='+edgeIds[a]);
+    {   
         this.delete_relation_id=edgeIds[a];
         this.delete_relation();
     }
@@ -241,7 +241,7 @@ function add_new_node_body(last_entered_node)
     this.setState({
         node_data_list:node_data_list
     });
-    this.add_node_to_network(last_entered_node);
+    this.add_node_to_network(last_entered_node,node_data_list.length-1);
 }
 
 function add_new_node()
@@ -273,9 +273,9 @@ function add_new_node()
             const node_data_list=[...this.state.node_data_list];
             node_data_list[this.match_found_at].node_type_id=this.state.new_node_type.id;
             node_data_list[this.match_found_at].node_name=this.state.edit_node_name;
+            //Here another js chamatkar is going on, without setting the state on node_data_list the particular variable gets changed.
             this.delete_node_from_network(this.state.matched_node.node_id);
-            this.add_node_to_network(edited_node);
-
+            this.add_node_to_network(edited_node,node_data_list.length-1);
             window.ipcRenderer.send('edit_node',edited_node);
         }
         else
@@ -382,7 +382,34 @@ function add_new_relation()
             }
             else
             {
-                alert('edit mode');
+                relation.relation_id=this.state.edit_relation_id;
+                //send edited relation to db
+                window.ipcRenderer.send('edit_relation',relation);
+                this.setState({
+                    source_node:"",
+                    destination_node:"",
+                    new_relation_type:"",
+                    source_url:"",
+                    source_url_close_button_visible:'none',
+                    source_url_list:[],
+                    file_dir:"",
+                    file_dir_list:[],
+                    edit_mode_on:false,
+                    edit_relation_id:''
+                });
+                //edit the particular relation in the body
+                var relation_index=this.get_relation_indexed_from_relation_id(relation.relation_id);
+                relation_data_list[relation_index].relation_type_id=relation.relation_type_id;
+                relation_data_list[relation_index].source_node_id=relation.source_node_id;
+                relation_data_list[relation_index].destination_node_id=relation.destination_node_id;
+                relation_data_list[relation_index].source_url_list=relation.source_url_list;
+                relation_data_list[relation_index].source_local=[];
+                for(var a=0;a<relation.source_local.length;a++)
+                {   relation_data_list[relation_index].source_local.push(relation.source_local[a].new_file_dir);}
+                this.setState({relation_data_list});
+                //edit the relation in the network.
+                this.delete_relation_from_network(relation.relation_id);
+                this.add_relation_to_network(relation,relation_index);
             }
         }
     }

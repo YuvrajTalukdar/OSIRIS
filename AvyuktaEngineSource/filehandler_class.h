@@ -82,6 +82,7 @@ class filehandler_class
     void load_relations();
     void add_new_relation(relation&);
     void delete_relation(unsigned int relation_id);
+    void edit_relation(relation& relation_obj);
 
     //test functions
     void test()//for settings

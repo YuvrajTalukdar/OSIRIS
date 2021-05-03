@@ -23,6 +23,7 @@ operation_class op_class;
 
 Local<Object> relation_to_v8_relation(Isolate* isolate,relation relation_data);
 Local<Object> node_to_v8_node(Isolate* isolate,data_node node);
+relation v8_to_relation(const FunctionCallbackInfo<Value>& args);
 
 void initialize_engine(const FunctionCallbackInfo<Value>& args)
 {   db.initialize_db();}
@@ -92,34 +93,38 @@ void get_node_relation_data(const FunctionCallbackInfo<Value>& args)
 
 void add_new_relation(const FunctionCallbackInfo<Value>& args)
 {
+    relation relation_obj=v8_to_relation(args);
+    op_class.add_relation(db,relation_obj);
+}
+
+relation v8_to_relation(const FunctionCallbackInfo<Value>& args)
+{
     Isolate* isolate = args.GetIsolate();
     Local<Context> context=isolate->GetCurrentContext();
-
-    int source_node_id=args[0].As<Number>()->Value();
-    int destination_node_id=args[1].As<Number>()->Value();
-    int relation_type_id=args[2].As<Number>()->Value();
+    relation relation_obj;
+    relation_obj.weight=1.10;
+    relation_obj.source_node_id=args[0].As<Number>()->Value();
+    relation_obj.destination_node_id=args[1].As<Number>()->Value();
+    relation_obj.relation_type_id=args[2].As<Number>()->Value();
 
     Local<Array> v8_source_url_list = Local<Array>::Cast(args[3]);
-    vector<string> source_url_list;
     for(int a=0;a<v8_source_url_list->Length();a++)
     {
         Local<Value> localKey=v8_source_url_list->Get(context,a).ToLocalChecked();
         v8::String::Utf8Value str(isolate, localKey);
         string url(*str);
-        source_url_list.push_back(url);
+        relation_obj.source_url_list.push_back(url);
     }
 
     Local<Array> v8_source_local_list = Local<Array>::Cast(args[4]);
-    vector<string> source_local;
     for(int a=0;a<v8_source_local_list->Length();a++)
     {
         Local<Value> localKey=v8_source_local_list->Get(context,a).ToLocalChecked();
         v8::String::Utf8Value str(isolate, localKey);
         string dir(*str);
-        source_local.push_back(dir);
+        relation_obj.source_local.push_back(dir);
     }
-
-    op_class.add_relation(db,source_node_id,destination_node_id,relation_type_id,source_url_list,source_local);
+    return relation_obj;
 }
 
 Local<Object> relation_to_v8_relation(Isolate* isolate,relation relation_data)
@@ -180,7 +185,9 @@ void get_last_entered_relation_data(const FunctionCallbackInfo<Value>& args)
 
 void edit_relation(const FunctionCallbackInfo<Value>& args)
 {
-
+    relation relation_obj=v8_to_relation(args);
+    relation_obj.relation_id=args[5].As<Number>()->Value();
+    op_class.edit_relation(db,relation_obj);
 }
 
 void delete_relation(const FunctionCallbackInfo<Value>& args)

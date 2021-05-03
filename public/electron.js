@@ -75,6 +75,17 @@ ipcMain.on('add_new_node',(enent,data)=>{
     mainWindow.webContents.send('last_entered_node',last_entered_node);
 });
 
+ipcMain.on('edit_relation',(enent,data)=>{
+    var source_local=[];
+    for(var a=0;a<data.source_local.length;a++)
+    {   
+        copy_files(data.source_local[a].file_dir,data.source_local[a].new_file_dir);
+        source_local.push(data.source_local[a].new_file_dir);
+    }
+    AvyuktaEngine.edit_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local,data.relation_id);
+    console.log("relation_edited");
+});
+
 ipcMain.on('delete_node',(enent,data)=>{
     AvyuktaEngine.delete_node(data);
 });

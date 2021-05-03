@@ -151,7 +151,7 @@ class Main extends React.Component
         this.state=
         {
             /*Drawer Settings*/
-            add_drawer_open:true,
+            add_drawer_open:false,
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
@@ -301,7 +301,6 @@ class Main extends React.Component
             });
             this.search_node_name("");
             var obj=this.get_node_indexes_from_edge_id(this.context_edge_id);
-
             this.setState({
                 new_node_name:"",
                 source_node:this.state.node_data_list[obj.from_node_index],

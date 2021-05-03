@@ -56,16 +56,9 @@ void operation_class::delete_node(database_class &db,unsigned int node_id)
     db.file_handler.delete_node(node_id);
 }
 
-void operation_class::add_relation(database_class &db,unsigned int source_node_id,unsigned int destination_node_id,unsigned int relation_type_id,vector<string>& source_url_list,vector<string>& source_local)
+void operation_class::add_relation(database_class &db,relation &relation_obj)
 {
-    relation r1;
-    r1.source_node_id=source_node_id;
-    r1.destination_node_id=destination_node_id;
-    r1.weight=1.10;
-    r1.relation_type_id=relation_type_id;
-    r1.source_url_list=source_url_list;
-    r1.source_local=source_local;
-    db.file_handler.add_new_relation(r1);
+    db.file_handler.add_new_relation(relation_obj);
 }
 
 void operation_class::delete_relation(database_class &db,unsigned int relation_id)
@@ -80,4 +73,9 @@ void operation_class::edit_node(database_class &db,unsigned int node_id,unsigned
     node.node_type_id=node_type_id;
     node.node_name=node_name;
     db.file_handler.edit_node(node);
+}
+
+void operation_class::edit_relation(database_class &db,relation &relation_obj)
+{
+    db.file_handler.edit_relation(relation_obj);
 }

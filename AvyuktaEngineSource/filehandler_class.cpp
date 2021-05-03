@@ -1339,3 +1339,104 @@ void filehandler_class::delete_relation(unsigned int relation_id)
         cout<<"ERROR!: Insex not matching."<<relation_id;
     }
 }
+
+void filehandler_class::edit_relation(relation& relation_obj)
+{
+    //change the relation data
+    relation_list.at(relation_obj.relation_id).destination_node_id=relation_obj.destination_node_id;
+    relation_list.at(relation_obj.relation_id).source_node_id=relation_obj.source_node_id;
+    relation_list.at(relation_obj.relation_id).gap_relation=relation_obj.gap_relation;
+    relation_list.at(relation_obj.relation_id).grouped_relation_id_list=relation_obj.grouped_relation_id_list;
+    relation_list.at(relation_obj.relation_id).relation_id_list=relation_obj.relation_id_list;
+    relation_list.at(relation_obj.relation_id).relation_type_id=relation_obj.relation_type_id;
+    relation_list.at(relation_obj.relation_id).source_local=relation_obj.source_local;
+    relation_list.at(relation_obj.relation_id).source_url_list=relation_obj.source_url_list;
+    relation_list.at(relation_obj.relation_id).weight=relation_obj.weight;
+    //write the changes to the file
+    string file_dir=database_dir+relation_file_list.at(relation_obj.relation_id/no_of_relation_in_one_file).file_name;
+    ifstream infile(file_dir,ios::in);
+    string word,line,temp_data;
+    int comma_count=0,current_rid;
+    while(infile)
+    {
+        getline(infile,line);
+        if(infile.eof())
+        {   break;}
+        if(strcasestr(line.c_str(),"RELATION_ID"))
+        {
+            word="";
+            comma_count=0;
+            current_rid=-1;
+            for(int a=0;a<line.size();a++)
+            {
+                if(line.at(a)!=',')
+                {   word.push_back(line.at(a));}
+                else
+                {
+                    if(comma_count==1)
+                    {   current_rid=stoi(word);break;}
+                    comma_count++;
+                    word="";
+                }
+            }
+            if(current_rid==relation_obj.relation_id)
+            {
+                temp_data+=line;
+                temp_data+="\n";
+                line="RELATION_TYPE_ID:,"+to_string(relation_obj.relation_type_id)+",\n";
+                temp_data+=line;
+                line="SOURCE_NODE_ID:,"+to_string(relation_obj.source_node_id)+",\n";
+                temp_data+=line;
+                line="DESTINATION_NODE_ID:,"+to_string(relation_obj.destination_node_id)+",\n";
+                temp_data+=line;
+                line="WEIGHT:,"+to_string(relation_obj.weight)+",\n";
+                temp_data+=line;
+                line="RELATION_ID_LIST:,\n";
+                for(int a=0;a<relation_obj.relation_id_list.size();a++)
+                {   line+=(to_string(relation_obj.relation_id_list.at(a))+",");}
+                temp_data+=line;
+                line="GROUPED_RELATION_ID_LIST:,\n";
+                for(int a=0;a<relation_obj.grouped_relation_id_list.size();a++)
+                {   line+=(to_string(relation_obj.grouped_relation_id_list.at(a))+",");}
+                temp_data+=line;
+                line="SOURCE_URL_LIST:,\n";
+                temp_data+=line;
+                for(int a=0;a<relation_obj.source_url_list.size();a++)
+                {
+                    temp_data+=relation_obj.source_url_list.at(a);
+                    temp_data+="\n";
+                }
+                line="LOCAL_SOURCE_LIST,\n";
+                temp_data+=line;
+                for(int a=0;a<relation_obj.source_local.size();a++)
+                {
+                    temp_data+=relation_obj.source_local.at(a);
+                    temp_data+="\n";
+                }
+                temp_data+="#END\n";
+                while(infile)
+                {
+                    getline(infile,line);
+                    if(infile.eof())
+                    {   break;}
+                    if(strcasestr(line.c_str(),"#END"))
+                    {   break;}
+                }
+            }
+            else
+            {   
+                temp_data+=line;
+                temp_data+="\n";
+            }
+        }
+        else
+        {
+            temp_data+=line;
+            temp_data+="\n";
+        }
+    }
+    infile.close();
+    ofstream out_file(file_dir,ios::out);
+    out_file<<temp_data;
+    out_file.close();
+}

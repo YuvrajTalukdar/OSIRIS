@@ -18,6 +18,7 @@ export function add_network_func(CLASS)
     CLASS.prototype.get_node_type = get_node_type;
     CLASS.prototype.check_if_relation_is_already_present = check_if_relation_is_already_present;
     CLASS.prototype.get_node_indexes_from_edge_id = get_node_indexes_from_edge_id;
+    CLASS.prototype.get_relation_indexed_from_relation_id = get_relation_indexed_from_relation_id;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -90,6 +91,12 @@ function get_node_indexes_from_edge_id(edge_id)
         relation_type:this.get_relation_type(edge.relation_type_id)
     }
     return obj;
+}
+
+function get_relation_indexed_from_relation_id(relation_id)
+{   
+    var edge=edges.get(relation_id);
+    return edge.js_index;
 }
 
 function check_if_relation_is_already_present(node1_id,node2_id,relation_type_id)
