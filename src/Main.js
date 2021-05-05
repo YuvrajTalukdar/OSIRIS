@@ -1,6 +1,7 @@
 import React,{createRef} from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Popover,Typography,Slider} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import theme from './theme';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import SpeedIcon from '@material-ui/icons/Speed';
@@ -203,11 +204,17 @@ class Main extends React.Component
             permission_dialog_text:"",
             alert_dialog_open:false,
             alert_dialog_text:"",
-
+            /*Other UI components*/
+            //search_node_bar:'', 
             net_ref:createRef(),
             open_network_popup:false,
             network_popup_top:100,
             network_popup_bottom:100,
+            open_speed_popover:false,
+            speed_popover_anchor:'',
+            keyboard_zoom:0.05,
+            mouse_zoom:1,
+            navigation_speed:10,
 
             context_menu_list:[],
         };
@@ -560,41 +567,89 @@ class Main extends React.Component
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <Popover
+                open={this.state.open_speed_popover}
+                anchorEl={this.state.speed_popover_anchor}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+                onClose={e=>
+                {
+                    this.setState({open_speed_popover:false});
+                    this.set_speed();
+                }}>
+                    <div className="speedMenu">
+                        <Typography color="primary">Keyboard Zoom</Typography>
+                        <Slider
+                            valueLabelDisplay="auto"
+                            marks
+                            min={0.01}
+                            step={0.01}
+                            max={0.1}
+                            value={this.state.keyboard_zoom}
+                            onChange={(e,value)=>{
+                                this.setState({keyboard_zoom:value});
+                            }}
+                        />
+                        <Typography color="primary">Mouse Wheel Zoom</Typography>
+                        <Slider
+                            valueLabelDisplay="auto"
+                            marks
+                            min={1}
+                            step={1}
+                            max={8}
+                            value={this.state.mouse_zoom}
+                            onChange={(e,value)=>{
+                                this.setState({mouse_zoom:value});
+                            }}
+                        />
+                        <Typography color="primary">Keyboard Navigation</Typography>
+                        <Slider
+                            valueLabelDisplay="auto"
+                            marks
+                            min={5}
+                            step={5}
+                            max={40}
+                            value={this.state.navigation_speed}
+                            onChange={(e,value)=>{
+                                this.setState({navigation_speed:value});
+                            }}
+                        />
+                    </div>
+                </Popover>
                 {/*-----------------------------------------App Bar--------------------------------------------------- */ }
                 <AppBar  style={{ background: '#242527',paddingLeft: 40 }} className={this.props.classes.appBar}>
                     <Toolbar variant="dense">
                         <Grid container direction="column"  spacing={2} xs={6} alignItems="left">
-                            <TextField 
-                                id="SearchSettingsTextField" 
-                                label='Search Nodes' 
-                                variant='filled' /*fullWidth*/ 
-                                style={{width:'100%',paddingLeft:'1px',paddingRight:'1px',borderRadius: 5}} 
-                                size='small'
-                                value={""}
-                                onChange={
-                                    e=>{
-                                        
-                                    }
-                                }
-                                InputProps={
-                                {
-                                    className: this.props.classes.textfield_text,
-                                    endAdornment: 
-                                    (
-                                        <Button  color="primary"
-                                        onClick={
-                                            e=>{
-                                                
-                                            }
-                                        }
-                                        >Clear</Button>  
-                                    ),
-                                }}
+                        <Autocomplete  
+                        classes={this.props.classes}
+                        options={this.state.node_data_list}
+                        getOptionLabel={(option) => option.node_name}
+                        style={{ width:'100%',paddingLeft:'1px',paddingRight:'1px'}}
+                        size="small"
+                        //value={this.state.search_node_bar}
+                        onChange={(event,value)=>
+                            {
+                                //this.setState({search_node_bar:value});
+                                if(value!=null)
+                                {   this.focus_on_node(value.node_id);}
+                            }}
+                        renderInput=
+                        {
+                            (params) => 
+                                <TextField 
+                                {...params} 
+                                label="Search Nodes" variant="filled" 
                                 className={this.props.classes.textfield_background}
-                                InputLabelProps={
-                                    {   className: this.props.classes.textfield_label}
-                                }
-                            />
+                                InputLabelProps=
+                                {{   
+                                    ...params.InputLabelProps,
+                                    className: this.props.classes.textfield_label
+                                }}
+                                />
+                        }
+                        />
                         </Grid>
                         <Grid container direction="row" spacing={2} xs={6} alignItems="center" justify="flex-end">
                             <Tooltip title="Center Focus">
@@ -605,14 +660,21 @@ class Main extends React.Component
                                     <CenterFocusStrongIcon/>
                                 </IconButton>
                             </Tooltip>
-                            <IconButton color="primary"
-                            onClick={
-                                e=>{
-                                    //window.ipcRenderer.send('test_lower',"");
-                                }
-                            }>
-                                <SpeedIcon/>
-                            </IconButton>
+                            <Tooltip title="Navigation Speed">
+                                <IconButton color="primary"
+                                onClick={
+                                    e=>{
+                                        //window.ipcRenderer.send('test_lower',"");
+                                        this.setState(
+                                        {
+                                            open_speed_popover:true,
+                                            speed_popover_anchor:e.target,
+                                        });
+                                    }
+                                }>
+                                    <SpeedIcon/>
+                                </IconButton>
+                            </Tooltip>
                         </Grid>
                     </Toolbar>
                 </AppBar>

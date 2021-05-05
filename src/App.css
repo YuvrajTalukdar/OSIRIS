@@ -50,10 +50,17 @@
 .contextMenu 
 {
     color: #ffffff;
-    background-color: #242527;
+    background-color: #191919;
     border-color: #000000;
-    
     max-width: 200px;
+}
+
+.speedMenu 
+{
+    background-color: #191919;
+    border-color: #000000;
+    padding: 10px;
+    max-width: 400px;
 }
 
 @keyframes App-logo-spin {

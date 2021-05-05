@@ -4,7 +4,6 @@ import {DataSet} from "vis-data/peer/esm/vis-data";
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 
-
 export function add_network_func(CLASS)
 {
     CLASS.prototype.init_network = init_network;
@@ -19,6 +18,8 @@ export function add_network_func(CLASS)
     CLASS.prototype.check_if_relation_is_already_present = check_if_relation_is_already_present;
     CLASS.prototype.get_node_indexes_from_edge_id = get_node_indexes_from_edge_id;
     CLASS.prototype.get_relation_indexed_from_relation_id = get_relation_indexed_from_relation_id;
+    CLASS.prototype.focus_on_node = focus_on_node;
+    CLASS.prototype.set_speed = set_speed;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -47,7 +48,14 @@ var options = {autoResize: true,height:'100%',width:'100%',
         },
     },
     interaction: {
-        hover: true
+        hover: true,
+        keyboard: 
+        {
+            enabled: true,
+            speed: {x: 10, y: 10,zoom: 0.05},
+            bindToWindow: true
+        },
+        zoomSpeed: 1,
     },
     nodes:{
         borderWidth: 4,
@@ -271,27 +279,43 @@ function init_network()
     this.setState({context_menu_list});
 }
 //------------------------------Network Focus Functions-------------------------------
+function focus_on_node(node_id)
+{
+    var focus_options={
+        scale:2,
+        animation: {             
+            duration: 250,                 
+            easingFunction: "easeInOutQuad"
+        } 
+    }
+    this.network.focus(node_id,focus_options);
+    this.network.unselectAll();
+    var nodeIds=[];
+    nodeIds.push(node_id);
+    this.network.selectNodes(nodeIds,true);
+}
+
 function center_focus()
 {
     var fit_options={
         nodes:nodes.getIds(),
-        minZoomLevel: 1.5,
-        maxZoomLevel: 1.5,
+        minZoomLevel: 1.2,
+        maxZoomLevel: 1.2,
         animation: {             
             duration: 250,                 
             easingFunction: "easeInOutQuad"
         } 
     }
     this.network.fit(fit_options);
+}
 
-    //this.network.focus(3,{scale: '5%', offset:{x: -(6/3)}});
-    //var scaleOption = { scale : 0.5 };
-    //this.network.moveTo(scaleOption);
-    /*this.network.once('stabilized', function() {
-        var scaleOption = { scale : 0.5 };
-        //this.network.moveTo(scaleOption);
-        this.network.fit(fit_options);
-    })*/
+function set_speed()
+{
+    options.interaction.keyboard.speed.x=this.state.navigation_speed;
+    options.interaction.keyboard.speed.y=this.state.navigation_speed;
+    options.interaction.zoomSpeed=this.state.mouse_zoom;
+    options.interaction.keyboard.speed.zoom=this.state.keyboard_zoom;
+    this.network.setOptions(options);
 }
 
 export function Add_Network(THIS)
@@ -302,7 +326,6 @@ export function Add_Network(THIS)
                 <div id="net" ref={THIS.state.net_ref} className="net"></div>  
             </Grid>
             <Popover
-            id={'id'}
             open={THIS.state.open_network_popup}
             anchorReference="anchorPosition"
             anchorPosition={{top:THIS.state.network_popup_top,left:THIS.state.network_popup_bottom}}
