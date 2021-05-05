@@ -745,6 +745,14 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
                         {   obj.type_name=word;}
                         else if(comma_count==2 && node_or_relation==1)
                         {   obj.color_code=word;}
+                        else if(comma_count==3 && node_or_relation==1)
+                        {
+                            int vectored=stoi(word);
+                            if(vectored==0)
+                            {   obj.vectored=false;}
+                            else if(vectored==1)
+                            {   obj.vectored=true;}
+                        }
                         comma_count++;
                         word="";
                     }
@@ -760,7 +768,7 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
     }
 }
 
-void filehandler_class::add_node_relation_type(string type,int node_or_relation,string color_code)
+void filehandler_class::add_node_relation_type(string type,int node_or_relation,string color_code,bool vectored)
 {
     //check if file node_type_list.csv is present
     string dir,file_name;
@@ -802,7 +810,7 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
         if(node_or_relation==0)
         {   temp_data+="ID,NODE_TYPE,\n";}
         else if(node_or_relation==1)
-        {   temp_data+="ID,RELATION_TYPE,COLOR_CODE,\n";}
+        {   temp_data+="ID,RELATION_TYPE,COLOR_CODE,VECTORED,\n";}
     }
     temp_data+=to_string(last_id+1);
     temp_data+=",";
@@ -814,6 +822,10 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
         transform(color_code.begin(),color_code.end(),color_code.begin(),::toupper);
         temp_data+=color_code;
         temp_data+=",";
+        if(vectored)
+        {   temp_data+="1,";}
+        else
+        {   temp_data+="0,";}
     }
     temp_data+="\n";
     ofstream out_file(dir,ios::out);
@@ -825,7 +837,11 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
     if(node_or_relation==0)
     {   node_types.push_back(obj);}
     else if(node_or_relation==1)
-    {   relation_types.push_back(obj);}
+    {   
+        obj.color_code=color_code;
+        obj.vectored=vectored;
+        relation_types.push_back(obj);
+    }
 }
 
 void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_relation)//gap ignorance technique is used here

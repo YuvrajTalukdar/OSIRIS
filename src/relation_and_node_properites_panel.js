@@ -1,4 +1,4 @@
-import {Button,Toolbar,Typography,TextField,Grid,IconButton,Drawer,Divider,List,ListItem,ListItemText,Box} from '@material-ui/core';
+import {Button,Toolbar,Typography,TextField,Grid,IconButton,Drawer,Divider,List,ListItem,ListItemText,Box,FormControl,Select,MenuItem} from '@material-ui/core';
 import ColorPicker from "material-ui-color-picker";
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -10,7 +10,7 @@ export function add_node_relation_props_func(CLASS)
     CLASS.prototype.delete_node_type = delete_node_type;
     CLASS.prototype.search_node_type = search_node_type;
 
-    CLASS.prototype.delete_relation_type = delete_relation_type;
+    CLASS.prototype.Delete_Relation_Type = Delete_Relation_Type;
     CLASS.prototype.search_relation_type = search_relation_type;
     CLASS.prototype.add_relation_type = add_relation_type;
 }
@@ -86,7 +86,7 @@ function search_node_type(data)
     });
 }
 
-function delete_relation_type()
+function Delete_Relation_Type()
 {
     const relation_type_list=[...this.state.relation_type_data_list];
     const new_relation_type_list=relation_type_list.filter(item=>item.id!=this.delete_relation_type_id);
@@ -135,13 +135,19 @@ function add_relation_type()
     }
     if(!found)
     {
-        var data={node_or_relation:1,type:this.state.relation_type_name,color_code:this.state.color_picker_hex_value};
+        var data={
+            node_or_relation:1,
+            type:this.state.relation_type_name,
+            color_code:this.state.color_picker_hex_value,
+            vectored:this.state.vectored_relation
+        };
         window.ipcRenderer.send('add_node_relation_type',data);
         const newData={
             id:relation_type_list[relation_type_list.length-1].id+1,
             relation_type:this.state.relation_type_name.toUpperCase(),
             color_code:this.state.color_picker_hex_value,
             show:true,
+            vectored:this.state.vectored_relation
         }
         relation_type_list.push(newData);
         this.search_relation_type("");
@@ -336,10 +342,46 @@ export function relation_node_properties_panel(THIS)
                             </div>
                         </ListItem>
                         <ListItem>
-                        <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                        onClick={
-                            e=>{THIS.add_relation_type();}
-                        }>Add</Button>
+                            <Grid container direction="row" justify="space-between" alignItems="center">
+                                <Grid xs={6}>
+                                    <Typography
+                                        color="primary"
+                                        display="block"
+                                        variant="caption">
+                                        Vectored Relation:
+                                    </Typography>
+                                </Grid>
+                                <Grid xs={6}>
+                                    <FormControl variant="outlined" 
+                                    className={THIS.props.classes.formControl}
+                                    size='small'>
+                                        <Select
+                                        labelId="encryption_status_select"
+                                        id="encryption_status_select"
+                                        size='small'
+                                        value={THIS.state.vectored_relation}
+                                        onChange={e=>{THIS.setState({vectored_relation:e.target.value});}}
+                                        style={{width:'100%' }}
+                                        MenuProps={{classes:{paper: THIS.props.classes.menu_dropdown_style}}}
+                                        className={THIS.props.classes.select_style}
+                                        inputProps={{
+                                            classes: {
+                                                root: THIS.props.classes.select_style,
+                                                icon:THIS.props.classes.select_style
+                                            },
+                                        }}>
+                                            <MenuItem value={true}>True</MenuItem>
+                                            <MenuItem value={false}>False</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                            </Grid>
+                        </ListItem>
+                        <ListItem>
+                            <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
+                            onClick={
+                                e=>{THIS.add_relation_type();}
+                            }>Add</Button>
                         </ListItem>
                         <ListItem>
                             <Grid container direction="row" justify="center" alignItems="center">

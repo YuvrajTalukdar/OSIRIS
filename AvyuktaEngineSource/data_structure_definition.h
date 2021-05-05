@@ -35,6 +35,7 @@ struct data_node
 struct node_relation_type
 {
     unsigned int id;
+    bool vectored=false;
     string type_name,color_code;
 };
 

@@ -284,10 +284,12 @@ void get_type_data(const FunctionCallbackInfo<Value>& args)
         v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),db.file_handler.relation_types.at(a).type_name.c_str()).ToLocal(&v8_type_String);
         Local<Number> v8_id=Number::New(v8::Isolate::GetCurrent(),db.file_handler.relation_types.at(a).id);
         v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),db.file_handler.relation_types.at(a).color_code.c_str()).ToLocal(&v8_color_code_String);
+        Local<Boolean> v8_vectored=Boolean::New(v8::Isolate::GetCurrent(),db.file_handler.relation_types.at(a).vectored);
 
         relation_type_obj->Set(context,v8::String::NewFromUtf8(isolate,"id").ToLocalChecked(),v8_id).FromJust();
         relation_type_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_type").ToLocalChecked(),v8_type_String).FromJust();
         relation_type_obj->Set(context,v8::String::NewFromUtf8(isolate,"color_code").ToLocalChecked(),v8_color_code_String).FromJust();
+        relation_type_obj->Set(context,v8::String::NewFromUtf8(isolate,"vectored").ToLocalChecked(),v8_vectored).FromJust();
 
         relation_type_obj_list->Set(context,a,relation_type_obj);
     }
@@ -313,7 +315,8 @@ void add_node_relation_type(const FunctionCallbackInfo<Value>& args)
     v8::Local<v8::String> v8_color_code=args[2].As<v8::String>();
     v8::String::Utf8Value str2(isolate, v8_color_code);
     string color_code(*str2);
-    db.file_handler.add_node_relation_type(type,node_or_relation,color_code);
+    bool vectored=args[3].As<Boolean>()->Value();
+    db.file_handler.add_node_relation_type(type,node_or_relation,color_code,vectored);
 }
 
 void Initialize(Local<Object> exports)

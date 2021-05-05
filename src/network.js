@@ -39,6 +39,11 @@ var options = {autoResize: true,height:'100%',width:'100%',
                 scaleFactor: 0.5,
                 type: "arrow"
             },
+            from: 
+            {
+                scaleFactor: 0.5,
+                type: "arrow"
+            },
         },
     },
     interaction: {
@@ -145,6 +150,7 @@ function add_relation_to_network(relation,js_index)
             width:1,
             color:relation_type.color_code,
             title:div,
+            arrows:{from:{enabled:!relation_type.vectored}},
             relation_type_id:relation.relation_type_id,//used in my finctions
             js_index:js_index//used in my finctions
         };

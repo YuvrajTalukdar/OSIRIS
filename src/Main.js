@@ -186,6 +186,7 @@ class Main extends React.Component
             edit_mode_on:false,
             relation_add_button_text:'Add',
             disable_relation_add_button:false,
+            vectored_relation:false,
             /*type data */
                 /*Node Type */
             node_type_data_list:[],
@@ -388,7 +389,7 @@ class Main extends React.Component
         if(this.permission_dialog_purpose_code==1)
         {   this.delete_node_type();}
         else if(this.permission_dialog_purpose_code==2)
-        {   this.delete_relation_type();}
+        {   this.Delete_Relation_Type();}
         else if(this.permission_dialog_purpose_code==3)
         {   this.delete_node();}
         else if(this.permission_dialog_purpose_code==4)
