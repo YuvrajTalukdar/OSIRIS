@@ -25,7 +25,7 @@ const useStyles = (theme)=>
         paddingTop:'2px'
     },
     textfield_background:
-    {   background: "#394458"},
+    {   background: "#00404B"},
     textfield_text:
     {   color: "#03DAC5"},
     textfield_label:
@@ -156,7 +156,7 @@ class Main extends React.Component
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
-            relation_node_properties_drawer_open:false,
+            relation_node_properties_drawer_open:true,
             relation_node_properties_icon_color:'primary',
             color_picker_hex_value:"#03DAC5",
             collaborate_drawer_open:false,
@@ -170,6 +170,7 @@ class Main extends React.Component
             disable_add_button:false,
             matched_node:undefined,
             edit_node_name_box_visible:'none',
+            edit_node_name_close_button:'none',
             edit_node_name:'',
 
             /*Relation Data*/
@@ -191,9 +192,14 @@ class Main extends React.Component
             /*type data */
                 /*Node Type */
             node_type_data_list:[],
-            node_type_search_text:"",
+            node_type_name_edit:"",
             node_type_search_close_button_visible:"none",
             node_type_name:"",
+            edit_node_type_box_visible:'none',
+            add_node_type_button_text:'Add',
+            disable_add_node_type_button:false,
+            edit_node_type:undefined,
+            edit_node_type_name_close_button_visible:'none',
                 /*Relation Type */
             relation_type_data_list:[],
             relation_type_search_text:"",
@@ -261,7 +267,8 @@ class Main extends React.Component
     delete_relation_destination_node="";
     delete_relation_type="";
 
-    match_found_at=-1;
+    match_found_at=-1;//for edit node
+    match_found_at2=-1;//for edit node type
 
     source_node_id=-1;
     destination_node_id=-1;
@@ -539,7 +546,6 @@ class Main extends React.Component
                             Ok
                         </Button>
                     </DialogActions>
-                    
                 </Dialog>
                 {/*Permission Dialog*/}
                 <Dialog

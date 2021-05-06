@@ -57,6 +57,10 @@ ipcMain.on('add_node_relation_type',(enent,data)=>{
     AvyuktaEngine.add_node_relation_type(data.type,data.node_or_relation,data.color_code,data.vectored);
 });
 
+ipcMain.on('edit_node_relation_type',(enent,data)=>{
+    AvyuktaEngine.edit_node_relation_type(data.node_or_relation,data.id,data.type,data.color_code,data.vectored);
+});
+
 ipcMain.on('edit_node',(enent,data)=>{
     AvyuktaEngine.edit_node(data.node_id,data.node_type_id,data.node_name);
 });

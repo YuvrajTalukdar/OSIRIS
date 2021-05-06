@@ -319,6 +319,21 @@ void add_node_relation_type(const FunctionCallbackInfo<Value>& args)
     db.file_handler.add_node_relation_type(type,node_or_relation,color_code,vectored);
 }
 
+void edit_node_relation_type(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    int node_or_relation=args[0].As<Number>()->Value();
+    int node_relation_id=args[1].As<Number>()->Value();
+    v8::Local<v8::String> v8_type=args[2].As<v8::String>();
+    v8::String::Utf8Value str(isolate, v8_type);
+    string type(*str);
+    v8::Local<v8::String> v8_color_code=args[3].As<v8::String>();
+    v8::String::Utf8Value str2(isolate, v8_color_code);
+    string color_code(*str2);
+    bool vectored=args[4].As<Boolean>()->Value();
+    op_class.edit_node_relation_type(db,node_or_relation,node_relation_id,type,color_code,vectored);
+}
+
 void Initialize(Local<Object> exports)
 {
     NODE_SET_METHOD(exports,"initialize_engine",initialize_engine);
@@ -327,6 +342,7 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"get_type_data",get_type_data);
     NODE_SET_METHOD(exports,"delete_node_relation_type",delete_node_relation_type);
     NODE_SET_METHOD(exports,"add_node_relation_type",add_node_relation_type);
+    NODE_SET_METHOD(exports,"edit_node_relation_type",edit_node_relation_type);
     NODE_SET_METHOD(exports,"get_node_relation_data",get_node_relation_data);
     NODE_SET_METHOD(exports,"get_last_entered_node_data",get_last_entered_node_data);
     NODE_SET_METHOD(exports,"add_new_node",add_new_node);

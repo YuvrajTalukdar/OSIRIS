@@ -78,6 +78,7 @@ class filehandler_class
     void load_node_relation_type(int node_or_relation);//ok tested 0 means node 1 means relation.
     void add_node_relation_type(string,int,string color_code,bool vectored);//ok tested
     void delete_node_relation_type(unsigned int id,int node_or_relation);//ok tested
+    void edit_node_relation_type(node_relation_type &type_data,int node_or_relation);
     //relation related functions
     void load_relations();
     void add_new_relation(relation&);

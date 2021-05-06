@@ -203,7 +203,13 @@ function search_node_name(data)
         else
         {   node_data_list[a].show=false;}
     }
+    var name_matched=false;
     if(no_of_match==1)
+    {
+        if(node_data_list[this.match_found_at].node_name.toUpperCase().localeCompare(data.toUpperCase())==0)
+        {   name_matched=true;}
+    }
+    if(name_matched==true)
     {   
         var a;
         for(a=0;a<this.state.node_type_data_list.length;a++)
@@ -217,6 +223,7 @@ function search_node_name(data)
             disable_add_button:true,
             matched_node:matched_node,
             edit_node_name_box_visible:'block',
+            edit_node_name_close_button:'block',
             edit_node_name:matched_node.node_name
         });
     }
@@ -227,6 +234,7 @@ function search_node_name(data)
             new_node_type:'',
             disable_add_button:false,
             matched_node:undefined,
+            edit_node_name_close_button:'none',
             edit_node_name_box_visible:'none',
             edit_node_name:''
         });
@@ -620,6 +628,8 @@ export function add_panel(THIS)
                                         edit_node_name:e.target.value,
                                         disable_add_button:disable_add_button
                                     });
+                                    if(e.target.value.length!=0)
+                                    {   THIS.setState({edit_node_name_close_button:'block'});}
                                 }}
                             InputLabelProps={
                             {   className: THIS.props.classes.textfield_label}}
@@ -632,9 +642,9 @@ export function add_panel(THIS)
                                 },
                                 endAdornment: 
                                 (
-                                    <Box display={THIS.state.new_node_name_close_button_visible}> 
+                                    <Box display={THIS.state.edit_node_name_close_button}> 
                                         <IconButton color='primary' size='small'
-                                        onClick={e=>{THIS.setState({edit_node_name:""})}}>
+                                        onClick={e=>{THIS.setState({edit_node_name:"",edit_node_name_close_button:'none'})}}>
                                             <CloseIcon/>
                                         </IconButton>
                                     </Box> 

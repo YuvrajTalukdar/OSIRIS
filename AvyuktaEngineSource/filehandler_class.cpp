@@ -846,11 +846,11 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
 
 void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_relation)//gap ignorance technique is used here
 {
-    string dir,file_name;
+    string dir;
     if(node_or_relation==0)
-    {   dir=node_type_file_dir;file_name="node_type_list.csv";}
+    {   dir=node_type_file_dir;}
     else if(node_or_relation==1)
-    {   dir=relation_type_file_dir;file_name="relation_type_list.csv";}
+    {   dir=relation_type_file_dir;}
 
     ifstream in_file(dir,ios::in);
     string temp_data,line,word;
@@ -923,6 +923,109 @@ void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_re
         }
         if(found)
         {   relation_types.erase(relation_types.begin()+mid);}
+    }
+}
+
+void filehandler_class::edit_node_relation_type(node_relation_type &type_data,int node_or_relation)
+{   
+    string dir;
+    if(node_or_relation==0)
+    {   dir=node_type_file_dir;}
+    else if(node_or_relation==1)
+    {   dir=relation_type_file_dir;}
+
+    ifstream in_file(dir,ios::in);
+    string temp_data,line,word="";
+    unsigned int line_count=0;
+    while(in_file)
+    {
+        getline(in_file,line);
+        if(in_file.eof())
+        {   break;}
+        if(line_count>0)
+        {
+            for(int a=0;a<line.length();a++)
+            {
+                if(line.at(a)!=',')
+                {   word.push_back(line.at(a));}
+                else
+                {   
+                    if(stoi(word)!=type_data.id)
+                    {
+                        temp_data+=line;
+                        temp_data+="\n";
+                    }
+                    else
+                    {
+                        temp_data+=to_string(type_data.id);
+                        temp_data+=",";
+                        temp_data+=type_data.type_name;
+                        if(node_or_relation==1)
+                        {
+                            temp_data+=",";
+                            temp_data+=type_data.color_code;
+                            temp_data+=",";
+                            if(type_data.vectored)
+                            {   temp_data+=to_string(1);}
+                            else
+                            {   temp_data+=to_string(0);}
+                        }
+                        temp_data+=",\n";
+                    }
+                    word="";
+                    break;
+                }
+            }
+        }
+        else
+        {
+            temp_data+=line;
+            temp_data+="\n";
+        }
+        line_count++;
+    }
+    in_file.close();
+    ofstream out_file(dir,ios::out);
+    out_file<<temp_data;
+    out_file.close();
+    //Binary search is done here
+    if(node_or_relation==0)
+    {
+        int left=0,right=node_types.size()-1,mid;
+        bool found=false;
+        while(left <= right)
+        {   
+            mid=left+(right-left)/2;
+            if(node_types.at(mid).id==type_data.id)
+            {   found=true;break;}
+            else if(node_types.at(mid).id>type_data.id)
+            {   right=mid-1;}
+            else if(node_types.at(mid).id<type_data.id)
+            {   left=mid+1;}
+        }
+        if(found)
+        {   node_types.at(mid).type_name=type_data.type_name;}
+    }
+    else if(node_or_relation==1)
+    {
+        int left=0,right=relation_types.size()-1,mid;
+        bool found=false;
+        while(left <= right)
+        {
+            mid=left+(right-left)/2;
+            if(relation_types.at(mid).id==type_data.id)
+            {   found=true;break;}
+            else if(relation_types.at(mid).id>type_data.id)
+            {   right=mid-1;}
+            else if(relation_types.at(mid).id<type_data.id)
+            {   left=mid+1;}
+        }
+        if(found)
+        {   
+            relation_types.at(mid).color_code=type_data.color_code;
+            relation_types.at(mid).type_name=type_data.type_name;
+            relation_types.at(mid).vectored=type_data.vectored;
+        }
     }
 }
 

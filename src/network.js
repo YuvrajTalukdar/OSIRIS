@@ -20,6 +20,7 @@ export function add_network_func(CLASS)
     CLASS.prototype.get_relation_indexed_from_relation_id = get_relation_indexed_from_relation_id;
     CLASS.prototype.focus_on_node = focus_on_node;
     CLASS.prototype.set_speed = set_speed;
+    CLASS.prototype.change_node_type = change_node_type;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -92,6 +93,23 @@ var options = {autoResize: true,height:'100%',width:'100%',
         },
     }
 };
+
+function change_node_type(node_type)
+{
+    const div = document.createElement("div");
+    div.className="tooltip";
+    div.innerText=node_type.type;
+    var node;
+    for(var a=0;a<this.state.node_data_list.length;a++)
+    {
+        if(this.state.node_data_list[a].node_type_id==node_type.id)
+        {
+            node=nodes.get(this.state.node_data_list[a].node_id);
+            node.title=div;
+            nodes.update(node);
+        }
+    }
+}
 
 function get_node_indexes_from_edge_id(edge_id)
 {
@@ -194,7 +212,8 @@ function add_node_to_network(node,js_index)
             label:node.node_name,
             shape:'circle',
             title:div,
-            js_index:js_index
+            js_index:js_index,
+            node_type_id:node_type.id
         };
         nodes.add(node);
     }

@@ -1,6 +1,5 @@
 import {Button,Toolbar,Typography,TextField,Grid,IconButton,Drawer,Divider,List,ListItem,ListItemText,Box,FormControl,Select,MenuItem} from '@material-ui/core';
 import ColorPicker from "material-ui-color-picker";
-import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
 
@@ -17,36 +16,52 @@ export function add_node_relation_props_func(CLASS)
 
 function add_node_type()
 {
-    const node_type_list=[...this.state.node_type_data_list];
-    
-    var found=false;
-    for(var a=0;a<node_type_list.length;a++)
+    if(this.state.node_type_name.length!=0)
     {
-        if(node_type_list[a].node_type.toUpperCase().localeCompare(this.state.node_type_name.toUpperCase())==0)
-        {   found=true;break;}
-    }
-    if(!found)
-    {
-        var data={node_or_relation:0,type:this.state.node_type_name,color_code:""};
-        window.ipcRenderer.send('add_node_relation_type',data);
-        const newData={
-            id:node_type_list[node_type_list.length-1].id+1,
-            node_type:this.state.node_type_name.toUpperCase(),
-            show:true,
+        const node_type_list=[...this.state.node_type_data_list];
+        
+        var found=false;
+        for(var a=0;a<node_type_list.length;a++)
+        {   
+            if(node_type_list[a].node_type.toUpperCase().localeCompare(this.state.node_type_name.toUpperCase())==0)
+            {   found=true;break;}
         }
-        node_type_list.push(newData);
+        if(!found)
+        {
+            var data={
+                node_or_relation:0,
+                type:this.state.node_type_name.toUpperCase(),
+                color_code:'',
+                vectored:false,
+            };
+            window.ipcRenderer.send('add_node_relation_type',data);
+            const newData={
+                id:node_type_list[node_type_list.length-1].id+1,
+                node_type:this.state.node_type_name.toUpperCase(),
+                show:true,
+            }
+            node_type_list.push(newData);
+        }
+        else
+        {   
+            var data={
+                node_or_relation:0,
+                id:node_type_list[a].id,
+                type:this.state.node_type_name_edit.toUpperCase(),
+                color_code:'',
+                vectored:false,
+            };
+            window.ipcRenderer.send('edit_node_relation_type',data);
+            node_type_list[a].node_type=this.state.node_type_name_edit.toUpperCase();
+            this.change_node_type(data);
+        }
         this.search_node_type("");
         this.setState({
             node_type_data_list:node_type_list
-        })
+        });
     }
     else
-    {
-        if(this.state.node_type_name.length==0)
-        {   this.setState({alert_dialog_open:true,alert_dialog_text:"Enter a node type name!"});}
-        else
-        {   this.setState({alert_dialog_open:true,alert_dialog_text:"Node type already present!"});}
-    }
+    {   this.setState({alert_dialog_open:true,alert_dialog_text:"Enter a node type name!"});}
 }
 
 function delete_node_type()
@@ -71,19 +86,51 @@ function search_node_type(data)
     if(data.length>0)
     {   this.setState({node_type_search_close_button_visible:"block"});}
     else
-    {   this.setState({node_type_search_close_button_visible:"none"});}
+    {   this.setState({node_type_search_close_button_visible:"none",node_type_name:"",});}
 
     const node_type_list=[...this.state.node_type_data_list];
+    var match_count=0;
     for(var a=0;a<node_type_list.length;a++)
     {
         if(node_type_list[a].node_type.toUpperCase().includes(data.toUpperCase()))
-        {   node_type_list[a].show=true;}
+        {   
+            node_type_list[a].show=true;
+            match_count++;
+            this.match_found_at2=a;
+        }
         else
         {   node_type_list[a].show=false;}
     }
-    this.setState({
-        node_type_data_list:node_type_list
-    });
+    var type_matched=false;
+    if(match_count==1)
+    {
+        if(node_type_list[this.match_found_at2].node_type.toUpperCase().localeCompare(data.toUpperCase())==0)
+        {   type_matched=true;}
+    }
+    if(type_matched)
+    {
+        this.setState({
+            node_type_data_list:node_type_list,
+            disable_add_node_type_button:true,
+            add_node_type_button_text:'Save Changes',
+            edit_node_type_box_visible:'block',
+            edit_node_type_name_close_button_visible:'block',
+            node_type_name_edit:data,
+            edit_node_type:node_type_list[this.match_found_at2],
+        });
+    }
+    else
+    {
+        this.setState({
+            node_type_data_list:node_type_list,
+            disable_add_node_type_button:false,
+            add_node_type_button_text:'Add',
+            edit_node_type_box_visible:'none',
+            edit_node_type_name_close_button_visible:'none',
+            node_type_name_edit:'',
+            edit_node_type:undefined,
+        });
+    }
 }
 
 function Delete_Relation_Type()
@@ -189,42 +236,12 @@ export function relation_node_properties_panel(THIS)
                                 label='Node Type' 
                                 variant='outlined' 
                                 size='small'                                          
-                                style={{ width: '79%' }}
-                                onChange={
-                                    e=>{
-                                        THIS.setState({
-                                            node_type_name:e.target.value
-                                        });
-                                    }
-                                }
-                                InputLabelProps={
-                                {   className: THIS.props.classes.textfield_label}}
-                                InputProps={{
-                                    className: THIS.props.classes.valueTextField,
-                                    classes:{
-                                        root:THIS.props.classes.root,
-                                        notchedOutline: THIS.props.classes.valueTextField,
-                                        disabled: THIS.props.classes.valueTextField
-                                    }
-                                }}/>
-                                <IconButton color='primary'
-                                    onClick={e=>{THIS.add_node_type();}}>
-                                    <AddIcon/>
-                                </IconButton>
-                            </Grid>
-                        </ListItem>
-                        <ListItem>
-                            <Grid container direction="row" justify="center" alignItems="center">
-                                <TextField         
-                                label='Search Node Types' 
-                                variant='outlined' 
-                                size='small'                                          
                                 style={{ width: '100%' }}
-                                value={THIS.state.node_type_search_text}
+                                value={THIS.state.node_type_name}
                                 onChange={
                                     e=>{
                                         THIS.setState({
-                                            node_type_search_text:e.target.value
+                                            node_type_name:e.target.value,
                                         });
                                         THIS.search_node_type(e.target.value);
                                     }
@@ -245,7 +262,7 @@ export function relation_node_properties_panel(THIS)
                                             onClick={
                                                 e=>{
                                                     THIS.search_node_type("");
-                                                    THIS.setState({node_type_search_text:""})
+                                                    THIS.setState({node_type_name:""})
                                                 }
                                             }>
                                                 <CloseIcon/>
@@ -254,6 +271,58 @@ export function relation_node_properties_panel(THIS)
                                     ),
                                 }}/>
                             </Grid>
+                        </ListItem>
+                        <ListItem>
+                            <Grid container direction="row" justify="center" alignItems="center">
+                                <Box display={THIS.state.edit_node_type_box_visible}>
+                                    <TextField         
+                                    label='New Node Type Name' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '100%' }}
+                                    value={THIS.state.node_type_name_edit}
+                                    onChange={
+                                        e=>{
+                                            var dis_ad_no_ty_btn=false;
+                                            if(e.target.value.toUpperCase().localeCompare(THIS.state.node_type_name.toUpperCase())==0)
+                                            {   dis_ad_no_ty_btn=true;}
+                                            THIS.setState({
+                                                node_type_name_edit:e.target.value,
+                                                disable_add_node_type_button:dis_ad_no_ty_btn
+                                            });
+                                            if(e.target.value.length!=0)
+                                            {   THIS.setState({edit_node_type_name_close_button_visible:'block'});}
+                                        }
+                                    }
+                                    InputLabelProps={
+                                    {   className: THIS.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: THIS.props.classes.valueTextField,
+                                        classes:{
+                                            root:THIS.props.classes.root,
+                                            notchedOutline: THIS.props.classes.valueTextField,
+                                            disabled: THIS.props.classes.valueTextField
+                                        },
+                                        endAdornment: 
+                                        (
+                                            <Box display={THIS.state.edit_node_type_name_close_button_visible}> 
+                                                <IconButton color='primary' size='small'
+                                                onClick={e=>{THIS.setState({node_type_name_edit:'',edit_node_type_name_close_button_visible:'none'})}}>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </Box> 
+                                        ),
+                                    }}/>
+                                </Box>
+                            </Grid>
+                        </ListItem>
+                        <ListItem>
+                            <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
+                                onClick={
+                                    e=>{    THIS.add_node_type();}}
+                                classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
+                                disabled={THIS.state.disable_add_node_type_button}>{THIS.state.add_node_type_button_text}
+                            </Button>
                         </ListItem>
                         <ListItem>
                             <List className={THIS.props.classes.properties_list_class}>

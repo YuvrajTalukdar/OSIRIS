@@ -79,3 +79,13 @@ void operation_class::edit_relation(database_class &db,relation &relation_obj)
 {
     db.file_handler.edit_relation(relation_obj);
 }
+
+void operation_class::edit_node_relation_type(database_class &db,int node_or_relation,unsigned int id,string type,string color_code,bool vectored)
+{
+    node_relation_type obj1;
+    obj1.id=id;
+    obj1.type_name=type;
+    obj1.color_code=color_code;
+    obj1.vectored=vectored;
+    db.file_handler.edit_node_relation_type(obj1,node_or_relation);
+}

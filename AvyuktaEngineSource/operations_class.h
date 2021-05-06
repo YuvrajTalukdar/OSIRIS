@@ -24,4 +24,6 @@ class operation_class
     void edit_node(database_class &db,unsigned int node_id,unsigned int node_type_id,string node_name);
 
     void edit_relation(database_class &db,relation &relation_obj);
+
+    void edit_node_relation_type(database_class &db,int node_or_relation,unsigned int id,string type,string color_code,bool vectored);
 };
