@@ -21,6 +21,8 @@ export function add_network_func(CLASS)
     CLASS.prototype.focus_on_node = focus_on_node;
     CLASS.prototype.set_speed = set_speed;
     CLASS.prototype.change_node_type = change_node_type;
+    CLASS.prototype.change_relation_type = change_relation_type;
+    CLASS.prototype.enable_keyboard_navigation = enable_keyboard_navigation;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -93,6 +95,31 @@ var options = {autoResize: true,height:'100%',width:'100%',
         },
     }
 };
+
+function enable_keyboard_navigation(enable)
+{
+    options.interaction.keyboard.enabled=enable;
+    this.network.setOptions(options);
+}
+
+function change_relation_type(data)
+{
+    const div = document.createElement("div");
+    div.className="tooltip";
+    div.innerText=data.type;
+    var edge;
+    for(var a=0;a<this.state.relation_data_list.length;a++)
+    {
+        if(this.state.relation_data_list[a].relation_type_id==data.id)
+        {
+            edge=edges.get(this.state.relation_data_list[a].relation_id);
+            edge.title=div;
+            edge.color=data.color_code;
+            edge.arrows={from:{enabled:!data.vectored}};
+            edges.update(edge);
+        }
+    }
+}
 
 function change_node_type(node_type)
 {

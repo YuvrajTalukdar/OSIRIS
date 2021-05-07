@@ -156,7 +156,7 @@ class Main extends React.Component
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
-            relation_node_properties_drawer_open:true,
+            relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
             color_picker_hex_value:"#03DAC5",
             collaborate_drawer_open:false,
@@ -188,7 +188,6 @@ class Main extends React.Component
             edit_mode_on:false,
             relation_add_button_text:'Add',
             disable_relation_add_button:false,
-            vectored_relation:false,
             /*type data */
                 /*Node Type */
             node_type_data_list:[],
@@ -202,9 +201,15 @@ class Main extends React.Component
             edit_node_type_name_close_button_visible:'none',
                 /*Relation Type */
             relation_type_data_list:[],
-            relation_type_search_text:"",
-            relation_type_search_close_button_visible:"none",
+            vectored_relation:false,
+            edit_relation_type:"",
+            relation_type_close_button_visible:"none",
             relation_type_name:"",
+            edit_relation_type_box_visible:'none',
+            edit_relation_type_close_button_visible:'none',
+            edit_relation_type_obj:undefined,
+            disabled_add_relation_type_button:false,
+            relation_type_add_button_text:'Add',
             /*Dialog Box Settings*/
             permission_dialog_open:false,
             permission_dialog_text:"",
@@ -269,6 +274,7 @@ class Main extends React.Component
 
     match_found_at=-1;//for edit node
     match_found_at2=-1;//for edit node type
+    match_found_at3=-1;//for edit relation type
 
     source_node_id=-1;
     destination_node_id=-1;
@@ -635,6 +641,8 @@ class Main extends React.Component
                         style={{ width:'100%',paddingLeft:'1px',paddingRight:'1px'}}
                         size="small"
                         //value={this.state.search_node_bar}
+                        onFocus={e=>{this.enable_keyboard_navigation(false);}}
+                        onBlur={e=>{this.enable_keyboard_navigation(true);}}
                         onChange={(event,value)=>
                             {
                                 //this.setState({search_node_bar:value});

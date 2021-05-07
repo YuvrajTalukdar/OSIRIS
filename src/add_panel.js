@@ -30,10 +30,14 @@ export function add_add_panel_func(CLASS)
 function enable_disable_save_relation_button()
 {
     var disabled=true;
+    try{
     if((this.source_node_id!=this.state.source_node.node_id)||
        (this.destination_node_id!=this.state.destination_node.node_id)||
        (this.relation_type_id!=this.state.new_relation_type.id))
     {   disabled=false;}
+    }
+    catch(error)
+    {}
     var a=0;
     if(disabled)
     {
@@ -83,9 +87,14 @@ function edit_relation_switch_toggle(switch_on)
 {   
     if(switch_on)
     {
-        var obj=this.check_if_relation_is_already_present(this.state.destination_node.node_id,this.state.source_node.node_id,this.state.new_relation_type.id);
-        
-        if(obj.relation_found)
+        var all_is_well=false;
+        try{
+            var obj=this.check_if_relation_is_already_present(this.state.destination_node.node_id,this.state.source_node.node_id,this.state.new_relation_type.id);
+            all_is_well=true;
+        }
+        catch(error)
+        {}
+        if(all_is_well && obj.relation_found)
         {
             var a=0;
             var url_list=[];
@@ -550,6 +559,8 @@ export function add_panel(THIS)
                         variant='outlined' 
                         size='small' 
                         value={THIS.state.new_node_name}
+                        onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                        onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                         onChange={
                             e => {
                                 THIS.setState({new_node_name:e.target.value});
@@ -616,6 +627,8 @@ export function add_panel(THIS)
                             variant='outlined' 
                             size='small' 
                             value={THIS.state.edit_node_name}
+                            onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                             onChange={
                                 e => 
                                 {
@@ -659,6 +672,8 @@ export function add_panel(THIS)
                         options={THIS.state.node_type_data_list}
                         getOptionLabel={(option) => option.node_type}
                         style={{ width: 300 }}
+                        onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                        onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                         value={THIS.state.new_node_type}
                         onChange={(event,value)=>
                             {
@@ -758,6 +773,8 @@ export function add_panel(THIS)
                             getOptionLabel={(option) => option.node_name}
                             style={{ width: '85%' }}
                             value={THIS.state.source_node}
+                            onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                             onChange={(event,value)=>
                                 {
                                     THIS.setState({source_node:value});
@@ -795,6 +812,8 @@ export function add_panel(THIS)
                             getOptionLabel={(option) => option.node_name}
                             style={{ width: '85%' }}
                             value={THIS.state.destination_node}
+                            onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                             onChange={(event,value)=>
                                 {
                                     THIS.setState({destination_node:value});
@@ -832,6 +851,8 @@ export function add_panel(THIS)
                             getOptionLabel={(option) => option.relation_type}
                             style={{ width: '85%' }}
                             value={THIS.state.new_relation_type}
+                            onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                             onChange={(event,value)=>
                                 {
                                     THIS.setState({new_relation_type:value});
@@ -865,6 +886,8 @@ export function add_panel(THIS)
                             size='small'                                          
                             style={{ width: '85%' }}
                             value={THIS.state.source_url}
+                            onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
                             onChange={
                                 e=>{
                                     THIS.setState({
