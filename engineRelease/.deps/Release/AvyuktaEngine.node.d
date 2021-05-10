@@ -1,0 +1,1 @@
+cmd_Release/AvyuktaEngine.node := ln -f "Release/obj.target/AvyuktaEngine.node" "Release/AvyuktaEngine.node" 2>/dev/null || (rm -rf "Release/AvyuktaEngine.node" && cp -af "Release/obj.target/AvyuktaEngine.node" "Release/AvyuktaEngine.node")

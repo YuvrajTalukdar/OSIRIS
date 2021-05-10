@@ -1,4 +1,6 @@
-const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
+process.env.NODE_ENV = 'production';
+//const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
+const AvyuktaEngine=require('AvyuktaEngine');
 
 const electron = require('electron')
 const path=require('path');

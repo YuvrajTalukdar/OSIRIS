@@ -1,0 +1,10 @@
+{
+    "name": "AvyuktaEngine",
+    "version": "1.0.0",
+    "description": "",
+    "main": "AvyuktaEngine.node",
+    "scripts": 
+    {"test": "echo \"test\""},
+    "author": "",
+    "license": "ISC"
+}  

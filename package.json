@@ -25,7 +25,8 @@
     "react-window": "^1.8.6",
     "vis": "*",
     "vis-network": "^9.0.4",
-    "web-vitals": "^1.1.0"
+    "web-vitals": "^1.1.0",
+    "AvyuktaEngine": "1.0.0"
   },
   "scripts": {
     "react-start": "react-scripts start",
