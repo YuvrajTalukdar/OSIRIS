@@ -1,5 +1,5 @@
 NO_OF_NODES_IN_THIS_FILE:,3,
 NODE_ID,NODE_NAME,NODE_TYPE_ID,RELATION_LIST:-,
-3,test_node2,1,2,3,4,
-4,test1,3,
-5,test_node2,1,2,3,4,
+3,test6,8,
+4,test5,12,
+5,test4,8,

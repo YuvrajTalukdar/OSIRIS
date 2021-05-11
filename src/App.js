@@ -1,6 +1,7 @@
 import './App.css';
 import Settings from './Settings';
 import Main from './Main';
+import Login from './Login';
 import {HashRouter,Route} from 'react-router-dom';
 
 function App()
@@ -11,6 +12,7 @@ function App()
             <div>  
                 <Route exact path="/" component={Main}/>
                 <Route exact path="/Settings" component={Settings}/>
+                <Route exact path="/Login" component={Login}/>
             </div>
         );
     }
@@ -22,6 +24,7 @@ function App()
                     <div>  
                         <Route exact path="/" component={Main}/>
                         <Route exact path="/Settings" component={Settings}/>
+                        <Route exact path="/Login" component={Login}/>
                     </div>
                 </switch>
             </HashRouter>

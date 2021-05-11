@@ -1,5 +1,4 @@
 .App-logo {
-  height: 40vmin;
   pointer-events: none;
 }
 
@@ -7,6 +6,16 @@
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+}
+
+.login
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-width: 100%;
+    background-color: #000000;
 }
 
 .App-header {

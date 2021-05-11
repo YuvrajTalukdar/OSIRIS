@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'production';
+//process.env.NODE_ENV = 'production';
 //const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
 const AvyuktaEngine=require('AvyuktaEngine');
 
@@ -28,6 +28,7 @@ app.on('ready', () =>
             contextIsolation: false 
         }
     });
+    //mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
     mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
     mainWindow.on('closed',()=>app.quit());
     mainWindow.setTitle("OSIRIS");
@@ -156,10 +157,51 @@ ipcMain.on('open_file_picker',(event,todo)=>{
     });
 });
 
-/*Testing functions*/
-ipcMain.on('test_lower',(event,data)=>{
-    //console.log("test_lower");
-    mainWindow.webContents.send('test_upper',"check67");
+ipcMain.on('login_create',(enent,data)=>{
+    console.log(data);
+});
+
+/*Login Page functions*/
+
+ipcMain.on('open_db_picker',(event,todo)=>{
+    dialog.showOpenDialog({
+        title:'Open Database',
+        properties:['openFile'],
+        filters: [{ name: 'OSIRIS Database', extensions: ['odb','ODB'] },]
+    },
+    ).then(function (response) 
+    {   
+        if (!response.canceled) 
+        {
+            var file_name=get_filename_from_path(response.filePaths);
+            var data={
+                'file_name':file_name,
+                'file_dir':response.filePaths
+            }
+            mainWindow.webContents.send('odb_dir',data);
+        } 
+    });
+});
+
+ipcMain.on('open_save_folder_picker',(event,todo)=>{
+    dialog.showSaveDialog({
+        title:'Save Database',
+        filters: [{ name: '.odb OSIRIS Database', extensions: ['odb','ODB'] },]
+    },
+    ).then(function (response) 
+    {   
+        if (!response.canceled) 
+        {
+            var file_name=get_filename_from_path(response.filePath);
+            console.log(response);
+            
+            var data={
+                'file_name':file_name,
+                'file_dir':response.filePath
+            }
+            mainWindow.webContents.send('odb_dir',data);
+        } 
+    });
 });
 
 /*Settings window functions and variables*/ 
@@ -216,14 +258,9 @@ const mainmenuTemplate=[
         label:'File',
         submenu:[
             {
-                label:'New Node',
+                label:'Create New Database',
                 click()
-                {   
-                    /*data_list=[];
-                    data_list.push("text1");
-                    data_list.push("text2");
-                    settingsWindow.webContents.send('settings:data',data_list);*/
-                }
+                {   }
             },
             {
                 label:'Settings',
@@ -254,7 +291,9 @@ const mainmenuTemplate=[
             {
                 label:'About',
                 click()
-                {}
+                {
+                    //mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
+                }
             }
         ]
     }

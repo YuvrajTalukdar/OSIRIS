@@ -142,8 +142,6 @@ const useStyles = (theme)=>
     },
 });
 
-var type_data_added=false;
-
 class Main extends React.Component
 {
     constructor(props)
@@ -460,42 +458,29 @@ class Main extends React.Component
     }
 
     add_main_window_data(data)
-    {
-        if(!type_data_added)
-        {
-            type_data_added=true;
-            var a;
-            for(a=0;a<data.node_type_list.length;a++)
-            {   data.node_type_list[a].show=true;}
-            for(a=0;a<data.relation_type_list.length;a++)
-            {   data.relation_type_list[a].show=true;}
+    {   console.log('test')
+        var a;
+        for(a=0;a<data.node_type_list.length;a++)
+        {   data.node_type_list[a].show=true;}
+        for(a=0;a<data.relation_type_list.length;a++)
+        {   data.relation_type_list[a].show=true;}
 
-            for(a=0;a<data.node_list.length;a++)
-            {   data.node_list[a].show=true;}
-            
-            this.setState({
-                node_type_data_list:data.node_type_list,
-                relation_type_data_list:data.relation_type_list,
-                node_data_list:data.node_list,
-                relation_data_list:data.relation_list
-            });
-            this.create_full_network();
-        }
+        for(a=0;a<data.node_list.length;a++)
+        {   data.node_list[a].show=true;}
+        
+        this.setState({
+            node_type_data_list:data.node_type_list,
+            relation_type_data_list:data.relation_type_list,
+            node_data_list:data.node_list,
+            relation_data_list:data.relation_list
+        });
+        this.create_full_network();
     }
     
     componentDidMount() 
     {  
-        window.ipcRenderer.on('test_upper',(event,data)=>
-        {   
-            var a=0;
-            var text="";
-            for(a=0;a<this.state.relation_data_list.length;a++)
-            {
-                text+=("id="+this.state.relation_data_list[a].relation_id+" s="+this.state.relation_data_list[a].source_node_id+" d="+this.state.relation_data_list[a].destination_node_id+"\n")
-            }
-            alert(text);
-            alert("fin="+this.state.relation_data_list.length)
-        });
+        window.ipcRenderer.on('main_window_data_received',(event,data)=>
+        {   this.add_main_window_data(data);});
 
         window.ipcRenderer.on('last_entered_relation',(event,data)=>
         {   this.add_new_relation_body(data);});
@@ -506,26 +491,14 @@ class Main extends React.Component
         window.ipcRenderer.on('add_file_dir',(event,data)=>
         {   this.add_file_dir(data);});
 
-        this.init_network();
+        var dummy="";
+        window.ipcRenderer.send('get_main_window_data', dummy);
 
-        /*document.onkeydown=function(e){
-            if(e.ctrlkey==true && this.ctrlKey==false)
-            {   this.ctrlKey=true;}
-        }
-        document.onkeyup=function(e){
-            if(e.key.localeCompare("Control")==0 && this.ctrlKey==true)
-            {   this.ctrlKey=false;}
-        }*/
+        this.init_network();
     }
     
     render()
     {
-        window.ipcRenderer.on('main_window_data_received',(event,data)=>
-        {   this.add_main_window_data(data);});
-
-        var dummy="";
-        window.ipcRenderer.send('get_main_window_data', dummy);
-        
         return(
         <ThemeProvider theme={theme}>
             <header className="Main_Style">
@@ -678,7 +651,6 @@ class Main extends React.Component
                                 <IconButton color="primary"
                                 onClick={
                                     e=>{
-                                        //window.ipcRenderer.send('test_lower',"");
                                         this.setState(
                                         {
                                             open_speed_popover:true,
