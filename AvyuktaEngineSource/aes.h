@@ -9,14 +9,14 @@
 
 #include<string.h>
 
-using namespace std;
+using namespace CryptoPP;
 
 struct decrypted_data
 {
-    string decrypt_text;
-    bool decryption_successful;
+    std::string decrypted_text;
+    bool decryption_successful=false;
 };
 
-string encrypt_text(string data,string password);
+std::string encrypt_text(std::string data,std::string password);
 
-decrypted_data decrypt_text(string data,string password);
+decrypted_data decrypt_text(std::string data,std::string password);

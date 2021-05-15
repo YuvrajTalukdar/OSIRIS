@@ -605,7 +605,8 @@ export function relation_node_properties_panel(THIS)
                                     onChange={e=>
                                     {
                                         THIS.setState({vectored_relation:e.target.value});
-                                        THIS.relation_type_add_button_enabler(THIS.state.edit_relation_type,THIS.state.color_picker_hex_value,e.target.value);
+                                        if(THIS.state.edit_relation_type_obj!=undefined)
+                                        {   THIS.relation_type_add_button_enabler(THIS.state.edit_relation_type,THIS.state.color_picker_hex_value,e.target.value);}
                                     }}
                                     style={{width:'100%' }}
                                     MenuProps={{classes:{paper: THIS.props.classes.menu_dropdown_style}}}

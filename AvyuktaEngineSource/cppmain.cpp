@@ -13,6 +13,7 @@ int main()
 {
     operation_class operations;
     database_class db;
-    db.initialize_db();
+    //db.create_odb("/media/yuvraj/Fast Disk/projects/react_electron/osiris/AvyuktaEngineSource/database/test.odb","test.odb","bikiclass7");
+    db.open_odb("/media/yuvraj/Fast Disk/projects/react_electron/osiris/AvyuktaEngineSource/database/test.odb","bikiclass7");
     return 0;
 }

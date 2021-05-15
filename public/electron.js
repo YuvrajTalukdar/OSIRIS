@@ -1,6 +1,6 @@
 //process.env.NODE_ENV = 'production';
-//const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
-const AvyuktaEngine=require('AvyuktaEngine');
+const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
+//const AvyuktaEngine=require('AvyuktaEngine');
 
 const electron = require('electron')
 const path=require('path');
@@ -10,9 +10,6 @@ const fs = require('fs');
 
 let mainWindow;
 let settingsWindow=null;
-
-function initialize_engine()
-{   AvyuktaEngine.initialize_engine();}
 
 app.on('ready', () => 
 {
@@ -28,15 +25,13 @@ app.on('ready', () =>
             contextIsolation: false 
         }
     });
-    //mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
-    mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
+    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
+    //mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
     mainWindow.on('closed',()=>app.quit());
     mainWindow.setTitle("OSIRIS");
 
     const mainMenu=Menu.buildFromTemplate(mainmenuTemplate);
     Menu.setApplicationMenu(mainMenu);
-
-    initialize_engine();
 });
 
 /*Main window functions*/
@@ -159,6 +154,22 @@ ipcMain.on('open_file_picker',(event,todo)=>{
 
 ipcMain.on('login_create',(enent,data)=>{
     console.log(data);
+    if(data.login_create_code==0)
+    {   
+        var error=AvyuktaEngine.initialize_engine(data.db_dir,data.password);
+        console.log(error);
+        if(error.error_code==-1)
+        {   mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);}
+        else
+        {   mainWindow.webContents.send('login_error',error);}
+    }
+    else if(data.login_create_code==1)
+    {   AvyuktaEngine.create_new_odb(data.db_dir,data.file_name,data.password);}
+});
+
+ipcMain.on('close_db',(enent,data)=>{
+    AvyuktaEngine.shutdown_engine();
+    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
 });
 
 /*Login Page functions*/
@@ -175,8 +186,8 @@ ipcMain.on('open_db_picker',(event,todo)=>{
         {
             var file_name=get_filename_from_path(response.filePaths);
             var data={
-                'file_name':file_name,
-                'file_dir':response.filePaths
+                'file_name':get_filename_from_path(file_name),
+                'file_dir':response.filePaths[0]
             }
             mainWindow.webContents.send('odb_dir',data);
         } 
@@ -196,7 +207,7 @@ ipcMain.on('open_save_folder_picker',(event,todo)=>{
             console.log(response);
             
             var data={
-                'file_name':file_name,
+                'file_name':get_filename_from_path(response.filePath),
                 'file_dir':response.filePath
             }
             mainWindow.webContents.send('odb_dir',data);
@@ -258,17 +269,20 @@ const mainmenuTemplate=[
         label:'File',
         submenu:[
             {
-                label:'Create New Database',
-                click()
-                {   }
-            },
-            {
                 label:'Settings',
                 click()
                 {   startSettingsWindow();}
             },
             {
-                label:'Quit',
+                label:'Close Database',
+                click()
+                {  
+                    AvyuktaEngine.shutdown_engine();
+                    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
+                }
+            },
+            {
+                label:'Quit Application',
                 accelerator:(()=>{
                     if(process.platform==='darwin')
                     {   return 'Command+Q';}

@@ -4,7 +4,12 @@
 #include<vector>
 #include<bits/stdc++.h>//for multimap
 
-using namespace std;
+using std::vector;
+using std::string;
+using std::to_string;
+using std::multimap;
+using std::cout;
+using std::endl;
 
 struct relation
 {
@@ -44,4 +49,10 @@ struct file_info
     string file_name;
     unsigned int file_id,start_id,end_id;
     bool file_full=false;
+};
+
+struct error
+{
+    string error_statement;
+    int error_code;
 };

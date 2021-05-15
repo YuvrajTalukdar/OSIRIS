@@ -3,91 +3,190 @@
 void filehandler_class::calc_node_list_size(float percent)
 {   no_of_nodes_in_memory=total_no_of_nodes*percent/100;}
 
-void filehandler_class::load_db_settings()
+bool filehandler_class::is_whitespace(const string& s) 
+{   return std::all_of(s.begin(), s.end(), isspace);}
+
+void filehandler_class::close_db()
 {
-    bool settings_file_found=check_if_file_is_present("settings.csv");
-    ifstream settings_file(settings_file_dir,ios::in);
-    string line;
-    while(settings_file)
+    password="";
+    node_file_list.clear();
+    gap_node_id_list.clear();
+    gap_relation_id_list.clear();
+    relation_file_list.clear();
+    node_types.clear();
+    relation_types.clear();
+    data_node_list.clear();
+    node_meta_list.clear();
+    relation_list.clear();
+}
+
+void filehandler_class::set_password_and_dir(string current_db_dir,string pass)
+{   
+    password=pass;
+    database_dir=current_db_dir;
+    node_file_list_dir=current_db_dir;
+    node_file_list_dir.append("node_file_list.csv");
+    relation_file_list_dir=current_db_dir;
+    relation_file_list_dir.append("relation_file_list.csv");
+    relation_type_file_dir=current_db_dir;
+    relation_type_file_dir.append("relation_type_list.csv");
+    node_type_file_dir=current_db_dir;
+    node_type_file_dir.append("node_type_list.csv");
+    settings_file_dir=current_db_dir;
+    settings_file_dir.append("settings.csv");
+}
+
+stringstream filehandler_class::decrypt_file(string file_dir)
+{
+    ifstream in_file(file_dir,ios::in);
+    string data,line;
+    while(in_file)
     {
-        getline(settings_file,line);//space problem is fixed here.
-        if(settings_file.eof())
+        getline(in_file,line);
+        data+=line;
+        data+="\n";
+        if(in_file.eof())
         {   break;}
-        if(strcmp(line.c_str(),"#END")==0)
-        {   break;}
-        else
+    }
+    in_file.close();
+    decrypted_data obj=decrypt_text(data,password);
+    stringstream ss;
+    ss<<obj.decrypted_text;
+    return ss;
+}
+
+void filehandler_class::encrypt_file(string file_dir,string data)
+{
+    ofstream out_file(file_dir,ios::out);
+    string encrypted_text=encrypt_text(data,password);
+    out_file<<encrypted_text;
+    out_file.close();
+    cout<<"\n\ncheck11---  dir==="<<file_dir<<" data=\n"<<data;
+}
+
+error filehandler_class::load_db_settings()
+{
+    error obj;
+    bool settings_file_found=check_if_file_is_present("settings.csv");
+    if(settings_file_found)
+    {
+        ifstream settings_file(settings_file_dir,ios::in);
+        string line;
+        while(settings_file)
         {
-            int count=0;
-            string word="";
-            short int option=-1;
-            for(int a=0;a<line.length();a++)
+            getline(settings_file,line);//space problem is fixed here.
+            if(settings_file.eof())
+            {   break;}
+            if(strcmp(line.c_str(),"#END")==0)
+            {   break;}
+            else
             {
-                if(line.at(a)!=',')
-                {   word.push_back(line.at(a));}
-                else
+                int count=0;
+                string word="";
+                short int option=-1;
+                for(int a=0;a<line.length();a++)
                 {
-                    if(count==0)
-                    {
-                        for(int b=0;b<5;b++)
-                        {
-                            string settings_name=settings_list[b]+":";
-                            if(strcmp(word.c_str(),settings_name.c_str())==0)
-                            {   option=b;break;}
-                        }
-                    }
+                    if(line.at(a)!=',')
+                    {   word.push_back(line.at(a));}
                     else
                     {
-                        if(option==0)
-                        {   
-                            if(strcmp(word.c_str(),"true")==0)
-                            {   encryption=true;}
-                            else
-                            {   encryption=false;}
+                        if(count==0)
+                        {
+                            for(int b=0;b<5;b++)
+                            {
+                                string settings_name=settings_list[b]+":";
+                                if(strcmp(word.c_str(),settings_name.c_str())==0)
+                                {   option=b;break;}
+                            }
                         }
-                        else if(option==1)
-                        {   percent_of_node_in_memory=stof(word);}
-                        else if(option==2)
-                        {   authors.push_back(word);}
-                        else if(option==3)
-                        {   no_of_nodes_in_one_node_file=stoi(word);}
-                        else if(option==4)
-                        {   no_of_relation_in_one_file=stoi(word);}
+                        else
+                        {
+                            if(option==0)
+                            {   
+                                if(strcmp(word.c_str(),"true")==0)
+                                {   encryption=true;}
+                                else
+                                {   encryption=false;}
+                            }
+                            else if(option==1)
+                            {   percent_of_node_in_memory=stof(word);}
+                            else if(option==2)
+                            {   authors.push_back(word);}
+                            else if(option==3)
+                            {   no_of_nodes_in_one_node_file=stoi(word);}
+                            else if(option==4)
+                            {   no_of_relation_in_one_file=stoi(word);}
+                        }
+                        word="";
+                        count++;
                     }
-                    word="";
-                    count++;
                 }
             }
         }
+        settings_file.close();
+        obj.error_code=-1;
     }
-    settings_file.close();
+    else
+    {   obj.error_code=0;}
+
+    return obj;
 }
 
 void filehandler_class::change_settings(string file_dir,string settings_name,string settings_value)
 {
-    ifstream settings_file(file_dir,ios::in);
-    string line,temp_data;
-    while(settings_file)
+    if(strcmp(file_dir.c_str(),settings_file_dir.c_str())==0)
     {
-        getline(settings_file,line);
-        if(settings_file.eof())
-        {   break;}
-        if(strcasestr(line.c_str(),settings_name.c_str()))
+        ifstream settings_file(file_dir,ios::in);
+        string line,temp_data;
+        while(settings_file)
         {
-            temp_data+=settings_name;
-            temp_data+=":,";
-            temp_data+=settings_value;
-            temp_data+=",\n";
+            getline(settings_file,line);
+            if(settings_file.eof())
+            {   break;}
+            if(strcasestr(line.c_str(),settings_name.c_str()))
+            {
+                temp_data+=settings_name;
+                temp_data+=":,";
+                temp_data+=settings_value;
+                temp_data+=",\n";
+            }
+            else
+            {
+                temp_data+=line;
+                temp_data+="\n";
+            }
         }
-        else
-        {
-            temp_data+=line;
-            temp_data+="\n";
-        }
+        settings_file.close();
+        ofstream new_settings_file(file_dir,ios::out);
+        new_settings_file<<temp_data;
+        new_settings_file.close();
     }
-    settings_file.close();
-    ofstream new_settings_file(file_dir,ios::out);
-    new_settings_file<<temp_data;
-    new_settings_file.close();
+    else
+    {
+        stringstream settings_file=decrypt_file(file_dir);
+        string line,temp_data;
+        while(settings_file)
+        {
+            getline(settings_file,line);
+            if(settings_file.eof())
+            {   break;}
+            if(strcasestr(line.c_str(),settings_name.c_str()))
+            {
+                temp_data+=settings_name;
+                temp_data+=":,";
+                temp_data+=settings_value;
+                temp_data+=",\n";
+            }
+            else
+            {
+                temp_data+=line;
+                temp_data+="\n";
+            }
+        }
+        settings_file.clear();
+        encrypt_file(file_dir,temp_data);
+    }
+    
 }
 
 void filehandler_class::load_node_relation_file_list(int node_or_relation)
@@ -97,7 +196,7 @@ void filehandler_class::load_node_relation_file_list(int node_or_relation)
     {   dir=node_file_list_dir;}
     else if(node_or_relation==1)
     {   dir=relation_file_list_dir;}
-    ifstream list_file(dir,ios::in);
+    stringstream list_file=decrypt_file(dir);
     string line;
     unsigned int line_count=0;
     while(list_file)
@@ -137,7 +236,7 @@ void filehandler_class::load_node_relation_file_list(int node_or_relation)
                 }
             }
         }
-        else if(line_count>2)//for the file data
+        else if(line_count>2 && !is_whitespace(line) && line.at(0)!=NULL)//for the file data
         {   
             string word="";
             int comma_count=0;
@@ -174,13 +273,13 @@ void filehandler_class::load_node_relation_file_list(int node_or_relation)
         }
         line_count++;
     }
-    list_file.close();
+    list_file.clear();
 }
 
 void filehandler_class::add_new_data_to_node_filelist(file_info &new_data)
 {
     node_file_list.push_back(new_data);
-    fstream list_file_in(node_file_list_dir,ios::in);
+    stringstream list_file_in=decrypt_file(node_file_list_dir);
     unsigned int line_count=0;
     string temp_data,line;
     while(list_file_in)
@@ -188,28 +287,31 @@ void filehandler_class::add_new_data_to_node_filelist(file_info &new_data)
         getline(list_file_in,line);
         if(list_file_in.eof())
         {   break;}
-        if(line_count==0)//change the no_of_node_data
+        if(line.length()>0 && !is_whitespace(line) && line.at(0)!=NULL)
         {
-            temp_data+="NO_OF_NODES:,";
-            total_no_of_nodes++;
-            temp_data+=to_string(total_no_of_nodes);
-            temp_data+=",\n";
+            if(line_count==0)//change the no_of_node_data
+            {
+                temp_data+="NO_OF_NODES:,";
+                total_no_of_nodes++;
+                temp_data+=to_string(total_no_of_nodes);
+                temp_data+=",\n";
+            }
+            else if(line_count==1)//change the no of files
+            {
+                temp_data+="NO_OF_NODEFILE:,";
+                total_no_of_nodefile++;
+                temp_data+=to_string(total_no_of_nodefile);
+                temp_data+=",\n";
+            }
+            else
+            {
+                temp_data+=line;
+                temp_data+="\n";
+            }
+            line_count++;
         }
-        else if(line_count==1)//change the no of files
-        {
-            temp_data+="NO_OF_NODEFILE:,";
-            total_no_of_nodefile++;
-            temp_data+=to_string(total_no_of_nodefile);
-            temp_data+=",\n";
-        }
-        else
-        {
-            temp_data+=line;
-            temp_data+="\n";
-        }
-        line_count++;
     }
-    list_file_in.close();
+    list_file_in.clear();
     temp_data+=to_string(new_data.file_id);
     temp_data+=",";
     temp_data+=new_data.file_name;
@@ -223,9 +325,7 @@ void filehandler_class::add_new_data_to_node_filelist(file_info &new_data)
     else
     {   temp_data+=to_string(0);}
     temp_data+=",\n";
-    ofstream list_file_out(node_file_list_dir,ios::out);
-    list_file_out<<temp_data;
-    list_file_out.close();
+    encrypt_file(node_file_list_dir,temp_data);
 }
 
 void filehandler_class::load_nodes()
@@ -242,7 +342,8 @@ void filehandler_class::load_nodes()
     for(int a=0;a<node_file_list.size();a++)
     {
         node_file_dir=database_dir+node_file_list.at(a).file_name;
-        ifstream in_file(node_file_dir,ios::in);
+        stringstream in_file=decrypt_file(node_file_dir);
+
         line_count=0;
         while(in_file)
         {
@@ -303,7 +404,7 @@ void filehandler_class::load_nodes()
             }
             line_count++;
         }
-        in_file.close();
+        in_file.clear();
     }
 }
 
@@ -324,7 +425,7 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
 {
     bool file_found=check_if_file_is_present(file_name);
     file_name=database_dir+file_name;
-    ifstream in_file(file_name,ios::in);
+    stringstream in_file=decrypt_file(file_name);
     string temp_data,line,line2;
     unsigned int no_of_nodes_in_this_file,insertion_index=0;
     temp_data+="NO_OF_NODES_IN_THIS_FILE:,";
@@ -399,12 +500,9 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
     }
     if(!insertion_done)
     {   temp_data+=line2;}
-    
-    in_file.close();
+    in_file.clear();
 
-    ofstream out_file(file_name,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    encrypt_file(file_name,temp_data);
     node_meta_list.insert(make_pair(node.node_name,data_node_list.size()));
     data_node_list.push_back(node);
 
@@ -494,7 +592,7 @@ void filehandler_class::set_file_full_status(unsigned int file_id,bool file_full
         dir=relation_file_list_dir;
         relation_file_list.at(file_id).file_full=file_full;
     }
-    ifstream in_file(dir,ios::in);
+    stringstream in_file=decrypt_file(dir);
     string temp_data="",line;
     vector<string> line_list;
     while(in_file)
@@ -504,8 +602,8 @@ void filehandler_class::set_file_full_status(unsigned int file_id,bool file_full
         {   break;}
         line_list.push_back(line);
     }        
-    in_file.close();
-    ofstream out_file(dir,ios::out);
+    in_file.clear();
+
     for(int a=0;a<line_list.size();a++)
     {
         if((a-3)!=file_id)
@@ -543,15 +641,13 @@ void filehandler_class::set_file_full_status(unsigned int file_id,bool file_full
             {   temp_data+="0,\n";}
         }
     }
-    line_list.clear();
-    out_file<<temp_data;
-    out_file.close();
+    encrypt_file(dir,temp_data);
 }
 
 void filehandler_class::delete_node_data_from_file(string file_name,unsigned int node_id)
 {
     file_name=database_dir+file_name;
-    ifstream in_file(file_name,ios::in);
+    stringstream in_file=decrypt_file(file_name);
     unsigned int line_count=0,id=0,comma_count=0,no_of_nodes_in_this_file=0;
     string line,word,temp_data;
     while (in_file)
@@ -603,10 +699,8 @@ void filehandler_class::delete_node_data_from_file(string file_name,unsigned int
         }
         line_count++;
     }
-    in_file.close();
-    ofstream out_file(file_name,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    in_file.clear();
+    encrypt_file(file_name,temp_data);
 }
 
 void filehandler_class::delete_node(unsigned int node_id)
@@ -662,7 +756,7 @@ void filehandler_class::edit_node(data_node &node)
     data_node_list.at(node.node_id).relation_id_list=node.relation_id_list;
     //edit the node file
     string node_file_name=database_dir+node_file_list.at(node.node_id/no_of_nodes_in_one_node_file).file_name;
-    ifstream in_file(node_file_name,ios::in);
+    stringstream in_file=decrypt_file(node_file_name);
     string line,word,new_data;
     int line_count=0,comma_count=0;
     bool found=false;
@@ -705,10 +799,8 @@ void filehandler_class::edit_node(data_node &node)
         }
         line_count++;
     }
-    in_file.close();
-    ofstream out_file(node_file_name,ios::out);
-    out_file<<new_data;
-    out_file.close();
+    in_file.clear();
+    encrypt_file(node_file_name,new_data);
 }
 
 void filehandler_class::load_node_relation_type(int node_or_relation)
@@ -721,7 +813,7 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
 
     if(check_if_file_is_present(file_name))
     {
-        ifstream in_file(dir,ios::in);
+        stringstream in_file=decrypt_file(dir);
         unsigned int line_count=0,comma_count;
         string line,word;
         while(in_file)
@@ -729,7 +821,7 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
             getline(in_file,line);
             if(in_file.eof())
             {   break;}
-            if(line_count>0)
+            if(line_count>0 && line.length()>0 && !is_whitespace(line) && line.at(0)!=NULL)
             {   
                 node_relation_type obj;
                 comma_count=0;
@@ -764,7 +856,7 @@ void filehandler_class::load_node_relation_type(int node_or_relation)
             }
             line_count++;
         }
-        in_file.close();
+        in_file.clear();
     }
 }
 
@@ -782,16 +874,19 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
     int last_id=-1;
     if(file_found)
     {
-        ifstream in_file(dir,ios::in);
+        stringstream in_file=decrypt_file(dir);
         string line,word,last_line;
         while(in_file)
         {
             getline(in_file,line);
             if(in_file.eof())
             {   break;}
-            temp_data+=line;
-            temp_data+="\n";
-            last_line=line;
+            if(line.length()>0 && !is_whitespace(line) && line.at(0)!=NULL)
+            {
+                temp_data+=line;
+                temp_data+="\n";
+                last_line=line;
+            }   
         }
         for(int a=0;a<last_line.length();a++)
         {
@@ -803,7 +898,7 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
                 break;
             }
         }
-        in_file.close();
+        in_file.clear();
     }
     else
     {   
@@ -828,9 +923,7 @@ void filehandler_class::add_node_relation_type(string type,int node_or_relation,
         {   temp_data+="0,";}
     }
     temp_data+="\n";
-    ofstream out_file(dir,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    encrypt_file(dir,temp_data);
     node_relation_type obj;
     obj.id=last_id+1;
     obj.type_name=type;
@@ -852,7 +945,7 @@ void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_re
     else if(node_or_relation==1)
     {   dir=relation_type_file_dir;}
 
-    ifstream in_file(dir,ios::in);
+    stringstream in_file=decrypt_file(dir);
     string temp_data,line,word;
     unsigned int line_count=0;
     while(in_file)
@@ -860,35 +953,36 @@ void filehandler_class::delete_node_relation_type(unsigned int id,int node_or_re
         getline(in_file,line);
         if(in_file.eof())
         {   break;}
-        if(line_count>0)
+        if(line.length()>0 && !is_whitespace(line) && line.at(0)!=NULL)
         {
-            for(int a=0;a<line.length();a++)
+            if(line_count>0)
             {
-                if(line.at(a)!=',')
-                {   word.push_back(line.at(a));}
-                else
+                for(int a=0;a<line.length();a++)
                 {
-                    if(stoi(word)!=id)
-                    {   
-                        temp_data+=line;
-                        temp_data+="\n";
+                    if(line.at(a)!=',')
+                    {   word.push_back(line.at(a));}
+                    else
+                    {
+                        if(stoi(word)!=id)
+                        {   
+                            temp_data+=line;
+                            temp_data+="\n";
+                        }
+                        word="";
+                        break;
                     }
-                    word="";
-                    break;
                 }
             }
+            else
+            {   
+                temp_data+=line;
+                temp_data+="\n";
+            }
+            line_count++;
         }
-        else
-        {   
-            temp_data+=line;
-            temp_data+="\n";
-        }
-        line_count++;
     }
-    in_file.close();
-    ofstream out_file(dir,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    in_file.clear();
+    encrypt_file(dir,temp_data);
     //Binary search is done here
     if(node_or_relation==0)
     {
@@ -934,7 +1028,7 @@ void filehandler_class::edit_node_relation_type(node_relation_type &type_data,in
     else if(node_or_relation==1)
     {   dir=relation_type_file_dir;}
 
-    ifstream in_file(dir,ios::in);
+    stringstream in_file=decrypt_file(dir);
     string temp_data,line,word="";
     unsigned int line_count=0;
     while(in_file)
@@ -942,52 +1036,53 @@ void filehandler_class::edit_node_relation_type(node_relation_type &type_data,in
         getline(in_file,line);
         if(in_file.eof())
         {   break;}
-        if(line_count>0)
+        if(line.length()>0 && !is_whitespace(line) && line.at(0)!=NULL)
         {
-            for(int a=0;a<line.length();a++)
+            if(line_count>0)
             {
-                if(line.at(a)!=',')
-                {   word.push_back(line.at(a));}
-                else
-                {   
-                    if(stoi(word)!=type_data.id)
-                    {
-                        temp_data+=line;
-                        temp_data+="\n";
-                    }
+                for(int a=0;a<line.length();a++)
+                {
+                    if(line.at(a)!=',')
+                    {   word.push_back(line.at(a));}
                     else
-                    {
-                        temp_data+=to_string(type_data.id);
-                        temp_data+=",";
-                        temp_data+=type_data.type_name;
-                        if(node_or_relation==1)
+                    {   
+                        if(stoi(word)!=type_data.id)
                         {
-                            temp_data+=",";
-                            temp_data+=type_data.color_code;
-                            temp_data+=",";
-                            if(type_data.vectored)
-                            {   temp_data+=to_string(1);}
-                            else
-                            {   temp_data+=to_string(0);}
+                            temp_data+=line;
+                            temp_data+="\n";
                         }
-                        temp_data+=",\n";
+                        else
+                        {
+                            temp_data+=to_string(type_data.id);
+                            temp_data+=",";
+                            temp_data+=type_data.type_name;
+                            if(node_or_relation==1)
+                            {
+                                temp_data+=",";
+                                temp_data+=type_data.color_code;
+                                temp_data+=",";
+                                if(type_data.vectored)
+                                {   temp_data+=to_string(1);}
+                                else
+                                {   temp_data+=to_string(0);}
+                            }
+                            temp_data+=",\n";
+                        }
+                        word="";
+                        break;
                     }
-                    word="";
-                    break;
                 }
             }
+            else
+            {
+                temp_data+=line;
+                temp_data+="\n";
+            }
+            line_count++;
         }
-        else
-        {
-            temp_data+=line;
-            temp_data+="\n";
-        }
-        line_count++;
     }
-    in_file.close();
-    ofstream out_file(dir,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    in_file.clear();
+    encrypt_file(dir,temp_data);
     //Binary search is done here
     if(node_or_relation==0)
     {
@@ -1040,7 +1135,7 @@ void filehandler_class::load_relations()
     for(int a=0;a<relation_file_list.size();a++)
     {
         dir=database_dir+relation_file_list.at(a).file_name;
-        ifstream in_file(dir,ios::in);
+        stringstream in_file=decrypt_file(dir);
         while(in_file)
         {
             getline(in_file,line);
@@ -1118,7 +1213,7 @@ void filehandler_class::load_relations()
                 is_prev_id_neg=false;
             }
         }
-        in_file.close();
+        in_file.clear();
     }
 }
 
@@ -1126,7 +1221,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
 {
     bool file_found=check_if_file_is_present(file_name);
     file_name=database_dir+file_name;
-    ifstream in_file(file_name,ios::in);
+    stringstream in_file=decrypt_file(file_name);
     string temp_data,line;
     unsigned int no_of_relation_in_this_file,relation_count=0;
     temp_data+="NO_OF_RELATIONS_IN_THIS_FILE:,";
@@ -1232,10 +1327,8 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
         }
         file_found=true;
     }
-    in_file.close();
-    ofstream out_file(file_name,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    in_file.clear();
+    encrypt_file(file_name,temp_data);
     last_entered_relation=relation;
     return no_of_relation_in_this_file;
 }
@@ -1243,7 +1336,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
 void filehandler_class::add_new_data_to_relation_file_list(file_info &new_file)
 {
     relation_file_list.push_back(new_file);
-    ifstream in_file(relation_file_list_dir,ios::in);
+    stringstream in_file=decrypt_file(relation_file_list_dir);
     unsigned int line_count=0;
     string temp_data,line;
     while(in_file)
@@ -1251,28 +1344,31 @@ void filehandler_class::add_new_data_to_relation_file_list(file_info &new_file)
         getline(in_file,line);
         if(in_file.eof())
         {   break;}
-        if(line_count==0)
+        if(line.length()>0 && !is_whitespace(line) && line.at(0)!=NULL)
         {
-            temp_data+="NO_OF_RELATIONS:,";
-            total_no_of_relations++;//this value will be read druing the relation loading process.
-            temp_data+=to_string(total_no_of_relations);
-            temp_data+=",\n";
+            if(line_count==0)
+            {
+                temp_data+="NO_OF_RELATIONS:,";
+                total_no_of_relations++;//this value will be read druing the relation loading process.
+                temp_data+=to_string(total_no_of_relations);
+                temp_data+=",\n";
+            }
+            else if(line_count==1)
+            {
+                temp_data+="NO_OF_RELATIONFILE:,";
+                total_on_of_relationfile++;
+                temp_data+=to_string(total_on_of_relationfile);
+                temp_data+=",\n";
+            }
+            else 
+            {
+                temp_data+=line;
+                temp_data+="\n";
+            }
+            line_count++;
         }
-        else if(line_count==1)
-        {
-            temp_data+="NO_OF_RELATIONFILE:,";
-            total_on_of_relationfile++;
-            temp_data+=to_string(total_on_of_relationfile);
-            temp_data+=",\n";
-        }
-        else 
-        {
-            temp_data+=line;
-            temp_data+="\n";
-        }
-        line_count++;
     }
-    in_file.close();
+    in_file.clear();
     temp_data+=to_string(new_file.file_id);
     temp_data+=",";
     temp_data+=new_file.file_name;
@@ -1286,9 +1382,7 @@ void filehandler_class::add_new_data_to_relation_file_list(file_info &new_file)
     else
     {   temp_data+=to_string(0);}
     temp_data+=",\n";
-    ofstream file_out(relation_file_list_dir,ios::out);
-    file_out<<temp_data;
-    file_out.close();
+    encrypt_file(relation_file_list_dir,temp_data);
 }
 
 void filehandler_class::add_new_relation(relation &relation)
@@ -1378,7 +1472,7 @@ void filehandler_class::delete_relation(unsigned int relation_id)
     if(relation_list.size()-1>=relation_id)
     {
         string file_dir=database_dir+relation_file_list.at(relation_id/no_of_relation_in_one_file).file_name;
-        ifstream in_file(file_dir,ios::in);
+        stringstream in_file=decrypt_file(file_dir);
         string word,temp_data,line;
         unsigned int comma_count=0,current_id;
         unsigned int no_of_relation_in_this_file;
@@ -1433,10 +1527,8 @@ void filehandler_class::delete_relation(unsigned int relation_id)
                 temp_data+="\n";
             }
         }
-        in_file.close();
-        ofstream out_file(file_dir,ios::out);
-        out_file<<temp_data;
-        out_file.close();
+        in_file.clear();
+        encrypt_file(file_dir,temp_data);
         //post processing
         total_no_of_relations--;
         if(gap_relation_id_list.size()==0)
@@ -1473,7 +1565,7 @@ void filehandler_class::edit_relation(relation& relation_obj)
     relation_list.at(relation_obj.relation_id).weight=relation_obj.weight;
     //write the changes to the file
     string file_dir=database_dir+relation_file_list.at(relation_obj.relation_id/no_of_relation_in_one_file).file_name;
-    ifstream infile(file_dir,ios::in);
+    stringstream infile=decrypt_file(file_dir);
     string word,line,temp_data;
     int comma_count=0,current_rid;
     while(infile)
@@ -1554,8 +1646,6 @@ void filehandler_class::edit_relation(relation& relation_obj)
             temp_data+="\n";
         }
     }
-    infile.close();
-    ofstream out_file(file_dir,ios::out);
-    out_file<<temp_data;
-    out_file.close();
+    infile.clear();
+    encrypt_file(file_dir,temp_data);
 }

@@ -73,6 +73,7 @@ class Login extends React.Component
         {
             db_dir_label:'Browse Database',
             db_dir:'',
+            file_name:'',
             password:'',
             pass_textfield_close_button:'none',
             confirm_pass:'',
@@ -164,6 +165,7 @@ class Login extends React.Component
             else
             {   login_create_code=0;}
             var data={
+                file_name:this.state.file_name,
                 db_dir:this.state.db_dir,
                 password:this.state.password,
                 login_create_code:login_create_code
@@ -175,7 +177,15 @@ class Login extends React.Component
     componentDidMount() 
     {
         window.ipcRenderer.on('odb_dir',(event,data)=>
-        {   this.setState({db_dir:data.file_dir})});
+        {   this.setState({db_dir:data.file_dir,file_name:data.file_name});});
+
+        window.ipcRenderer.on('login_error',(event,data)=>
+        {   
+            this.setState({
+                alert_dialog_text:data.error_statement,
+                alert_dialog_open:true
+            });
+        });
     }
 
     render()

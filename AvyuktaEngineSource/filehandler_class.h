@@ -7,38 +7,51 @@
 #include<dirent.h>
 #include<algorithm>
 #include "data_structure_definition.h"
+#include "aes.h"
 
 #include<stdlib.h>
 #include<unistd.h>
+#include<sstream>
+
+using std::ofstream;
+using std::ifstream;
+using std::fstream;
+using std::ios;
+using std::stringstream;
 
 class filehandler_class
 {
     private:
+    string password;
     //dir data
-    string database_dir="./database/";
-    string node_file_list_dir="./database/node_file_list.csv";
-    string relation_file_list_dir="./database/relation_file_list.csv";
-    string relation_type_file_dir="./database/relation_type_list.csv";
-    string node_type_file_dir="./database/node_type_list.csv";
+    string database_dir;
+    string node_file_list_dir;//="./database/node_file_list.csv";
+    string relation_file_list_dir;//="./database/relation_file_list.csv";
+    string relation_type_file_dir;//="./database/relation_type_list.csv";
+    string node_type_file_dir;//="./database/node_type_list.csv";
     //node related data
     vector<file_info> node_file_list;
     vector<unsigned int> gap_node_id_list;
     //relation related data
     vector<unsigned int> gap_relation_id_list;
     vector<file_info> relation_file_list;
-
+    //file encryption related functions
+    stringstream decrypt_file(string file_dir);
+    void encrypt_file(string file_dir,string data);
+    //mics functions
+    bool is_whitespace(const string& s); 
     void calc_node_list_size(float);
     bool check_if_file_is_present(string);
     //node related private functions
-    unsigned int write_nodedata_to_file(string file_name,data_node&);//ok tested
-    void delete_node_data_from_file(string file_name,unsigned int node_index);//ok tested
+    unsigned int write_nodedata_to_file(string file_name,data_node&);//aes ok tested
+    void delete_node_data_from_file(string file_name,unsigned int node_index);//aes ok tested
     void add_new_data_to_node_filelist(file_info&);//ok tested
     //relation related file
     unsigned int write_relationdata_to_file(string file_name,relation &relation);
     void add_new_data_to_relation_file_list(file_info &new_file);
     //both node_relation_functions
-    void load_node_relation_file_list(int node_or_relation);//ok tested 0means node 1 means relation.
-    void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//ok tested
+    void load_node_relation_file_list(int node_or_relation);//aes ok tested 0 means node 1 means relation.
+    void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//aes ok tested
 
     public:
     //type related data
@@ -52,7 +65,7 @@ class filehandler_class
     vector<relation> relation_list;
     relation last_entered_relation;
     //settings data
-    string settings_file_dir="./database/settings.csv";
+    string settings_file_dir;//="./database/settings.csv";
     unsigned int total_no_of_nodes;
     unsigned int total_no_of_nodefile;
     float percent_of_node_in_memory;
@@ -65,29 +78,32 @@ class filehandler_class
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
     //file related data
     bool encryption;
+    void close_db();//ok tested
+    void set_password_and_dir(string current_db_dir,string password);
 
     //settings related functions
-    void change_settings(string file_dir,string settings_name,string settings_value);//ok tested, Function for changing individual settings of a file.
-    void load_db_settings();//ok tested
+    void change_settings(string file_dir,string settings_name,string settings_value);//aes ok tested, Function for changing individual settings of a file.
+    error load_db_settings();//ok tested
     //node related public functions
-    void add_new_node(data_node&);//ok tested
-    void load_nodes();//ok tested
-    void delete_node(unsigned int node_id);//relation part need to be implemented
-    void edit_node(data_node &node);
+    void add_new_node(data_node&);//aes ok tested
+    void load_nodes();//aes ok tested
+    void delete_node(unsigned int node_id);//aes ok tested
+    void edit_node(data_node &node);//aes ok tested
     //node relation type related functions
-    void load_node_relation_type(int node_or_relation);//ok tested 0 means node 1 means relation.
-    void add_node_relation_type(string,int,string color_code,bool vectored);//ok tested
-    void delete_node_relation_type(unsigned int id,int node_or_relation);//ok tested
-    void edit_node_relation_type(node_relation_type &type_data,int node_or_relation);
+    void load_node_relation_type(int node_or_relation);//aes ok tested 0 means node 1 means relation.
+    void add_node_relation_type(string,int,string color_code,bool vectored);//aes ok tested
+    void delete_node_relation_type(unsigned int id,int node_or_relation);//aes ok tested
+    void edit_node_relation_type(node_relation_type &type_data,int node_or_relation);//aes ok tested
     //relation related functions
-    void load_relations();
-    void add_new_relation(relation&);
-    void delete_relation(unsigned int relation_id);
-    void edit_relation(relation& relation_obj);
+    void load_relations();//aes ok tested
+    void add_new_relation(relation&);//aes ok tested
+    void delete_relation(unsigned int relation_id);//aes ok tested
+    void edit_relation(relation& relation_obj);//aes ok tested
 
     //test functions
     void test()//for settings
     {
+        cout<<"\n\nsettings:--------\n";
         cout<<"percent_nodes_in_memory="<<percent_of_node_in_memory<<endl;
         cout<<"encryption="<<encryption<<endl;
         cout<<"author="<<authors[0]<<endl;
@@ -97,6 +113,7 @@ class filehandler_class
 
     void test2()//for node file list
     {
+        cout<<"\n\nnode file list:-----\n";
         for(int a=0;a<node_file_list.size();a++)
         {
             cout<<node_file_list.at(a).file_id<<","<<node_file_list.at(a).file_name<<","<<node_file_list.at(a).start_id<<","<<node_file_list.at(a).end_id<<endl;
@@ -105,6 +122,7 @@ class filehandler_class
 
     void test3()//for node data and gap node data.
     {
+        cout<<"\n\nnode data list:----------\n";
         for(int a=0;a<data_node_list.size();a++)
         {
             cout<<data_node_list.at(a).node_id<<","<<data_node_list.at(a).node_name<<","<<data_node_list.at(a).node_type_id<<",";
@@ -123,7 +141,7 @@ class filehandler_class
 
     void test4()//for type functions data
     {
-        cout<<"node type list:-\n";
+        cout<<"\n\nnode type list:-\n";
         for(int a=0;a<node_types.size();a++)
         {
             cout<<"id="<<node_types.at(a).id<<" type="<<node_types.at(a).type_name<<endl;
@@ -137,7 +155,7 @@ class filehandler_class
 
     void test5()//for node multimap
     {
-        cout<<"\n\n";
+        cout<<"\n\nnode multimap:--------\n";
         multimap<string,int>::iterator i;
         i=node_meta_list.begin();
         for(;i!=node_meta_list.end();i++)
@@ -148,7 +166,7 @@ class filehandler_class
 
     void test6()//for relation file list
     {
-        cout<<"\ntotal no of_relations="<<total_no_of_relations;
+        cout<<"\n\ntotal no of_relations="<<total_no_of_relations;
         cout<<"\nno of relation file="<<total_on_of_relationfile;
         cout<<"\nfiles:-";
         for(int a=0;a<relation_file_list.size();a++)
@@ -159,7 +177,7 @@ class filehandler_class
 
     void test7()//for relation data and relation gap data
     {
-        cout<<"\nRelation:-";
+        cout<<"\n\nRelation:-----------";
         for(int a=0;a<relation_list.size();a++)
         {
             if(!relation_list.at(a).gap_relation)

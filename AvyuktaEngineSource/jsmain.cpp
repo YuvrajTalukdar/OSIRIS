@@ -15,7 +15,6 @@ namespace calculate{
     using v8::Array;
 }
 
-using namespace std;
 using namespace calculate;
 
 database_class db;
@@ -25,8 +24,50 @@ Local<Object> relation_to_v8_relation(Isolate* isolate,relation relation_data);
 Local<Object> node_to_v8_node(Isolate* isolate,data_node node);
 relation v8_to_relation(const FunctionCallbackInfo<Value>& args);
 
+void shutdown_engine(const FunctionCallbackInfo<Value>& args)
+{   db.close_db();}
+
+void create_new_odb(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::String> v8_dir=args[0].As<v8::String>();
+    v8::String::Utf8Value str(isolate,v8_dir);
+    string odb_dir(*str);
+
+    v8::Local<v8::String> v8_file_name=args[1].As<v8::String>();
+    v8::String::Utf8Value str2(isolate, v8_file_name);
+    string file_name(*str2);
+
+    v8::Local<v8::String> v8_password=args[2].As<v8::String>();
+    v8::String::Utf8Value str3(isolate, v8_password);
+    string password(*str3);
+    db.create_odb(odb_dir,file_name,password);
+}
+
 void initialize_engine(const FunctionCallbackInfo<Value>& args)
-{   db.initialize_db();}
+{   
+    Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::String> v8_dir=args[0].As<v8::String>();
+    v8::String::Utf8Value str(isolate,v8_dir);
+    string odb_dir(*str);
+
+    v8::Local<v8::String> v8_password=args[1].As<v8::String>();
+    v8::String::Utf8Value str2(isolate, v8_password);
+    string password(*str2);
+    
+    error err=db.open_odb(odb_dir,password);
+    Local<Object> obj=Object::New(isolate);
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Number> v8_error_code=Number::New(v8::Isolate::GetCurrent(),err.error_code);
+
+    v8::Local<v8::String> v8_error_statement;
+    v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),err.error_statement.c_str()).ToLocal(&v8_error_statement);
+    
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"error_code").ToLocalChecked(),v8_error_code).FromJust();
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"error_statement").ToLocalChecked(),v8_error_statement).FromJust();
+
+    args.GetReturnValue().Set(obj);   
+}
 
 void load_settings(const FunctionCallbackInfo<Value>& args)//converts settings data to v8 equivalent and loads them in the return obj.
 {
@@ -336,6 +377,8 @@ void edit_node_relation_type(const FunctionCallbackInfo<Value>& args)
 
 void Initialize(Local<Object> exports)
 {
+    NODE_SET_METHOD(exports,"shutdown_engine",shutdown_engine);
+    NODE_SET_METHOD(exports,"create_new_odb",create_new_odb);   
     NODE_SET_METHOD(exports,"initialize_engine",initialize_engine);
     NODE_SET_METHOD(exports,"load_settings",load_settings);
     NODE_SET_METHOD(exports,"change_settings",change_settings);

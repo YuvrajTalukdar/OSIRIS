@@ -11,6 +11,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
@@ -659,6 +660,12 @@ class Main extends React.Component
                                     }
                                 }>
                                     <SpeedIcon/>
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Close Database">
+                                <IconButton color="primary"
+                                onClick={e=>{window.ipcRenderer.send('close_db',"");}}>
+                                    <PowerSettingsNewIcon/>
                                 </IconButton>
                             </Tooltip>
                         </Grid>
