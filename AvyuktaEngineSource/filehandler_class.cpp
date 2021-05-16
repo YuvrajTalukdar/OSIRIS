@@ -9,6 +9,12 @@ bool filehandler_class::is_whitespace(const string& s)
 void filehandler_class::close_db()
 {
     password="";
+    database_dir="";
+    node_file_list_dir="";
+    relation_file_list_dir="";
+    relation_type_file_dir="";
+    node_type_file_dir="";
+
     node_file_list.clear();
     gap_node_id_list.clear();
     gap_relation_id_list.clear();
@@ -18,6 +24,7 @@ void filehandler_class::close_db()
     data_node_list.clear();
     node_meta_list.clear();
     relation_list.clear();
+    authors.clear();
 }
 
 void filehandler_class::set_password_and_dir(string current_db_dir,string pass)

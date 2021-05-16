@@ -171,6 +171,16 @@ class Login extends React.Component
                 login_create_code:login_create_code
             }
             window.ipcRenderer.send('login_create',data);
+            if(login_create_code==1)
+            {
+                this.setState({
+                    db_dir:'',
+                    password:'',
+                    confirm_pass:'',
+                    confirm_pass_textfield_close_button:'none',
+                    pass_textfield_close_button:'none',
+                })
+            }
         }
     }
 
@@ -179,7 +189,7 @@ class Login extends React.Component
         window.ipcRenderer.on('odb_dir',(event,data)=>
         {   this.setState({db_dir:data.file_dir,file_name:data.file_name});});
 
-        window.ipcRenderer.on('login_error',(event,data)=>
+        window.ipcRenderer.on('login_create_error',(event,data)=>
         {   
             this.setState({
                 alert_dialog_text:data.error_statement,

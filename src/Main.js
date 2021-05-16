@@ -685,6 +685,7 @@ class Main extends React.Component
                                 <AddIcon/>
                             </IconButton>
                         </Tooltip>
+                        {/*
                         <Tooltip title="Search">
                             <IconButton color="primary">
                                 <SearchIcon/>
@@ -695,16 +696,19 @@ class Main extends React.Component
                                 <AccountTreeIcon/>
                             </IconButton>
                         </Tooltip>
+                        */}
                         <Tooltip title="Relation and Node Properties">
                             <IconButton color={this.state.relation_node_properties_icon_color} onClick={()=>this.handle_drawer(3)}>
                                 <CategoryIcon/>
                             </IconButton>
                         </Tooltip>
+                        {/*
                         <Tooltip title="Collaborate">
                             <IconButton color="primary">
                                 <GroupIcon/>
                             </IconButton>
                         </Tooltip>
+                        */}
                     </Grid>
                 </Drawer>   
                 {Add_Network(this)}

@@ -37,8 +37,13 @@ function add_node_type()
                 vectored:false,
             };
             window.ipcRenderer.send('add_node_relation_type',data);
+            var id;
+            if(node_type_list.length==0)
+            {   id=0;}
+            else
+            {   id=node_type_list[node_type_list.length-1].id+1;}
             const newData={
-                id:node_type_list[node_type_list.length-1].id+1,
+                id:id,
                 node_type:this.state.node_type_name.toUpperCase(),
                 show:true,
             }
@@ -258,8 +263,13 @@ function add_relation_type()
                 vectored:this.state.vectored_relation
             };
             window.ipcRenderer.send('add_node_relation_type',data);
+            var id;
+            if(relation_type_list.length==0)
+            {   id=0;}
+            else
+            {   id=relation_type_list[relation_type_list.length-1].id+1;}
             const newData={
-                id:relation_type_list[relation_type_list.length-1].id+1,
+                id:id,
                 relation_type:this.state.relation_type_name.toUpperCase(),
                 color_code:this.state.color_picker_hex_value,
                 show:true,

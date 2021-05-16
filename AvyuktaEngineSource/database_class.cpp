@@ -42,7 +42,7 @@ error database_class::create_odb(string dir,string database_name1,string passwor
 {
     error obj;
     int empty=is_dir_empty(dir);
-    if(empty==0)
+    if(empty==1)
     {
         //create odb file
         database_name=database_name1;    
@@ -83,7 +83,7 @@ error database_class::create_odb(string dir,string database_name1,string passwor
 
         obj.error_code-1;
     }
-    else if(empty==1)
+    else if(empty==0)
     {
         obj.error_code=1;
         obj.error_statement=error_statement[1];

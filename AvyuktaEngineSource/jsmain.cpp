@@ -41,7 +41,19 @@ void create_new_odb(const FunctionCallbackInfo<Value>& args)
     v8::Local<v8::String> v8_password=args[2].As<v8::String>();
     v8::String::Utf8Value str3(isolate, v8_password);
     string password(*str3);
-    db.create_odb(odb_dir,file_name,password);
+
+    error err=db.create_odb(odb_dir,file_name,password);
+    Local<Object> obj=Object::New(isolate);
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Number> v8_error_code=Number::New(v8::Isolate::GetCurrent(),err.error_code);
+
+    v8::Local<v8::String> v8_error_statement;
+    v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),err.error_statement.c_str()).ToLocal(&v8_error_statement);
+    
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"error_code").ToLocalChecked(),v8_error_code).FromJust();
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"error_statement").ToLocalChecked(),v8_error_statement).FromJust();
+
+    args.GetReturnValue().Set(obj);   
 }
 
 void initialize_engine(const FunctionCallbackInfo<Value>& args)
