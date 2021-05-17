@@ -1,5 +1,5 @@
 import React,{createRef} from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Popover,Typography,Slider} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Popover,Box,Typography,Slider} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import theme from './theme';
@@ -12,6 +12,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
+import CloseIcon from '@material-ui/icons/Close';
 
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
@@ -214,6 +215,13 @@ class Main extends React.Component
             permission_dialog_text:"",
             alert_dialog_open:false,
             alert_dialog_text:"",
+            change_pass_dialog:false,
+            current_pass:'',
+            current_pass_close_btn_show:'none',
+            new_pass1:'',
+            new_pass1_close_btn_show:'none',
+            new_pass2:'',
+            new_pass2_close_btn_show:'none',
             /*Other UI components*/
             //search_node_bar:'', 
             net_ref:createRef(),
@@ -248,6 +256,7 @@ class Main extends React.Component
 
         this.rgbToHex=this.rgbToHex.bind(this);
         this.getRndInteger=this.getRndInteger.bind(this);
+        this.change_password=this.change_password.bind(this);
 
         add_node_relation_props_func(Main);
         add_add_panel_func(Main);
@@ -280,6 +289,46 @@ class Main extends React.Component
     relation_type_id=-1;
     url_list=[];
     source_local=[];
+
+    change_password()
+    {
+        if(this.state.current_pass.length==0)
+        {
+            this.setState({
+                alert_dialog_text:"Enter the current Password !",
+                alert_dialog_open:true
+            });
+        }
+        else if(this.state.new_pass1.length==0)
+        {
+            this.setState({
+                alert_dialog_text:"Enter the new password !",
+                alert_dialog_open:true
+            });
+        }
+        else if(this.state.new_pass2.length==0)
+        {
+            this.setState({
+                alert_dialog_text:"Type the new password again !",
+                alert_dialog_open:true
+            });
+        }
+        else if(this.state.new_pass1.localeCompare(this.state.new_pass2)!=0)
+        {
+            this.setState({
+                alert_dialog_text:"Password didnot match !",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {
+            var data={
+                current_pass:this.state.current_pass,
+                new_pass:this.state.new_pass1,
+            };
+            window.ipcRenderer.send('change_password', data);
+        }
+    }
 
     reset_context_menu_settings()
     {
@@ -459,7 +508,7 @@ class Main extends React.Component
     }
 
     add_main_window_data(data)
-    {   console.log('test')
+    {   
         var a;
         for(a=0;a<data.node_type_list.length;a++)
         {   data.node_type_list[a].show=true;}
@@ -492,6 +541,30 @@ class Main extends React.Component
         window.ipcRenderer.on('add_file_dir',(event,data)=>
         {   this.add_file_dir(data);});
 
+        window.ipcRenderer.on('change_pass_dialog',(event,data)=>
+        {   this.setState({
+            change_pass_dialog:true,
+            current_pass:'',
+            new_pass1:'',
+            new_pass2:'',
+            new_pass1_close_btn_show:'none',
+            new_pass2_close_btn_show:'none',
+            current_pass_close_btn_show:'none'
+        })});
+
+        window.ipcRenderer.on('password_change_status',(event,data)=>
+        {      
+            if(data.error_code!=-1)
+            {
+                this.setState({
+                    alert_dialog_text:data.error_statement,
+                    alert_dialog_open:true
+                });
+            }
+            else
+            {   this.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}
+        });
+
         var dummy="";
         window.ipcRenderer.send('get_main_window_data', dummy);
 
@@ -504,6 +577,151 @@ class Main extends React.Component
         <ThemeProvider theme={theme}>
             <header className="Main_Style">
                 {/*-----------------------------------------Dialogs----------------------------------------------------- */ }
+                {/*Password change dialog*/}
+                <Dialog
+                    open={this.state.change_pass_dialog}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                    PaperProps={{
+                        style:{
+                            backgroundColor:'#191919'
+                        }
+                    }}
+                >
+                    <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Change Password</span></DialogTitle>
+                    <DialogContent>
+                        <TextField 
+                            label='Current Password'
+                            variant='outlined' 
+                            size='small' 
+                            value={this.state.current_pass}
+                            type="password"
+                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
+                            onChange={
+                                e => 
+                                {
+                                    var btn_visible='';
+                                    if(e.target.value.length>0)
+                                    {   btn_visible='block';}
+                                    else
+                                    {   btn_visible='none';}
+                                    this.setState({current_pass:e.target.value,current_pass_close_btn_show:btn_visible});
+                                }}                                            
+                            style={{width:300}} 
+                            InputLabelProps={
+                            {   className: this.props.classes.textfield_label}}
+                            InputProps={{
+                                className: this.props.classes.valueTextField,
+                                classes:{
+                                    root:this.props.classes.root,
+                                    notchedOutline: this.props.classes.valueTextField,
+                                    disabled: this.props.classes.valueTextField
+                                },
+                                endAdornment: 
+                                (
+                                    <Box display={this.state.current_pass_close_btn_show}> 
+                                        <IconButton color='primary' size='small'
+                                        onClick={e=>{this.setState({current_pass:"",current_pass_close_btn_show:'none'});}}>
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Box> 
+                                ),
+                            }}
+                        />
+                    </DialogContent>
+                    <DialogContent>
+                        <TextField 
+                            label='New Password'
+                            variant='outlined' 
+                            size='small' 
+                            value={this.state.new_pass1}
+                            type="password"
+                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
+                            onChange={
+                                e => 
+                                {
+                                    var btn_visible='';
+                                    if(e.target.value.length>0)
+                                    {   btn_visible='block';}
+                                    else
+                                    {   btn_visible='none';}
+                                    this.setState({new_pass1:e.target.value,new_pass1_close_btn_show:btn_visible});
+                                }}                                            
+                            style={{width:300}} 
+                            InputLabelProps={
+                            {   className: this.props.classes.textfield_label}}
+                            InputProps={{
+                                className: this.props.classes.valueTextField,
+                                classes:{
+                                    root:this.props.classes.root,
+                                    notchedOutline: this.props.classes.valueTextField,
+                                    disabled: this.props.classes.valueTextField
+                                },
+                                endAdornment: 
+                                (
+                                    <Box display={this.state.new_pass1_close_btn_show}> 
+                                        <IconButton color='primary' size='small'
+                                        onClick={e=>{this.setState({new_pass1:"",new_pass1_close_btn_show:'none'});}}>
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Box> 
+                                ),
+                            }}
+                        />
+                    </DialogContent>
+                    <DialogContent>
+                        <TextField 
+                            label='Confirm Password'
+                            variant='outlined' 
+                            size='small' 
+                            value={this.state.new_pass2}
+                            type="password"
+                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
+                            onChange={
+                                e => 
+                                {
+                                    var btn_visible='';
+                                    if(e.target.value.length>0)
+                                    {   btn_visible='block';}
+                                    else
+                                    {   btn_visible='none';}
+                                    this.setState({new_pass2:e.target.value,new_pass2_close_btn_show:btn_visible});
+                                }}                                            
+                            style={{width:300}} 
+                            InputLabelProps={
+                            {   className: this.props.classes.textfield_label}}
+                            InputProps={{
+                                className: this.props.classes.valueTextField,
+                                classes:{
+                                    root:this.props.classes.root,
+                                    notchedOutline: this.props.classes.valueTextField,
+                                    disabled: this.props.classes.valueTextField
+                                },
+                                endAdornment: 
+                                (
+                                    <Box display={this.state.new_pass2_close_btn_show}> 
+                                        <IconButton color='primary' size='small'
+                                        onClick={e=>{this.setState({new_pass2:"",new_pass2_close_btn_show:'none'});}}>
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Box> 
+                                ),
+                            }}
+                        />
+                    </DialogContent>
+                    
+                    <DialogActions>
+                        <Button onClick={e=>{this.change_password()}} color="primary">
+                            Change Password
+                        </Button>
+                        <Button onClick={e=>{this.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}} color="primary">
+                            Cancel
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 {/*Alert Dialog*/}
                 <Dialog
                     open={this.state.alert_dialog_open}

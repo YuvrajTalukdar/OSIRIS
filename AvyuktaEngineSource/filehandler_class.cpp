@@ -1,7 +1,12 @@
 #include "filehandler_class.h"
 
-void filehandler_class::calc_node_list_size(float percent)
-{   no_of_nodes_in_memory=total_no_of_nodes*percent/100;}
+bool filehandler_class::password_same(string current_passowrd)
+{
+    if(strcmp(password.c_str(),current_passowrd.c_str())==0)
+    {   return true;}
+    else
+    {   return false;}
+}
 
 bool filehandler_class::is_whitespace(const string& s) 
 {   return std::all_of(s.begin(), s.end(), isspace);}
@@ -27,6 +32,51 @@ void filehandler_class::close_db()
     authors.clear();
 }
 
+void filehandler_class::change_password(string new_password)
+{
+    string temp_dir=database_dir+"/temp_files";
+    decrypted_data obj;
+    //setting the new password
+    string old_password=password;
+    //re-encrypting node_file_list
+    obj=decrypt_file_text(node_file_list_dir);
+    password=new_password;
+    encrypt_file(temp_dir+"/node_file_list.csv",obj.decrypted_text);
+    //re-encrypting relation_file_list
+    password=old_password;
+    obj=decrypt_file_text(relation_file_list_dir);
+    password=new_password;
+    encrypt_file(temp_dir+"/relation_file_list.csv",obj.decrypted_text);
+    //re-encrypting node_type_file
+    password=old_password;
+    obj=decrypt_file_text(node_type_file_dir);
+    password=new_password;
+    encrypt_file(temp_dir+"/node_type_list.csv",obj.decrypted_text);
+    //re-encrypting relation_type_file
+    password=old_password;
+    obj=decrypt_file_text(relation_type_file_dir);
+    password=new_password;
+    encrypt_file(temp_dir+"/relation_type_list.csv",obj.decrypted_text);
+
+    //re-encrypting node_files
+    string file_dir;
+    for(int a=0;a<node_file_list.size();a++)
+    {
+        password=old_password;
+        obj=decrypt_file_text(database_dir+"/"+node_file_list.at(a).file_name);
+        password=new_password;
+        encrypt_file(temp_dir+"/"+node_file_list.at(a).file_name,obj.decrypted_text);
+    }
+    //re-encrypting relation_files
+    for(int a=0;a<relation_file_list.size();a++)
+    {
+        password=old_password;
+        obj=decrypt_file_text(database_dir+"/"+relation_file_list.at(a).file_name);
+        password=new_password;
+        encrypt_file(temp_dir+"/"+relation_file_list.at(a).file_name,obj.decrypted_text);
+    }
+}
+
 void filehandler_class::set_password_and_dir(string current_db_dir,string pass)
 {   
     password=pass;
@@ -41,6 +91,24 @@ void filehandler_class::set_password_and_dir(string current_db_dir,string pass)
     node_type_file_dir.append("node_type_list.csv");
     settings_file_dir=current_db_dir;
     settings_file_dir.append("settings.csv");
+}
+
+decrypted_data filehandler_class::decrypt_file_text(string file_dir)
+{
+    ifstream in_file(file_dir,ios::in);
+    string data,line;
+    while(in_file)
+    {
+        getline(in_file,line);
+        data+=line;
+        data+="\n";
+        if(in_file.eof())
+        {   break;}
+    }
+    in_file.close();
+    decrypted_data obj=decrypt_text(data,password);
+    
+    return obj;
 }
 
 stringstream filehandler_class::decrypt_file(string file_dir)

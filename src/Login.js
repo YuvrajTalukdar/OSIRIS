@@ -241,7 +241,6 @@ class Login extends React.Component
                             onClick={e=>{this.handle_login_create_mode(0);}}>Login to DB</Button>
                         </Grid>
                         <Grid container direction="column" xs={12} spacing={5} justify="center" alignItems="center">
-                            
                             <TextField 
                             label={this.state.db_dir_label}
                             variant='outlined' 

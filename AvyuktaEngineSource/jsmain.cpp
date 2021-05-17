@@ -24,6 +24,32 @@ Local<Object> relation_to_v8_relation(Isolate* isolate,relation relation_data);
 Local<Object> node_to_v8_node(Isolate* isolate,data_node node);
 relation v8_to_relation(const FunctionCallbackInfo<Value>& args);
 
+void change_password(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+
+    v8::Local<v8::String> v8_current_password=args[0].As<v8::String>();
+    v8::String::Utf8Value str1(isolate, v8_current_password);
+    string current_password(*str1);
+
+    v8::Local<v8::String> v8_new_password=args[1].As<v8::String>();
+    v8::String::Utf8Value str2(isolate, v8_new_password);
+    string new_password(*str2);
+
+    error err=db.change_password(current_password,new_password);
+    Local<Object> obj=Object::New(isolate);
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Number> v8_error_code=Number::New(v8::Isolate::GetCurrent(),err.error_code);
+
+    v8::Local<v8::String> v8_error_statement;
+    v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),err.error_statement.c_str()).ToLocal(&v8_error_statement);
+    
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"error_code").ToLocalChecked(),v8_error_code).FromJust();
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"error_statement").ToLocalChecked(),v8_error_statement).FromJust();
+
+    args.GetReturnValue().Set(obj);
+}
+
 void shutdown_engine(const FunctionCallbackInfo<Value>& args)
 {   db.close_db();}
 
@@ -389,6 +415,7 @@ void edit_node_relation_type(const FunctionCallbackInfo<Value>& args)
 
 void Initialize(Local<Object> exports)
 {
+    NODE_SET_METHOD(exports,"change_password",change_password);
     NODE_SET_METHOD(exports,"shutdown_engine",shutdown_engine);
     NODE_SET_METHOD(exports,"create_new_odb",create_new_odb);   
     NODE_SET_METHOD(exports,"initialize_engine",initialize_engine);

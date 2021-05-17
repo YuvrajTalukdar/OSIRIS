@@ -43,6 +43,11 @@ app.on('ready', () =>
 });
 
 /*Main window functions*/
+ipcMain.on('change_password',(enent,data)=>{
+    let obj1=AvyuktaEngine.change_password(data.current_pass,data.new_pass);
+    mainWindow.webContents.send('password_change_status',obj1);
+});
+
 ipcMain.on('get_main_window_data',(event,todo)=>{
     let obj1=AvyuktaEngine.get_type_data();
     let obj2=AvyuktaEngine.get_node_relation_data();
@@ -264,13 +269,7 @@ ipcMain.on('cancelButton:pressed',(event,todo)=>{
 
 ipcMain.on('get_settings_data',(event,todo)=>{
     var settings_obj=AvyuktaEngine.load_settings();
-    var data={
-        'nodes_in_one_nodefile':settings_obj.nodes_in_one_nodefile,
-        'relation_in_one_file':settings_obj.relation_in_one_file,
-        'percent_of_nodes_in_mem':settings_obj.percent_of_nodes_in_mem,
-        'encryption_status':settings_obj.encryption_status
-    };
-    settingsWindow.webContents.send('settings_data_received',data);
+    settingsWindow.webContents.send('settings_data_received',settings_obj);
 });
 
 ipcMain.on('new_settings',(event,data)=>
@@ -351,9 +350,7 @@ const mainmenuTemplate=[
                     {   return 'Ctrl+P';}
                 })(),
                 click()
-                {  
-                    
-                }
+                {   mainWindow.webContents.send('change_pass_dialog',"");}
             },
             {
                 label:'Close Database',

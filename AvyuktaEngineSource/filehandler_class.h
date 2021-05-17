@@ -36,11 +36,11 @@ class filehandler_class
     vector<unsigned int> gap_relation_id_list;
     vector<file_info> relation_file_list;
     //file encryption related functions
+    decrypted_data decrypt_file_text(string file_dir);
     stringstream decrypt_file(string file_dir);
     void encrypt_file(string file_dir,string data);
     //mics functions
     bool is_whitespace(const string& s); 
-    void calc_node_list_size(float);
     bool check_if_file_is_present(string);
     //node related private functions
     unsigned int write_nodedata_to_file(string file_name,data_node&);//aes ok tested
@@ -68,18 +68,19 @@ class filehandler_class
     string settings_file_dir;//="./database/settings.csv";
     unsigned int total_no_of_nodes;
     unsigned int total_no_of_nodefile;
-    float percent_of_node_in_memory;
-    unsigned int no_of_nodes_in_memory;
-    unsigned int no_of_nodes_in_one_node_file;
+    float percent_of_node_in_memory=100.0;
+    unsigned int no_of_nodes_in_one_node_file=3;
     vector<string> authors;
     unsigned int total_no_of_relations;
     unsigned int total_on_of_relationfile;
-    unsigned int no_of_relation_in_one_file;
+    unsigned int no_of_relation_in_one_file=3;
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
     //file related data
-    bool encryption;
+    bool encryption=true;
     void close_db();//ok tested
     void set_password_and_dir(string current_db_dir,string password);
+    bool password_same(string current_passowrd);
+    void change_password(string new_password);
 
     //settings related functions
     void change_settings(string file_dir,string settings_name,string settings_value);//aes ok tested, Function for changing individual settings of a file.

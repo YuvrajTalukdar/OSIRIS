@@ -6,66 +6,12 @@ import logo from './logo512.png';
 
 const useStyles = (theme)=>
 ({
-    textfield_background:
-    {   background: "#00404B"},
-    textfield_text:
-    {   color: "#03DAC5"},
-    textfield_label:
-    {   color: "#4CD6C9"},
-    FixedSizedList_props:
-    {   
-        width: '100%',
-        height: 400,
-        paddingBottom:'20px'
-    },
-    valueTextField:
-    {
-        borderColor: '#03DAC5',//textfield border color
-        color: "#03DAC5", //textfield input color
-    },
-    root:
-    {
-        '&:hover $valueTextField': 
-        {   borderColor: 'orange !important',},//textfield hover border color
-        "&.Mui-focused .MuiOutlinedInput-notchedOutline": 
-        {   borderColor: "orange"}//textfield border color when focused 
-    },
-    focused: {},
-    notchedOutline: {},
-    list_class:{
-        maxHeight: 400,
-        width: '100%',
-        position: 'relative',
-        overflow: 'auto',
-    },
-    select_style:{
-        color:'#03DAC5',
-        icon: {
-            fill: 'white',
-        },
-
-        '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#03DAC5'
-        },
-
-        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'orange !important'
-        },
-        '&:hover .MuiOutlinedInput-notchedOutline': 
-        {   borderColor: 'orange !important',}
-    },
     button:{
         background:'#03DAC5',
         '&$disabled_button':
         {   background: '#96FFF4'}
     },
     disabled_button:{},
-    menu_dropdown_style:{
-        border: "1px solid orange",
-        borderRadius: "5%",
-        backgroundColor:'#353535',
-        color:'#03DAC5'
-    }
 });
 
 class About extends React.Component
