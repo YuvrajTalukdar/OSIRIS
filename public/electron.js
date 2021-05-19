@@ -37,7 +37,7 @@ app.on('ready', () =>
 
     const mainMenu=Menu.buildFromTemplate(mainmenuTemplate);
     Menu.setApplicationMenu(mainMenu);
-    Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
+    //Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
     Menu.getApplicationMenu().getMenuItemById(1).enabled=false;
     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;
 });
@@ -168,7 +168,7 @@ ipcMain.on('open_file_picker',(event,todo)=>{
 ipcMain.on('close_db',(enent,data)=>{
     AvyuktaEngine.shutdown_engine();
     mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
-    Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
+    //Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
     Menu.getApplicationMenu().getMenuItemById(1).enabled=false;
     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;
 });
@@ -182,7 +182,7 @@ ipcMain.on('login_create',(enent,data)=>{
         if(error.error_code==-1)
         {   
             mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
-            Menu.getApplicationMenu().getMenuItemById(0).enabled=true;
+            //Menu.getApplicationMenu().getMenuItemById(0).enabled=true;
             Menu.getApplicationMenu().getMenuItemById(1).enabled=true;
             Menu.getApplicationMenu().getMenuItemById(2).enabled=true;
         }
@@ -328,7 +328,7 @@ const mainmenuTemplate=[
     {
         label:'File',
         submenu:[
-            {
+            /*{
                 label:'Settings',
                 id:0,
                 accelerator:(()=>{
@@ -339,7 +339,7 @@ const mainmenuTemplate=[
                 })(),
                 click()
                 {   startSettingsWindow();}
-            },
+            },*/
             {
                 label:'Change Database Password',
                 id:1,
@@ -365,7 +365,7 @@ const mainmenuTemplate=[
                 {  
                     AvyuktaEngine.shutdown_engine();
                     mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
-                    Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
+                    //Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
                     Menu.getApplicationMenu().getMenuItemById(1).enabled=false;
                     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;
                 }
@@ -387,12 +387,12 @@ const mainmenuTemplate=[
     {
         label:'Help',
         submenu:[
-            {
+            /*{
                 label:'Documentation',
                 id:4,
                 click()
                 {}
-            },
+            },*/
             {
                 label:'About',
                 id:5,

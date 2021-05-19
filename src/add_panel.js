@@ -388,7 +388,7 @@ function add_new_relation()
             if(source_found && destination_found && relation_type_found)
             {   break;}
         }
-        if(source_found && destination_found && relation_type_found && !this.state.edit_mode_on)
+        if(source_found && destination_found && relation_type_found /*&& !this.state.edit_mode_on*/)
         {
             this.setState({
                 alert_dialog_text:"This relation is already present !",
@@ -660,13 +660,22 @@ export function add_panel(THIS)
                                     if(e.target.value.toUpperCase().localeCompare(THIS.state.new_node_name.toUpperCase())==0)
                                     {   disable_add_button=true;}
                                     else
-                                    {   disable_add_button=false;}
+                                    {   
+                                        disable_add_button=false;
+                                        for(let a=0;a<THIS.state.node_data_list.length;a++)
+                                        {
+                                            if(THIS.state.node_data_list[a].node_name.toUpperCase().localeCompare(e.target.value.toUpperCase())==0)
+                                            {   disable_add_button=true;break;}
+                                        }
+                                    }
                                     THIS.setState({
                                         edit_node_name:e.target.value,
                                         disable_add_button:disable_add_button
                                     });
                                     if(e.target.value.length!=0)
                                     {   THIS.setState({edit_node_name_close_button:'block'});}
+                                    else
+                                    {   THIS.setState({edit_node_name_close_button:'none'});}
                                 }}
                             InputLabelProps={
                             {   className: THIS.props.classes.textfield_label}}

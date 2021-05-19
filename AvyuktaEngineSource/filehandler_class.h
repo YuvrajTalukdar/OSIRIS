@@ -73,11 +73,11 @@ class filehandler_class
     unsigned int total_no_of_nodes=0;
     unsigned int total_no_of_nodefile=0;
     float percent_of_node_in_memory=100.0;
-    unsigned int no_of_nodes_in_one_node_file=3;
+    unsigned int no_of_nodes_in_one_node_file=10;
     vector<string> authors;
     unsigned int total_no_of_relations;
     unsigned int total_on_of_relationfile;
-    unsigned int no_of_relation_in_one_file=3;
+    unsigned int no_of_relation_in_one_file=10;
     const string settings_list[5]={"ENCRYPTION","PERCENT_OF_NODE_IN_MEMORY","AUTHORS","NODES_IN_ONE_NODEFILE","RELATION_IN_ONE_RELATIONFILE"};
     //file related data
     bool encryption=true;
