@@ -13,6 +13,7 @@ export function add_add_panel_func(CLASS)
     CLASS.prototype.add_new_node_body = add_new_node_body;
     CLASS.prototype.add_new_node = add_new_node;
     CLASS.prototype.delete_relation = delete_relation;
+    CLASS.prototype.delete_multiple_relation = delete_multiple_relation;
     CLASS.prototype.add_new_relation = add_new_relation;
     CLASS.prototype.search_source_url = search_source_url;
     CLASS.prototype.add_source_url_to_list = add_source_url_to_list;
@@ -165,6 +166,35 @@ function delete_relation()
     this.reset_context_menu_settings();
 }
 
+function delete_multiple_relation(edgeIds)
+{
+    const relation_data_list=[...this.state.relation_data_list];
+    const new_relation_data_list=relation_data_list.filter(function(value,index)
+    {
+        let edge_found=false;
+        for(var a=0;a<edgeIds.length;a++)
+        {
+            if(value.relation_id==edgeIds[a])
+            {   edge_found=true;break;}
+        }
+        if(!edge_found)
+        {   return value;}
+    });
+    for(var a=0;a<edgeIds.length;a++)
+    {
+        window.ipcRenderer.send('delete_relation',edgeIds[a]);
+        this.delete_relation_from_network(edgeIds[a]);
+    }
+
+    this.setState({relation_data_list:new_relation_data_list});
+
+    this.delete_relation_id=-1;
+    this.delete_relation_source_node_name="";
+    this.delete_relation_destination_node="";
+    this.delete_relation_type="";
+    this.reset_context_menu_settings();
+}
+
 function delete_node()
 {
     const node_data_list=[...this.state.node_data_list];
@@ -172,13 +202,8 @@ function delete_node()
 
     window.ipcRenderer.send('delete_node',this.delete_node_id);
     var edgeIds=this.delete_node_from_network(this.delete_node_id);
-
-    var a=0;
-    for(a=0;a<edgeIds.length;a++)
-    {   
-        this.delete_relation_id=edgeIds[a];
-        this.delete_relation();
-    }
+    
+    this.delete_multiple_relation(edgeIds);
 
     this.setState({
         node_data_list:new_node_data_list
