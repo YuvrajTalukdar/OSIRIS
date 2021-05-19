@@ -238,8 +238,50 @@ void database_class::initialize_db(string password)
     
     //data write testing
     /*
+    data_node n1;
+    n1.node_type_id=0;
+    n1.node_name="test";
+    file_handler.add_new_node(n1);
+    file_handler.add_new_node(n1);
+    file_handler.add_new_node(n1);
+    file_handler.add_new_node(n1);
+    file_handler.add_new_node(n1);
+    file_handler.delete_node(0);
+    file_handler.delete_node(1);
+    file_handler.delete_node(2);
+    file_handler.delete_node(3);
+    file_handler.test3();
+    file_handler.add_new_node(n1);
+    file_handler.add_new_node(n1);
+    file_handler.add_new_node(n1);*/
+    /*
+    relation r1,r2,r3,r4,r5;
+    r1.source_node_id=0;
+    r1.destination_node_id=1;
+    r2.source_node_id=0;
+    r2.destination_node_id=2;
+    r3.source_node_id=0;
+    r3.destination_node_id=3;
+    r4.source_node_id=0;
+    r4.destination_node_id=4;
+    r5.source_node_id=5;
+    r5.destination_node_id=6;
+
+    file_handler.add_new_relation(r1);
+    file_handler.add_new_relation(r2);
+    file_handler.add_new_relation(r3);
+    file_handler.add_new_relation(r4);
+    file_handler.add_new_relation(r5);
+    file_handler.delete_relation(0);
+    file_handler.delete_relation(1);
+    file_handler.delete_relation(2);
+    file_handler.delete_relation(3);
+    file_handler.test7();
+    file_handler.add_new_relation(r1);
+    file_handler.add_new_relation(r2);
+    file_handler.add_new_relation(r3);*/
     //data load testing    
-    file_handler.test();//for settings
+    /*file_handler.test();//for settings
 
     file_handler.test4();//for type data
 

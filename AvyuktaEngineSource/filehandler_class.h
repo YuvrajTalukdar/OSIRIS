@@ -6,6 +6,7 @@
 #include<fstream>
 #include<dirent.h>
 #include<algorithm>
+#include<map>
 #include "data_structure_definition.h"
 #include "aes.h"
 
@@ -18,6 +19,7 @@ using std::ifstream;
 using std::fstream;
 using std::ios;
 using std::stringstream;
+using std::make_pair;
 
 class filehandler_class
 {
@@ -31,9 +33,11 @@ class filehandler_class
     string node_type_file_dir;//="./database/node_type_list.csv";
     //node related data
     vector<file_info> node_file_list;
-    vector<unsigned int> gap_node_id_list;
+    multimap<int,int> gap_node_id_map;
+    multimap<int,int>::iterator gap_node_iterator;
     //relation related data
-    vector<unsigned int> gap_relation_id_list;
+    multimap<int,int> gap_relation_id_map;
+    multimap<int,int>::iterator gap_relation_iterator;
     vector<file_info> relation_file_list;
     //file encryption related functions
     decrypted_data decrypt_file_text(string file_dir);
@@ -66,8 +70,8 @@ class filehandler_class
     relation last_entered_relation;
     //settings data
     string settings_file_dir;//="./database/settings.csv";
-    unsigned int total_no_of_nodes;
-    unsigned int total_no_of_nodefile;
+    unsigned int total_no_of_nodes=0;
+    unsigned int total_no_of_nodefile=0;
     float percent_of_node_in_memory=100.0;
     unsigned int no_of_nodes_in_one_node_file=3;
     vector<string> authors;
@@ -92,7 +96,7 @@ class filehandler_class
     void edit_node(data_node &node);//aes ok tested
     //node relation type related functions
     void load_node_relation_type(int node_or_relation);//aes ok tested 0 means node 1 means relation.
-    void add_node_relation_type(string,int,string color_code,bool vectored);//aes ok tested
+    void add_node_relation_type(string type,int node_or_relation,string color_code,bool vectored);//aes ok tested
     void delete_node_relation_type(unsigned int id,int node_or_relation);//aes ok tested
     void edit_node_relation_type(node_relation_type &type_data,int node_or_relation);//aes ok tested
     //relation related functions
@@ -133,10 +137,11 @@ class filehandler_class
             }
             cout<<"\n";
         }
-        cout<<"size="<<gap_node_id_list.size()<<endl;
-        for(int a=0;a<gap_node_id_list.size();a++)
+        cout<<"size="<<gap_node_id_map.size();
+        gap_node_iterator=gap_node_id_map.begin();
+        for(;gap_node_iterator!=gap_node_id_map.end();gap_node_iterator++)
         {
-            cout<<"\nid="<<gap_node_id_list[a];
+            cout<<"\nid="<<gap_node_iterator->first;
         }
     }
 
@@ -203,9 +208,10 @@ class filehandler_class
             }
         }
         cout<<"\n\ngap relation:-";
-        for(int a=0;a<gap_relation_id_list.size();a++)
+        gap_relation_iterator=gap_relation_id_map.begin();
+        for(;gap_relation_iterator!=gap_relation_id_map.end();gap_relation_iterator++)
         {
-            cout<<"\n"<<gap_relation_id_list.at(a);
+            cout<<"\n"<<gap_relation_iterator->first;
         }
     }
 };

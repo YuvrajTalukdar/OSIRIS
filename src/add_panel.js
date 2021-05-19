@@ -24,7 +24,6 @@ export function add_add_panel_func(CLASS)
     CLASS.prototype.edit_relation_switch_toggle = edit_relation_switch_toggle;
     CLASS.prototype.get_filename_from_path = get_filename_from_path;
     CLASS.prototype.enable_disable_save_relation_button = enable_disable_save_relation_button;
-
 }
 
 function enable_disable_save_relation_button()

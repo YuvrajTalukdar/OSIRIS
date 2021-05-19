@@ -93,6 +93,7 @@ function delete_node_type()
     window.ipcRenderer.send('delete_node_relation_type',data);
     this.delete_node_type_id=-1;
     this.delete_node_type_name="";
+    this.search_node_type("");
     this.setState({
         node_type_data_list:new_node_type_list
     });
@@ -162,8 +163,10 @@ function Delete_Relation_Type()
     window.ipcRenderer.send('delete_node_relation_type',data);
     this.delete_relation_type_id=-1
     this.delete_relation_type_name="";
+    this.search_relation_type("");
     this.setState({
-        relation_type_data_list:new_relation_type_list
+        relation_type_data_list:new_relation_type_list,
+        relation_type_name:''
     });
 }
 
