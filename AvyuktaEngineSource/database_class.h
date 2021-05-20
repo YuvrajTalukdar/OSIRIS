@@ -7,8 +7,6 @@
 #include<stdio.h>
 #include "filehandler_class.h"
 
-namespace fs = std::filesystem;
-
 class database_class
 {
     private:

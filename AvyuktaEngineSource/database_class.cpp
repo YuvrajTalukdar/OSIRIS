@@ -24,20 +24,13 @@ int database_class::is_dir_empty(string dir)
     }
     current_db_dir=dir.substr(0,a+1);
 
-    struct dirent *de;
-    DIR *dr=opendir(current_db_dir.c_str());
     int empty=1;
-    if(dr!=NULL)
+    try
     {
-        int count=0;
-        while((de=readdir(dr))!=NULL)
-        {
-            count++;
-            if(count>=3)
-            {   empty=0;break;}
-        }
+        for(auto& p: fs::directory_iterator(current_db_dir))
+        {   empty=0;break;}
     }
-    else
+    catch(std::exception e)
     {   empty=2;}
     return empty;
 }
@@ -253,8 +246,8 @@ void database_class::initialize_db(string password)
     file_handler.test3();
     file_handler.add_new_node(n1);
     file_handler.add_new_node(n1);
-    file_handler.add_new_node(n1);*/
-    /*
+    file_handler.add_new_node(n1);
+    
     relation r1,r2,r3,r4,r5;
     r1.source_node_id=0;
     r1.destination_node_id=1;
@@ -279,9 +272,9 @@ void database_class::initialize_db(string password)
     file_handler.test7();
     file_handler.add_new_relation(r1);
     file_handler.add_new_relation(r2);
-    file_handler.add_new_relation(r3);*/
+    file_handler.add_new_relation(r3);
     //data load testing    
-    /*file_handler.test();//for settings
+    file_handler.test();//for settings
 
     file_handler.test4();//for type data
 

@@ -4,7 +4,6 @@
 3. File formats are handled here.
 */
 #include<fstream>
-#include<dirent.h>
 #include<algorithm>
 #include<map>
 #include "data_structure_definition.h"
@@ -20,6 +19,8 @@ using std::fstream;
 using std::ios;
 using std::stringstream;
 using std::make_pair;
+
+namespace fs = std::filesystem;
 
 class filehandler_class
 {
@@ -46,6 +47,7 @@ class filehandler_class
     //mics functions
     bool is_whitespace(const string& s); 
     bool check_if_file_is_present(string);
+    string get_name_from_path(string path);
     //node related private functions
     unsigned int write_nodedata_to_file(string file_name,data_node&);//aes ok tested
     void delete_node_data_from_file(string file_name,unsigned int node_index);//aes ok tested

@@ -93,6 +93,19 @@ var options = {autoResize: true,height:'100%',width:'100%',
             x:0,
             y:0
         },
+    },
+    physics:{
+        enabled:true,
+        barnesHut: {
+            theta: 0.5,
+            gravitationalConstant: -5000,
+            centralGravity: 0.3,
+            springLength: 95,
+            springConstant: 0.04,
+            damping: 0.09,
+            avoidOverlap: 0
+        },
+        solver: 'barnesHut',
     }
 };
 
@@ -345,8 +358,8 @@ function center_focus()
 {
     var fit_options={
         nodes:nodes.getIds(),
-        minZoomLevel: 1.2,
-        maxZoomLevel: 1.2,
+        minZoomLevel: 1,
+        maxZoomLevel: 1,
         animation: {             
             duration: 250,                 
             easingFunction: "easeInOutQuad"

@@ -1,5 +1,18 @@
 #include "filehandler_class.h"
 
+string filehandler_class::get_name_from_path(string path)
+{
+    string name;
+    for(int a=path.length()-1;a>=0;a--)
+    {
+        if(path.at(a)!='/')
+        {   name=path.at(a)+name;}
+        else
+        {   break;}
+    }
+    return name;
+}
+
 bool filehandler_class::password_same(string current_passowrd)
 {
     if(strcmp(password.c_str(),current_passowrd.c_str())==0)
@@ -498,12 +511,10 @@ void filehandler_class::load_nodes()
 
 bool filehandler_class::check_if_file_is_present(string file_name)
 {
-    struct dirent *de;
-    DIR *dr=opendir(database_dir.c_str());
     bool file_found=false;
-    while((de=readdir(dr))!=NULL)
+    for(auto& p: fs::directory_iterator(database_dir))
     {
-        if(strcmp(file_name.c_str(),de->d_name)==0)
+        if(strcmp(file_name.c_str(),get_name_from_path(p.path()).c_str())==0)
         {   file_found=true;break;}
     }
     return file_found;
