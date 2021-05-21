@@ -15,6 +15,7 @@
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.3",
+    "AvyuktaEngine": "1.0.0",
     "cross-env": "^7.0.3",
     "electron-is-dev": "^2.0.0",
     "material-ui-color-picker": "^3.5.1",
@@ -24,9 +25,9 @@
     "react-scripts": "4.0.3",
     "react-window": "^1.8.6",
     "vis": "*",
+    "vis-data": "^7.1.2",
     "vis-network": "^9.0.4",
-    "web-vitals": "^1.1.0",
-    "AvyuktaEngine": "1.0.0"
+    "web-vitals": "^1.1.0"
   },
   "scripts": {
     "react-start": "react-scripts start",
