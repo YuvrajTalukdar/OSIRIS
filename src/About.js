@@ -2,7 +2,7 @@ import React from 'react';
 import theme from './theme';
 import {Button,Grid,Box,Typography} from '@material-ui/core';
 import { ThemeProvider, withStyles } from '@material-ui/core';
-import logo from './logo512.png';
+import logo from './osiris_icon2.png';
 
 const useStyles = (theme)=>
 ({

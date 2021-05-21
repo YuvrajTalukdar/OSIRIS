@@ -1,9 +1,9 @@
 import React from 'react';
-import {Button,TextField,Grid,IconButton,Box} from '@material-ui/core';
+import {Button,TextField,Grid,IconButton,Box,Typography} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import theme from './theme';
-import logo from './logo512.png';
+import logo from './osiris_icon2.png';
 import CloseIcon from '@material-ui/icons/Close';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 
@@ -229,6 +229,14 @@ class Login extends React.Component
                     <Grid container direction="column" xs={12} spacing={5} justify="center" alignItems="center">
                         <Grid container direction="column" justify="center" alignItems="center">
                             <img src={logo} style={{padding:12}} width="100" height="100" />
+                        </Grid>
+                        <Grid container direction="column" justify="center" alignItems="center">
+                            <Typography
+                                color="primary"
+                                display="block"
+                                variant="h3">
+                                OSIRIS
+                            </Typography>
                         </Grid>
                         <Grid container direction="row" justify="center" alignItems="center">
                             <Button variant="outlined" color="primary" style={{width:145,margin:5}}

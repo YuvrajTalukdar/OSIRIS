@@ -1,7 +1,7 @@
 const version=1.0;
-//process.env.NODE_ENV = 'production';
-const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
-//const AvyuktaEngine=require('AvyuktaEngine');
+process.env.NODE_ENV = 'production';
+//const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
+const AvyuktaEngine=require('AvyuktaEngine');
 
 const electron = require('electron')
 const path=require('path');
@@ -25,7 +25,8 @@ app.on('ready', () =>
         {   nodeIntegration:true,
             preload: path.join(__dirname, './preload.js'),
             contextIsolation: false 
-        }
+        },
+        icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
     });
     mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
     mainWindow.on('closed',()=>
@@ -253,7 +254,8 @@ function startSettingsWindow()
                 preload: path.join(__dirname, './preload.js'),
                 contextIsolation: false 
             },
-            resizable:false
+            resizable:false,
+            icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
         });
         settingsWindow.loadURL(is_dev? 'http://localhost:3000/Settings':`file://${path.join(__dirname,"../build/index.html#/settings")}`);
         settingsWindow.on('closed',()=>settingsWindow=null);
@@ -294,7 +296,8 @@ function startAboutWindow()
                 preload: path.join(__dirname, './preload.js'),
                 contextIsolation: false 
             },
-            resizable:false
+            resizable:false,
+            icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
         });
         aboutWindow.loadURL(is_dev? 'http://localhost:3000/About':`file://${path.join(__dirname,"../build/index.html#/About")}`);
         aboutWindow.on('closed',()=>aboutWindow=null);
