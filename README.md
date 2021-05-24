@@ -17,7 +17,7 @@ Add Panel
 ![](screenshots/properties_panel.png)
 Properties Panel
 
-# Building from source
+# Building from source (Linux)
 
 1. Open linux terminal 
    Installing curl
@@ -74,3 +74,6 @@ To build the engine from source type:-
 HOME=~/.electron-gyp node-gyp rebuild -j 16 --target=12.0.0 --arch=x64 --dist-url=https://atom.io/download/electron
 
 The compiled engine will be saved in build/Release.
+
+
+There is a demo database in the source folder called star wars database, the password for it is test1234
