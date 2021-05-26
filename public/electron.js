@@ -5,6 +5,7 @@ const AvyuktaEngine=require('AvyuktaEngine');
 
 const electron = require('electron')
 const path=require('path');
+const url = require('url');
 const is_dev=require('electron-is-dev');
 const {app,BrowserWindow,Menu,ipcMain,screen,dialog} = electron;
 const fs = require('fs');
@@ -20,15 +21,21 @@ app.on('ready', () =>
     {   
         width:width, 
         height:height,
-        title:'OSIRIS',//nitle need to be changes in the html page. It is redundant here.
+        title:'OSIRIS',//title need to be changes in the html page. It is redundant here.
         webPreferences:
         {   nodeIntegration:true,
             preload: path.join(__dirname, './preload.js'),
             contextIsolation: false 
         },
-        icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
+        icon:electron.nativeImage.createFromPath(__dirname+'/icon.png')
     });
-    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
+    let login_file=url.format({
+        pathname: path.join(__dirname, 'index.html'),
+        hash: '/Login',
+        protocol: 'file:',
+        slashes: true
+      });
+    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':login_file);
     mainWindow.on('closed',()=>
     {
         AvyuktaEngine.shutdown_engine();
@@ -168,7 +175,13 @@ ipcMain.on('open_file_picker',(event,todo)=>{
 
 ipcMain.on('close_db',(enent,data)=>{
     AvyuktaEngine.shutdown_engine();
-    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
+    let login_file=url.format({
+        pathname: path.join(__dirname, 'index.html'),
+        hash: '/Login',
+        protocol: 'file:',
+        slashes: true
+      });
+    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':login_file);
     //Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
     Menu.getApplicationMenu().getMenuItemById(1).enabled=false;
     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;
@@ -182,7 +195,13 @@ ipcMain.on('login_create',(enent,data)=>{
         var error=AvyuktaEngine.initialize_engine(data.db_dir,data.password);
         if(error.error_code==-1)
         {   
-            mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
+            let index_file=url.format({
+                pathname: path.join(__dirname, 'index.html'),
+                hash: '/',
+                protocol: 'file:',
+                slashes: true
+              });
+            mainWindow.loadURL(is_dev? 'http://localhost:3000':index_file);
             //Menu.getApplicationMenu().getMenuItemById(0).enabled=true;
             Menu.getApplicationMenu().getMenuItemById(1).enabled=true;
             Menu.getApplicationMenu().getMenuItemById(2).enabled=true;
@@ -255,7 +274,7 @@ function startSettingsWindow()
                 contextIsolation: false 
             },
             resizable:false,
-            icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
+            icon:electron.nativeImage.createFromPath(__dirname+'/icon.png')
         });
         settingsWindow.loadURL(is_dev? 'http://localhost:3000/Settings':`file://${path.join(__dirname,"../build/index.html#/settings")}`);
         settingsWindow.on('closed',()=>settingsWindow=null);
@@ -297,9 +316,15 @@ function startAboutWindow()
                 contextIsolation: false 
             },
             resizable:false,
-            icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
+            icon:electron.nativeImage.createFromPath(__dirname+'/icon.png')
         });
-        aboutWindow.loadURL(is_dev? 'http://localhost:3000/About':`file://${path.join(__dirname,"../build/index.html#/About")}`);
+        let about_file=url.format({
+            pathname: path.join(__dirname, 'index.html'),
+            hash: '/About',
+            protocol: 'file:',
+            slashes: true
+        });
+        aboutWindow.loadURL(is_dev? 'http://localhost:3000/About':about_file);
         aboutWindow.on('closed',()=>aboutWindow=null);
         aboutWindow.setTitle("About");
         if(process.env.NODE_ENV==='production')
@@ -367,7 +392,13 @@ const mainmenuTemplate=[
                 click()
                 {  
                     AvyuktaEngine.shutdown_engine();
-                    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
+                    let login_file=url.format({
+                        pathname: path.join(__dirname, 'index.html'),
+                        hash: '/Login',
+                        protocol: 'file:',
+                        slashes: true
+                      });
+                    mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':login_file);
                     //Menu.getApplicationMenu().getMenuItemById(0).enabled=false;
                     Menu.getApplicationMenu().getMenuItemById(1).enabled=false;
                     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;

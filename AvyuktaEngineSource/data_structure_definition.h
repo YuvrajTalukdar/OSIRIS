@@ -2,7 +2,7 @@
 #include<string>
 #include<string.h>//fpr strcasestr
 #include<vector>
-#include<bits/stdc++.h>//for multimap
+//#include<bits/stdc++.h>//for multimap
 
 using std::vector;
 using std::string;

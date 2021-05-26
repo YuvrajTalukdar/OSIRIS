@@ -1,12 +1,21 @@
 #include "database_class.h"
 
+bool database_class::strcasestr(string str,string substr)
+{
+    transform(str.begin(), str.end(), str.begin(),::toupper);
+    transform(substr.begin(), substr.end(), substr.begin(),::toupper);
+    if(str.find(substr) != string::npos)
+    {   return true;}
+    else 
+    {   return false;}
+}
 
 string database_class::get_name_from_path(string path)
 {
     string name;
     for(int a=path.length()-1;a>=0;a--)
     {
-        if(path.at(a)!='/')
+        if(path.at(a)!='\\')
         {   name=path.at(a)+name;}
         else
         {   break;}
@@ -19,7 +28,7 @@ int database_class::is_dir_empty(string dir)
     int a;
     for(a=dir.size()-1;a>=0;a--)
     {
-        if(dir.at(a)=='/')
+        if(dir.at(a)=='\\')
         {   break;}
     }
     current_db_dir=dir.substr(0,a+1);
@@ -86,9 +95,7 @@ error database_class::create_odb(string dir,string database_name1,string passwor
         data+=to_string(file_handler.percent_of_node_in_memory);
         data+=",\n";
         data+="AUTHORS:,";
-        char username[32];
-        cuserid(username);
-        data+=username;
+        data+=get_name_from_path(getenv("USERPROFILE"));
         data+=",\n";
         data+="NODES_IN_ONE_NODEFILE:,";
         data+=to_string(file_handler.no_of_nodes_in_one_node_file);
@@ -197,16 +204,16 @@ error database_class::change_password(string current_password,string new_passwor
         string dir_temp=current_db_dir;
         string temp_dir=current_db_dir+"temp_files";
         fs::create_directory(temp_dir);
-        create_odb(temp_dir+"/"+database_name,database_name,new_password);
+        create_odb(temp_dir+"\\"+database_name,database_name,new_password);
         current_db_dir=dir_temp;
         file_handler.change_password(new_password);
         for(auto& p: fs::directory_iterator(current_db_dir))
-        {
+        {   
             if(!p.is_directory())
             {
                 fs::remove(p.path());
-                string file_name=get_name_from_path(p.path());
-                fs::copy_file(temp_dir+"/"+file_name,current_db_dir+file_name);
+                string file_name=get_name_from_path(p.path().string());
+                fs::copy_file(temp_dir+"\\"+file_name,current_db_dir+file_name);
             }
         }
         fs::remove_all(temp_dir);

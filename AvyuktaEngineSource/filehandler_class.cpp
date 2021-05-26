@@ -1,11 +1,21 @@
 #include "filehandler_class.h"
 
+bool filehandler_class::strcasestr(string str,string substr)
+{
+    transform(str.begin(), str.end(), str.begin(),::toupper);
+    transform(substr.begin(), substr.end(), substr.begin(),::toupper);
+    if(str.find(substr) != string::npos)
+    {   return true;}
+    else 
+    {   return false;}
+}
+
 string filehandler_class::get_name_from_path(string path)
 {
     string name;
     for(int a=path.length()-1;a>=0;a--)
     {
-        if(path.at(a)!='/')
+        if(path.at(a)!='\\')
         {   name=path.at(a)+name;}
         else
         {   break;}
@@ -514,7 +524,7 @@ bool filehandler_class::check_if_file_is_present(string file_name)
     bool file_found=false;
     for(auto& p: fs::directory_iterator(database_dir))
     {
-        if(strcmp(file_name.c_str(),get_name_from_path(p.path()).c_str())==0)
+        if(strcmp(file_name.c_str(),get_name_from_path(p.path().string()).c_str())==0)
         {   file_found=true;break;}
     }
     return file_found;
@@ -1245,7 +1255,7 @@ void filehandler_class::load_relations()
             {
                 relation r1;
                 line_count=0;
-                unsigned int current_line;
+                unsigned int current_line=0;
                 bool local_source_list_lock=false,source_url_list_lock=false;
                 while(!strcasestr(line.c_str(),"#END"))
                 {   

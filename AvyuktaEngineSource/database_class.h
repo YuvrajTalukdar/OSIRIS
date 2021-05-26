@@ -19,6 +19,7 @@ class database_class
     string currentDateTime();
     string get_data_from_line(string line);
     int is_dir_empty(string dir);
+    bool strcasestr(string str,string substr);
     public:
     filehandler_class file_handler;
 

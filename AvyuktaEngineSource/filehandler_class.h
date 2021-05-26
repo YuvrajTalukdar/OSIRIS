@@ -10,8 +10,9 @@
 #include "aes.h"
 
 #include<stdlib.h>
-#include<unistd.h>
+#include<io.h>
 #include<sstream>
+#include<filesystem>
 
 using std::ofstream;
 using std::ifstream;
@@ -48,6 +49,7 @@ class filehandler_class
     bool is_whitespace(const string& s); 
     bool check_if_file_is_present(string);
     string get_name_from_path(string path);
+    bool strcasestr(string str,string substr);
     //node related private functions
     unsigned int write_nodedata_to_file(string file_name,data_node&);//aes ok tested
     void delete_node_data_from_file(string file_name,unsigned int node_index);//aes ok tested
