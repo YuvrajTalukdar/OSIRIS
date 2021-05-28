@@ -17,6 +17,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
+import {add_operations_func,add_operations_panel} from './operations_panel.js'
 
 const useStyles = (theme)=>
 ({
@@ -24,7 +25,7 @@ const useStyles = (theme)=>
     {
         paddingLeft:'52px',
         paddingRight:'2px',
-        paddingTop:'2px'
+        paddingTop:'10px'
     },
     textfield_background:
     {   background: "#00404B"},
@@ -155,7 +156,8 @@ class Main extends React.Component
             add_drawer_open:false,
             add_icon_color:'primary',
             search_drawer_open:false,
-            operation_drawer_open:false,
+            operation_drawer_open:true,
+            operation_drawer_color:'primary',
             relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
             color_picker_hex_value:"#03DAC5",
@@ -222,9 +224,23 @@ class Main extends React.Component
             new_pass1_close_btn_show:'none',
             new_pass2:'',
             new_pass2_close_btn_show:'none',
+            /*Operation panel*/
+            search_operation_text:'',
+            search_operations_text_close_btn:'none',
+            operation_list:[
+                {name:"Sortest Path",display:'block'},
+                {name:"Minimum Spanning Tree",display:'block'},
+                {name:"Clustering",display:'block'}
+            ],
+            sortest_path_node_source:'',
+            sortest_path_node_destination:'',
+            mst_node:undefined,
+            mst_node_list:[],
+            clustering_node:undefined,
+            clustering_node_list:[],
+            cluster_color:"#03DAC5",
             /*Other UI components*/
             //search_node_bar:'', 
-            net_ref:createRef(),
             open_network_popup:false,
             network_popup_top:100,
             network_popup_bottom:100,
@@ -233,9 +249,10 @@ class Main extends React.Component
             keyboard_zoom:0.05,
             mouse_zoom:1,
             navigation_speed:10,
-
-            context_menu_list:[],
         };
+
+        this.net_ref=createRef();
+        this.context_menu_list=[];
         this.network = {};
 
         this.context_node_id=-1;
@@ -259,6 +276,7 @@ class Main extends React.Component
         this.change_password=this.change_password.bind(this);
 
         add_node_relation_props_func(Main);
+        add_operations_func(Main);
         add_add_panel_func(Main);
         add_network_func(Main);
     }
@@ -422,9 +440,30 @@ class Main extends React.Component
                 add_icon_color:color,
                 search_drawer_open:false,
                 operation_drawer_open:false,
+                operation_drawer_color:'primary',
                 relation_node_properties_drawer_open:false,
                 relation_node_properties_icon_color:'primary',
                 collaborate_drawer_open:false,
+            });
+        }
+        else if(drawer_id==2)
+        {
+            var color;
+            if(this.state.operation_drawer_open)
+            {   color='primary';}
+            else
+            {   color='secondary'}
+            this.setState({
+                add_drawer_open:false,
+                add_icon_color:'primary',
+                search_drawer_open:false,
+                operation_drawer_open:!this.state.operation_drawer_open,
+                operation_drawer_color:color,
+                relation_node_properties_drawer_open:false,
+                relation_node_properties_icon_color:'primary',
+                collaborate_drawer_open:false,
+
+                cluster_color:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))
             });
         }
         else if(drawer_id==3)
@@ -439,6 +478,7 @@ class Main extends React.Component
                 add_icon_color:'primary',
                 search_drawer_open:false,
                 operation_drawer_open:false,
+                operation_drawer_color:'primary',
                 relation_node_properties_drawer_open:!this.state.relation_node_properties_drawer_open,
                 relation_node_properties_icon_color:color,
                 collaborate_drawer_open:false,
@@ -891,6 +931,8 @@ class Main extends React.Component
                 </AppBar>
                 {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
                 {add_panel(this)}
+                {/*---------------------------------------------Operations Panel-----------------------------------------------------*/}
+                {add_operations_panel(this)}
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
                 {relation_node_properties_panel(this)}
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
@@ -909,12 +951,12 @@ class Main extends React.Component
                                 <SearchIcon/>
                             </IconButton>
                         </Tooltip>
+                        */}
                         <Tooltip title="Perform Operations">
-                            <IconButton color="primary">
+                            <IconButton color="primary" color={this.state.operation_drawer_color} onClick={()=>this.handle_drawer(2)}>
                                 <AccountTreeIcon/>
                             </IconButton>
                         </Tooltip>
-                        */}
                         <Tooltip title="Relation and Node Properties">
                             <IconButton color={this.state.relation_node_properties_icon_color} onClick={()=>this.handle_drawer(3)}>
                                 <CategoryIcon/>

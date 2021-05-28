@@ -469,7 +469,7 @@ export function relation_node_properties_panel(THIS)
                         }
                         </List>
                     </ListItem>
-                    <Divider light classes={{root:THIS.props.classes.divider}}/>
+                    <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
                     <ListItem>
                         <Grid container direction="row" justify="center" alignItems="center">
                             <Typography

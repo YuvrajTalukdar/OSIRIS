@@ -292,9 +292,9 @@ function create_full_network()
 function init_network()
 {
     this.create_full_network();
-    this.network = new Network(this.state.net_ref.current,data,options);
+    this.network = new Network(this.net_ref.current,data,options);
     var height = Math.round(window.innerHeight * 0.00) + 'px';
-    this.state.net_ref.current.style.height = height;
+    this.net_ref.current.style.height = height;
     this.center_focus(); 
     this.network.on('oncontext',(values)=>{
         var node=this.network.getNodeAt(values.pointer.DOM);
@@ -322,7 +322,7 @@ function init_network()
         }
     }); 
     //context menu handling
-    var context_menu_list=[];
+    this.context_menu_list=[];
     var menuItem1={
         'id':0,
         'text':'Edit',
@@ -333,9 +333,8 @@ function init_network()
         'text':'Delete',
         'icon':DeleteIcon
     }  
-    context_menu_list.push(menuItem1);
-    context_menu_list.push(menuItem2);
-    this.setState({context_menu_list});
+    this.context_menu_list.push(menuItem1);
+    this.context_menu_list.push(menuItem2);
 }
 //------------------------------Network Focus Functions-------------------------------
 function focus_on_node(node_id)
@@ -382,7 +381,7 @@ export function Add_Network(THIS)
     return(
         <div>
             <Grid container direction="row" xs={12} alignItems="center" justify="center">
-                <div id="net" ref={THIS.state.net_ref} className="net"></div>  
+                <div id="net" ref={THIS.net_ref} className="net"></div>  
             </Grid>
             <Popover
             open={THIS.state.open_network_popup}
@@ -397,7 +396,7 @@ export function Add_Network(THIS)
                 <div className="contextMenu">
                     <List>
                     {
-                        THIS.state.context_menu_list.map(item=>
+                        THIS.context_menu_list.map(item=>
                         {
                             return(
                                 <ListItem button

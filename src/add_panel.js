@@ -739,7 +739,7 @@ export function add_panel(THIS)
                             classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
                             disabled={THIS.state.disable_add_button}>{THIS.state.add_button_text}</Button>
                     </ListItem>
-                    <Divider light classes={{root:THIS.props.classes.divider}}/>
+                    <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
                     <ListItem>
                         <Grid container direction="row" justify="center" alignItems="center">
                             <Typography
@@ -953,7 +953,6 @@ export function add_panel(THIS)
                                     </Box> 
                                 ),
                             }}/>
-                            
                         </Grid>
                     </ListItem>
                     <ListItem> 
