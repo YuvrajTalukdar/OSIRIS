@@ -8,8 +8,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 export function add_operations_func(CLASS)
 {
     CLASS.prototype.search_operation = search_operation;
-    CLASS.prototype.find_sortest_path = find_sortest_path;
+    CLASS.prototype.find_shortest_path = find_shortest_path;
     CLASS.prototype.find_MST = find_MST;
+    CLASS.prototype.create_cluster = create_cluster;
 }
 
 function search_operation(op_name)
@@ -25,12 +26,38 @@ function search_operation(op_name)
     this.setState({operation_list});
 }
 
-function find_sortest_path()
+function find_shortest_path()
+{
+    if(this.state.shortest_path_node_source==null || this.state.shortest_path_node_source.length==0)
+    {
+        this.setState({
+            alert_dialog_text:"Source Node not entered !",
+            alert_dialog_open:true
+        });
+    }
+    else if(this.state.shortest_path_node_destination==null || this.state.shortest_path_node_destination.length==0)
+    {
+        this.setState({
+            alert_dialog_text:"Destination Node not entered !",
+            alert_dialog_open:true
+        });
+    }
+    else
+    {
+        let data={
+            source:this.state.shortest_path_node_source,
+            destination:this.state.shortest_path_node_destination
+        }
+        window.ipcRenderer.send('find_shortest_path',data);
+    }
+}
+
+function find_MST()
 {
 
 }
 
-function find_MST()
+function create_cluster()
 {
 
 }
@@ -95,6 +122,7 @@ export function add_operations_panel(THIS)
                     ),
                 }}/>
                 <List className={THIS.props.classes.list_class}> 
+                    <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
                     <Box display={THIS.state.operation_list[0].display}>
                         <ListItem>
                             <Grid container direction="row" justify="center" alignItems="center">
@@ -112,16 +140,16 @@ export function add_operations_panel(THIS)
                                 style={{ width: 300, paddingTop:10}}
                                 onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                                 onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                value={THIS.state.node1}
+                                value={THIS.state.shortest_path_node_source}
                                 onChange={(event,value)=>
                                     {
-                                        THIS.setState({sortest_path_node_source:value});
+                                        THIS.setState({shortest_path_node_source:value});
                                     }}
                                 renderInput=
                                 {
                                     (params) => 
                                         <TextField 
-                                        {...params} label="Source Node.." variant="outlined" 
+                                        {...params} label="Source Node" variant="outlined" 
                                         InputLabelProps=
                                         {{   
                                                 ...params.InputLabelProps,
@@ -138,16 +166,16 @@ export function add_operations_panel(THIS)
                                 style={{ width: 300, paddingTop:10,paddingBottom:10 }}
                                 onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                                 onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                value={THIS.state.new_node_type}
+                                value={THIS.state.shortest_path_node_destination}
                                 onChange={(event,value)=>
                                     {
-                                        THIS.setState({sortest_path_node_destination:value});
+                                        THIS.setState({shortest_path_node_destination:value});
                                     }}
                                 renderInput=
                                 {
                                     (params) => 
                                         <TextField 
-                                        {...params} label="Destination Node.." variant="outlined" 
+                                        {...params} label="Destination Node" variant="outlined" 
                                         InputLabelProps=
                                         {{   
                                                 ...params.InputLabelProps,
@@ -157,9 +185,9 @@ export function add_operations_panel(THIS)
                                 }
                                 />
                                 <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                                onClick={e=>{THIS.find_sortest_path();}}
+                                onClick={e=>{THIS.find_shortest_path();}}
                                 classes={{root: THIS.props.classes.button}}>
-                                    Find Sortest Path
+                                    Find Shortest Path
                                 </Button>
                             </Grid>
                         </ListItem>
@@ -392,7 +420,7 @@ export function add_operations_panel(THIS)
                                 }
                                 </List>
                                 <Button variant="contained" size="small" color="primary" style={{width:'100%',marginTop:10}}
-                                onClick={e=>{THIS.find_MST();}}
+                                onClick={e=>{THIS.create_cluster();}}
                                 classes={{root: THIS.props.classes.button}}>
                                     Create Cluster
                                 </Button>

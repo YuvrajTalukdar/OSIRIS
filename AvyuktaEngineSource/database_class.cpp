@@ -277,10 +277,11 @@ void database_class::initialize_db(string password)
     file_handler.test();//for settings
 
     file_handler.test4();//for type data
-
+    
     file_handler.test2();//node file list
-    file_handler.test3();//data node list
-    file_handler.test5();//node multimap
+    */
+    //file_handler.test3();//data node list
+    /*file_handler.test5();//node multimap
 
     file_handler.test6();//relation file list
     file_handler.test7();//for relation data

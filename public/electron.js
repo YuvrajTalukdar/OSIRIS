@@ -174,6 +174,11 @@ ipcMain.on('close_db',(enent,data)=>{
     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;
 });
 
+ipcMain.on('find_shortest_path',(enent,data)=>{
+    let obj=AvyuktaEngine.find_shortest_path(data.source.node_id,data.destination.node_id);
+    mainWindow.webContents.send('shortest_path',obj);
+});
+
 /*Login Page functions*/
 
 ipcMain.on('login_create',(enent,data)=>{

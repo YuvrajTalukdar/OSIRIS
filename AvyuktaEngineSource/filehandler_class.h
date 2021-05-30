@@ -133,9 +133,9 @@ class filehandler_class
         for(int a=0;a<data_node_list.size();a++)
         {
             cout<<data_node_list.at(a).node_id<<","<<data_node_list.at(a).node_name<<","<<data_node_list.at(a).node_type_id<<",";
-            for(int b=0;b<data_node_list.at(a).relation_id_list.size();b++)
+            for(int b=0;b<data_node_list.at(a).relations.size();b++)
             {
-                cout<<data_node_list.at(a).relation_id_list.at(b)<<",";
+                cout<<data_node_list.at(a).relations.at(b)<<",";
             }
             cout<<"\n";
         }

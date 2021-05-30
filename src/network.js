@@ -23,6 +23,7 @@ export function add_network_func(CLASS)
     CLASS.prototype.change_node_type = change_node_type;
     CLASS.prototype.change_relation_type = change_relation_type;
     CLASS.prototype.enable_keyboard_navigation = enable_keyboard_navigation;
+    CLASS.prototype.highlight_path = highlight_path;   
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -337,6 +338,14 @@ function init_network()
     this.context_menu_list.push(menuItem2);
 }
 //------------------------------Network Focus Functions-------------------------------
+function highlight_path(path)
+{
+    this.network.setSelection({nodes:path.node_id_list,edges:path.relation_id_list},{
+        unselectAll: true,
+        highlightEdges: false
+    });
+}
+
 function focus_on_node(node_id)
 {
     var focus_options={

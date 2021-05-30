@@ -181,7 +181,7 @@ relation v8_to_relation(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = args.GetIsolate();
     Local<Context> context=isolate->GetCurrentContext();
     relation relation_obj;
-    relation_obj.weight=1.10;
+    relation_obj.weight=1;
     relation_obj.source_node_id=args[0].As<Number>()->Value();
     relation_obj.destination_node_id=args[1].As<Number>()->Value();
     relation_obj.relation_type_id=args[2].As<Number>()->Value();
@@ -285,18 +285,10 @@ Local<Object> node_to_v8_node(Isolate* isolate,data_node node)
     Local<Number> v8_node_type_id=Number::New(v8::Isolate::GetCurrent(),node.node_type_id);
     v8::String::NewFromUtf8(v8::Isolate::GetCurrent(),node.node_name.c_str()).ToLocal(&v8_node_name);
 
-    Local<Array> relation_id_list=Array::New(isolate);
-    for(int b=0;b<node.relation_id_list.size();b++)
-    {
-        Local<Number> v8_relation_id=Number::New(v8::Isolate::GetCurrent(),node.relation_id_list.at(b));
-        relation_id_list->Set(context,b,v8_relation_id);
-    }
-
     Local<Object> node_obj=Object::New(isolate);
     node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_id").ToLocalChecked(),v8_node_id).FromJust();
     node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_type_id").ToLocalChecked(),v8_node_type_id).FromJust();
     node_obj->Set(context,v8::String::NewFromUtf8(isolate,"node_name").ToLocalChecked(),v8_node_name).FromJust();
-    node_obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id_list").ToLocalChecked(),relation_id_list).FromJust();
     return node_obj;
 }
 
@@ -413,6 +405,33 @@ void edit_node_relation_type(const FunctionCallbackInfo<Value>& args)
     op_class.edit_node_relation_type(db,node_or_relation,node_relation_id,type,color_code,vectored);
 }
 
+void find_shortest_path(const FunctionCallbackInfo<Value>& args)
+{
+    int source_node_id=args[0].As<Number>()->Value();
+    int destination_node_id=args[1].As<Number>()->Value();
+    tree new_tree=op_class.dijkstra(db,source_node_id,destination_node_id);
+
+    Isolate* isolate = args.GetIsolate();
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Array> v8_node_id_list=Array::New(isolate);
+    for(int a=0;a<new_tree.node_ids.size();a++)
+    {
+        Local<Number> v8_node_id=Number::New(v8::Isolate::GetCurrent(),new_tree.node_ids.at(a));
+        v8_node_id_list->Set(context,a,v8_node_id);
+    }
+    Local<Array> v8_relation_id_list=Array::New(isolate);
+    for(int a=0;a<new_tree.relation_ids.size();a++)
+    {
+        Local<Number> v8_relation_id=Number::New(v8::Isolate::GetCurrent(),new_tree.relation_ids.at(a));
+        v8_relation_id_list->Set(context,a,v8_relation_id);
+    }
+
+    Local<Object> obj=Object::New(isolate);
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"node_id_list").ToLocalChecked(),v8_node_id_list).FromJust();
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id_list").ToLocalChecked(),v8_relation_id_list).FromJust();
+    args.GetReturnValue().Set(obj);
+}
+
 void Initialize(Local<Object> exports)
 {
     NODE_SET_METHOD(exports,"change_password",change_password);
@@ -434,6 +453,7 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"delete_relation",delete_relation);
     NODE_SET_METHOD(exports,"edit_node",edit_node);
     NODE_SET_METHOD(exports,"edit_relation",edit_relation);    
+    NODE_SET_METHOD(exports,"find_shortest_path",find_shortest_path); 
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

@@ -469,8 +469,6 @@ void filehandler_class::load_nodes()
                         {   node.node_name=word;}
                         else if(comma_count==2)
                         {   node.node_type_id=stoi(word);}
-                        else
-                        {   node.relation_id_list.push_back(stoi(word));};
                         word="";
                         comma_count++;
                     }
@@ -571,8 +569,6 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
     node.node_id=insertion_index;
     
     line2=to_string(node.node_id)+","+node.node_name+","+to_string(node.node_type_id)+",";
-    for(int a=0;a<node.relation_id_list.size();a++)
-    {   line2+=to_string(node.relation_id_list.at(a));line2+=",";}
     line2+="\n";
     
     bool insertion_done=false;
@@ -638,7 +634,6 @@ void filehandler_class::add_new_node(data_node &node)
         data_node_list.at(gap_node_iterator->first).node_id=gap_node_iterator->first;
         data_node_list.at(gap_node_iterator->first).node_name=node.node_name;
         data_node_list.at(gap_node_iterator->first).node_type_id=node.node_type_id;
-        data_node_list.at(gap_node_iterator->first).relation_id_list.assign(node.relation_id_list.begin(),node.relation_id_list.end());
         string file_name=node_file_list.at(gap_node_iterator->first/no_of_nodes_in_one_node_file).file_name;
         current_file_id=gap_node_iterator->first/no_of_nodes_in_one_node_file;
         node.node_id=gap_node_iterator->first;
@@ -849,7 +844,6 @@ void filehandler_class::edit_node(data_node &node)
     //editing data_node_list
     data_node_list.at(node.node_id).node_name=node.node_name;
     data_node_list.at(node.node_id).node_type_id=node.node_type_id;
-    data_node_list.at(node.node_id).relation_id_list=node.relation_id_list;
     //edit the node file
     string node_file_name=database_dir+node_file_list.at(node.node_id/no_of_nodes_in_one_node_file).file_name;
     stringstream in_file=decrypt_file(node_file_name);
@@ -878,8 +872,6 @@ void filehandler_class::edit_node(data_node &node)
                         line+=(to_string(node.node_id)+",");
                         line+=(node.node_name+",");
                         line+=(to_string(node.node_type_id)+",");
-                        for(int b=0;b<node.relation_id_list.size();b++)
-                        {   line+=(to_string(node.relation_id_list.at(a))+",");}
                         line+="\n";
                         new_data+=line;
                         found=true;
@@ -1311,6 +1303,9 @@ void filehandler_class::load_relations()
                 relation_list.push_back(r1);
                 previous_id=r1.relation_id;
                 is_prev_id_neg=false;
+                //graph creation
+                data_node_list.at(r1.source_node_id).relations.push_back(r1.relation_id);
+                data_node_list.at(r1.destination_node_id).relations.push_back(r1.relation_id);
             }
         }
         in_file.clear();
@@ -1434,6 +1429,9 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
     encrypt_file(file_name,temp_data);
     relation_list.push_back(relation);
     last_entered_relation=relation;
+    //graph creation
+    data_node_list.at(relation.source_node_id).relations.push_back(relation.relation_id);
+    data_node_list.at(relation.destination_node_id).relations.push_back(relation.relation_id);
     return no_of_relation_in_this_file;
 }
 
@@ -1642,6 +1640,22 @@ void filehandler_class::delete_relation(unsigned int relation_id)
         }
         in_file.clear();
         encrypt_file(file_dir,temp_data);
+        //graph editing
+        int position;
+        for(int a=0;a<data_node_list.at(relation_list.at(relation_id).source_node_id).relations.size();a++)
+        {
+            if(data_node_list.at(relation_list.at(relation_id).source_node_id).relations.at(a)==relation_list.at(relation_id).relation_id)
+            {   position=a;break;}
+        }
+        data_node_list.at(relation_list.at(relation_id).source_node_id).relations.erase(data_node_list.at(relation_list.at(relation_id).source_node_id).relations.begin()+position);
+
+        for(int a=0;a<data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.size();a++)
+        {
+            if(data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.at(a)==relation_list.at(relation_id).relation_id)
+            {   position=a;break;}
+        }
+        data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.erase(data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.begin()+position);
+
         //post processing
         relation_list.at(relation_id).gap_relation=true;
         total_no_of_relations--;
@@ -1658,6 +1672,24 @@ void filehandler_class::delete_relation(unsigned int relation_id)
 
 void filehandler_class::edit_relation(relation& relation_obj)
 {
+    //graph editing
+    int position;
+    for(int a=0;a<data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.size();a++)
+    {
+        if(data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.at(a)==relation_list.at(relation_obj.relation_id).relation_id)
+        {   position=a;break;}
+    }
+    data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.erase(data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.begin()+position);
+
+    for(int a=0;a<data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.size();a++)
+    {
+        if(data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.at(a)==relation_list.at(relation_obj.relation_id).relation_id)
+        {   position=a;break;}
+    }
+    data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.erase(data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.begin()+position);
+    
+    data_node_list.at(relation_obj.source_node_id).relations.push_back(relation_obj.relation_id);
+    data_node_list.at(relation_obj.destination_node_id).relations.push_back(relation_obj.relation_id);
     //change the relation data
     relation_list.at(relation_obj.relation_id).destination_node_id=relation_obj.destination_node_id;
     relation_list.at(relation_obj.relation_id).source_node_id=relation_obj.source_node_id;

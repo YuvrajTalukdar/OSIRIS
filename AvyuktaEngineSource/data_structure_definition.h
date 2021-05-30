@@ -19,7 +19,7 @@ struct relation
     unsigned int source_node_id;
     unsigned int destination_node_id;
 
-    double weight=0;
+    double weight=1;
 
     bool gap_relation=false;
 
@@ -34,7 +34,7 @@ struct data_node
     unsigned int node_id;
     string node_name;
     unsigned int node_type_id;
-    vector<unsigned int> relation_id_list;
+    vector<unsigned int> relations;
 };
 
 struct node_relation_type

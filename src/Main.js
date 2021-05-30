@@ -228,12 +228,12 @@ class Main extends React.Component
             search_operation_text:'',
             search_operations_text_close_btn:'none',
             operation_list:[
-                {name:"Sortest Path",display:'block'},
+                {name:"Shortest Path",display:'block'},
                 {name:"Minimum Spanning Tree",display:'block'},
                 {name:"Clustering",display:'block'}
             ],
-            sortest_path_node_source:'',
-            sortest_path_node_destination:'',
+            shortest_path_node_source:'',
+            shortest_path_node_destination:'',
             mst_node:undefined,
             mst_node_list:[],
             clustering_node:undefined,
@@ -569,6 +569,9 @@ class Main extends React.Component
     
     componentDidMount() 
     {  
+        window.ipcRenderer.on('shortest_path',(event,data)=>
+        {   this.highlight_path(data);});
+
         window.ipcRenderer.on('main_window_data_received',(event,data)=>
         {   this.add_main_window_data(data);});
 
@@ -877,7 +880,6 @@ class Main extends React.Component
                         onBlur={e=>{this.enable_keyboard_navigation(true);}}
                         onChange={(event,value)=>
                             {
-                                //this.setState({search_node_bar:value});
                                 if(value!=null)
                                 {   this.focus_on_node(value.node_id);}
                             }}
