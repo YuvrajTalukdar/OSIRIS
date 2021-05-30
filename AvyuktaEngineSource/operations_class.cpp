@@ -157,29 +157,32 @@ tree operation_class::dijkstra(database_class &db,unsigned int source_node_id,un
             break;
         }
     }
-    it=piority_queue.begin();
-    if(it->second.node_id!=destination_node_id)
-    {   goto point1;}
-    else
+    if(piority_queue.size()!=0)
     {
-        done_ids.push_back(it->second.node_id);
-        parent_node_ids.push_back(it->second.parent_node_id);
-        relation_ids.push_back(it->second.relation_id);
-    }
-    //backtracking
-    new_tree.node_ids.push_back(it->second.node_id);
-    for(int a=parent_node_ids.size()-1;a>=0;a--)
-    {
-        new_tree.node_ids.push_back(parent_node_ids.at(a));
-        new_tree.relation_ids.push_back(relation_ids.at(a));
-        for(int b=a;b>=0;b--)
+        it=piority_queue.begin();
+        if(it->second.node_id!=destination_node_id)
+        {   goto point1;}
+        else
         {
-            if(done_ids.at(b)==parent_node_ids.at(a))
-            {   a=b+1;break;}
+            done_ids.push_back(it->second.node_id);
+            parent_node_ids.push_back(it->second.parent_node_id);
+            relation_ids.push_back(it->second.relation_id);
+            //backtracking
+            new_tree.node_ids.push_back(it->second.node_id);
+            for(int a=parent_node_ids.size()-1;a>=0;a--)
+            {
+                new_tree.node_ids.push_back(parent_node_ids.at(a));
+                new_tree.relation_ids.push_back(relation_ids.at(a));
+                for(int b=a;b>=0;b--)
+                {
+                    if(done_ids.at(b)==parent_node_ids.at(a))
+                    {   a=b+1;break;}
+                }
+            }
+            new_tree.node_ids.pop_back();
+            new_tree.relation_ids.pop_back();
         }
     }
-    new_tree.node_ids.pop_back();
-    new_tree.relation_ids.pop_back();
     /*
     for(int a=0;a<new_tree.node_ids.size();a++)
     {

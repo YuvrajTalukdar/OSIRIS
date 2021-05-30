@@ -344,6 +344,13 @@ function highlight_path(path)
         unselectAll: true,
         highlightEdges: false
     });
+    if(path.relation_id_list.length==0)
+    {
+        this.setState({
+            alert_dialog_text:"Path not found !",
+            alert_dialog_open:true
+        });
+    }
 }
 
 function focus_on_node(node_id)

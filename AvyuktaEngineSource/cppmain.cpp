@@ -15,6 +15,6 @@ int main()
     database_class db;
     //db.create_odb("/media/yuvraj/Fast Disk/projects/react_electron/osiris/AvyuktaEngineSource/database/test.odb","test.odb","bikiclass7");
     db.open_odb("//media/yuvraj/Fast Disk/projects/react_electron/osiris/star wars database/star wars.odb","test1234");
-    operations.dijkstra(db,0,10);//14,3
+    operations.dijkstra(db,0,26);//14,3
     return 0;
 }
