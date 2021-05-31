@@ -432,6 +432,44 @@ void find_shortest_path(const FunctionCallbackInfo<Value>& args)
     args.GetReturnValue().Set(obj);
 }
 
+void find_mst(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    Local<Context> context=isolate->GetCurrentContext();
+    Local<Array> v8_node_id_list = Local<Array>::Cast(args[0]);
+    vector<unsigned int> node_ids;
+    for(int a=0;a<v8_node_id_list->Length();a++)
+    {
+        Local<Value> localKey=v8_node_id_list->Get(context,a).ToLocalChecked();
+        unsigned int node_id=localKey.As<Number>()->Value();
+        node_ids.push_back(node_id);
+    }
+    
+    mst new_mst=op_class.find_minimum_spanning_tree(db,node_ids);
+    set<unsigned int>::iterator it;
+
+    Local<Array> v8_node_id_list2=Array::New(isolate);
+    unsigned int a=0;
+    for(it=new_mst.node_ids.begin();it!=new_mst.node_ids.end();it++)
+    {
+        Local<Number> v8_node_id=Number::New(v8::Isolate::GetCurrent(),*it);
+        v8_node_id_list2->Set(context,a,v8_node_id);
+        a++;
+    }
+    Local<Array> v8_relation_id_list=Array::New(isolate);
+    a=0;
+    for(it=new_mst.relation_ids.begin();it!=new_mst.relation_ids.end();it++)
+    {
+        Local<Number> v8_relation_id=Number::New(v8::Isolate::GetCurrent(),*it);
+        v8_relation_id_list->Set(context,a,v8_relation_id);
+        a++;
+    }
+    Local<Object> obj=Object::New(isolate);
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"node_id_list").ToLocalChecked(),v8_node_id_list2).FromJust();
+    obj->Set(context,v8::String::NewFromUtf8(isolate,"relation_id_list").ToLocalChecked(),v8_relation_id_list).FromJust();
+    args.GetReturnValue().Set(obj);
+}
+
 void Initialize(Local<Object> exports)
 {
     NODE_SET_METHOD(exports,"change_password",change_password);
@@ -454,6 +492,7 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"edit_node",edit_node);
     NODE_SET_METHOD(exports,"edit_relation",edit_relation);    
     NODE_SET_METHOD(exports,"find_shortest_path",find_shortest_path); 
+    NODE_SET_METHOD(exports,"find_mst",find_mst); 
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

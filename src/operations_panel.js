@@ -54,7 +54,15 @@ function find_shortest_path()
 
 function find_MST()
 {
-
+    if(this.state.mst_node_list==null || this.state.mst_node_list.length<2)
+    {
+        this.setState({
+            alert_dialog_text:"Add at least 2 nodes for finding MST !",
+            alert_dialog_open:true
+        });
+    }
+    else
+    {   window.ipcRenderer.send('find_mst',this.state.mst_node_list);}
 }
 
 function create_cluster()
@@ -206,7 +214,7 @@ export function add_operations_panel(THIS)
                                     <IconButton color='primary' size="small"
                                         onClick={
                                             e=>
-                                            {   if(THIS.state.mst_node!=undefined)
+                                            {   if(THIS.state.mst_node!=undefined || THIS.state.mst_node.length==0)
                                                 {
                                                     let mst_node_list=[...THIS.state.mst_node_list];
                                                     let found=false;
@@ -218,10 +226,7 @@ export function add_operations_panel(THIS)
                                                     if(!found)
                                                     {
                                                         mst_node_list.push(THIS.state.mst_node);
-                                                        THIS.setState({
-                                                            mst_node:undefined,
-                                                            mst_node_list
-                                                        });
+                                                        THIS.setState({mst_node_list});
                                                     }
                                                 }
                                             }}>
@@ -235,7 +240,7 @@ export function add_operations_panel(THIS)
                                     style={{ width:'86%', paddingTop:10,paddingBottom:10 }}
                                     onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                                     onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                    value={THIS.state.new_node_type}
+                                    value={THIS.state.mst_node}
                                     onChange={(event,value)=>
                                         {
                                             THIS.setState({mst_node:value});
@@ -244,7 +249,7 @@ export function add_operations_panel(THIS)
                                     {
                                         (params) => 
                                             <TextField 
-                                            {...params} label="Select Node.." variant="outlined" 
+                                            {...params} label="Add Node" variant="outlined" 
                                             InputLabelProps=
                                             {{   
                                                     ...params.InputLabelProps,
@@ -294,7 +299,7 @@ export function add_operations_panel(THIS)
                                 <Button variant="contained" size="small" color="primary" style={{width:'100%',marginTop:10}}
                                 onClick={e=>{THIS.find_MST();}}
                                 classes={{root: THIS.props.classes.button}}>
-                                    Find MST
+                                    Find Network
                                 </Button>
                             </Grid>
                         </ListItem>

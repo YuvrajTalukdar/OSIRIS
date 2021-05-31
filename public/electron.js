@@ -179,6 +179,14 @@ ipcMain.on('find_shortest_path',(enent,data)=>{
     mainWindow.webContents.send('shortest_path',obj);
 });
 
+ipcMain.on('find_mst',(enent,data)=>{
+    let node_ids=[];
+    for(let a=0;a<data.length;a++)
+    {   node_ids.push(data[a].node_id);}
+    let obj=AvyuktaEngine.find_mst(node_ids);
+    mainWindow.webContents.send('find_mst',obj);
+});
+
 /*Login Page functions*/
 
 ipcMain.on('login_create',(enent,data)=>{

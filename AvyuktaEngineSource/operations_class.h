@@ -15,6 +15,12 @@ struct node_dijkstra
     unsigned int parent_node_id,node_id,relation_id;
 };
 
+struct mst
+{
+    set<unsigned int> node_ids;
+    set<unsigned int> relation_ids;
+};
+
 class operation_class
 {
     public:
@@ -39,4 +45,6 @@ class operation_class
     void edit_node_relation_type(database_class &db,int node_or_relation,unsigned int id,string type,string color_code,bool vectored);
 
     tree dijkstra(database_class &db,unsigned int source_node_id,unsigned int destination_node_id);  
+
+    mst find_minimum_spanning_tree(database_class &db,vector<unsigned int>& node_ids);
 };

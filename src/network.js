@@ -23,7 +23,10 @@ export function add_network_func(CLASS)
     CLASS.prototype.change_node_type = change_node_type;
     CLASS.prototype.change_relation_type = change_relation_type;
     CLASS.prototype.enable_keyboard_navigation = enable_keyboard_navigation;
-    CLASS.prototype.highlight_path = highlight_path;   
+    CLASS.prototype.highlight_path = highlight_path; 
+    CLASS.prototype.highlight_mst = highlight_mst;
+    CLASS.prototype.reset_node_color_settings = reset_node_color_settings;
+    CLASS.prototype.highlight_node = highlight_node;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -50,6 +53,7 @@ var options = {autoResize: true,height:'100%',width:'100%',
                 type: "arrow"
             },
         },
+        selectionWidth: 5,
     },
     interaction: {
         hover: true,
@@ -322,6 +326,9 @@ function init_network()
             }); 
         }
     }); 
+    this.network.on('deselectNode',(values)=>{
+        this.reset_node_color_settings();
+    });
     //context menu handling
     this.context_menu_list=[];
     var menuItem1={
@@ -338,18 +345,84 @@ function init_network()
     this.context_menu_list.push(menuItem2);
 }
 //------------------------------Network Focus Functions-------------------------------
-function highlight_path(path)
+function reset_node_color_settings()
 {
-    this.network.setSelection({nodes:path.node_id_list,edges:path.relation_id_list},{
+    for(let a=0;a<this.color_changed_node_id.length;a++)
+    {
+        let node=nodes.get(this.color_changed_node_id[a]);
+        node.chosen={
+            node:function(values, id, selected, hovering)
+            {
+                if(selected)
+                {
+                    values.borderColor='orange';
+                    values.shadowColor='orange';
+                }
+                else
+                {
+                    values.shadow=true;
+                    values.borderColor='#00FFE8';
+                }
+            }
+        }
+        nodes.update(node);
+    }
+    this.color_changed_node_id=[];
+}
+
+function highlight_node(node_id,color_code)
+{
+    let node=nodes.get(node_id);
+    node.chosen={
+        node:function(values, id, selected, hovering)
+        {
+            if(selected)
+            {
+                values.borderColor=color_code;
+                values.shadowColor=color_code;
+            }
+            else
+            {
+                values.shadow=true;
+                values.borderColor='#00FFE8';
+            }
+        }
+    }
+    nodes.update(node);
+    this.color_changed_node_id.push(node_id);
+}
+
+function highlight_mst(mst)
+{   
+    for(let a=0;a<this.state.mst_node_list.length;a++)
+    {   mst.node_id_list.push(this.state.mst_node_list[a].node_id);}
+    this.network.setSelection({nodes:mst.node_id_list,edges:mst.relation_id_list},{
         unselectAll: true,
         highlightEdges: false
     });
+    this.reset_node_color_settings();
+    for(let a=0;a<this.state.mst_node_list.length;a++)
+    {   this.highlight_node(this.state.mst_node_list[a].node_id,"red");}
+}
+
+function highlight_path(path)
+{
     if(path.relation_id_list.length==0)
     {
         this.setState({
             alert_dialog_text:"Path not found !",
             alert_dialog_open:true
         });
+    }
+    else
+    {
+        this.network.setSelection({nodes:path.node_id_list,edges:path.relation_id_list},{
+            unselectAll: true,
+            highlightEdges: false
+        });
+        this.reset_node_color_settings();
+        this.highlight_node(this.state.shortest_path_node_source.node_id,"red");
+        this.highlight_node(this.state.shortest_path_node_destination.node_id,"red");
     }
 }
 

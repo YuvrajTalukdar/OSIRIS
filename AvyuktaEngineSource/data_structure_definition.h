@@ -3,6 +3,7 @@
 #include<string.h>//fpr strcasestr
 #include<vector>
 #include<bits/stdc++.h>//for multimap
+#include<set>
 
 using std::vector;
 using std::string;
@@ -10,6 +11,7 @@ using std::to_string;
 using std::multimap;
 using std::cout;
 using std::endl;
+using std::set;
 
 struct relation
 {

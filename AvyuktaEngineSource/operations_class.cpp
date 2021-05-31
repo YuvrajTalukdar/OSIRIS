@@ -194,3 +194,28 @@ tree operation_class::dijkstra(database_class &db,unsigned int source_node_id,un
     */
     return new_tree;
 }
+
+mst operation_class::find_minimum_spanning_tree(database_class &db,vector<unsigned int>& node_ids)
+{
+    mst new_mst;
+    vector<tree> shortest_path_vec;
+    //finding shortest paths based on sparse matrix
+    for(int a=0;a<node_ids.size();a++)
+    {
+        for(int b=0;b<a;b++)
+        {   
+            tree new_tree=dijkstra(db,node_ids.at(a),node_ids.at(b));
+            shortest_path_vec.push_back(new_tree);
+        }
+    }
+    //union operator for path
+    for(int a=0;a<shortest_path_vec.size();a++)
+    {   
+        for(int b=0;b<shortest_path_vec.at(a).node_ids.size();b++)
+        {   new_mst.node_ids.insert(shortest_path_vec.at(a).node_ids.at(b));}
+        for(int b=0;b<shortest_path_vec.at(a).relation_ids.size();b++)
+        {   new_mst.relation_ids.insert(shortest_path_vec.at(a).relation_ids.at(b));}
+    }
+    shortest_path_vec.clear();
+    return new_mst;
+}

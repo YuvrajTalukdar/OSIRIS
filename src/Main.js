@@ -229,7 +229,7 @@ class Main extends React.Component
             search_operations_text_close_btn:'none',
             operation_list:[
                 {name:"Shortest Path",display:'block'},
-                {name:"Minimum Spanning Tree",display:'block'},
+                {name:"Network",display:'block'},
                 {name:"Clustering",display:'block'}
             ],
             shortest_path_node_source:'',
@@ -254,6 +254,7 @@ class Main extends React.Component
         this.net_ref=createRef();
         this.context_menu_list=[];
         this.network = {};
+        this.color_changed_node_id=[];
 
         this.context_node_id=-1;
         this.context_node_name="";
@@ -569,6 +570,9 @@ class Main extends React.Component
     
     componentDidMount() 
     {  
+        window.ipcRenderer.on('find_mst',(event,data)=>
+        {   this.highlight_mst(data);});
+
         window.ipcRenderer.on('shortest_path',(event,data)=>
         {   this.highlight_path(data);});
 
