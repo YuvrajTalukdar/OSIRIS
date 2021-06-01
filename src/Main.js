@@ -64,6 +64,13 @@ const useStyles = (theme)=>
         overflow: 'auto',
         border:'1px solid #03DAC5'
     },
+    properties_list_class2:{
+        height: "25vh",
+        width: '100%',
+        position: 'relative',
+        overflow: 'auto',
+        border:'1px solid #03DAC5',marginBottom:10
+    },
     formControl: {
         minWidth: '100%',
     },
@@ -236,9 +243,14 @@ class Main extends React.Component
             shortest_path_node_destination:'',
             mst_node:undefined,
             mst_node_list:[],
-            clustering_node:undefined,
+            clustering_node:'',
             clustering_node_list:[],
             cluster_color:"#03DAC5",
+            clustering_select_node_width:'100%',
+            clustering_type:0,
+            clustering_id_mode:'none',
+            cluster_name:'',
+            cluster_name_close_btn:'none',
             /*Other UI components*/
             //search_node_bar:'', 
             open_network_popup:false,
@@ -255,6 +267,8 @@ class Main extends React.Component
         this.context_menu_list=[];
         this.network = {};
         this.color_changed_node_id=[];
+        this.cluster_id_list=[];
+        this.cluster_id_with_nodes=[];
 
         this.context_node_id=-1;
         this.context_node_name="";

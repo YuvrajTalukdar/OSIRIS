@@ -27,6 +27,9 @@ export function add_network_func(CLASS)
     CLASS.prototype.highlight_mst = highlight_mst;
     CLASS.prototype.reset_node_color_settings = reset_node_color_settings;
     CLASS.prototype.highlight_node = highlight_node;
+    CLASS.prototype.cluster_by_connection = cluster_by_connection;
+    CLASS.prototype.cluster_by_id = cluster_by_id;
+    CLASS.prototype.generate_cluster_id = generate_cluster_id;
 }
 //----------------------network structure functions------------------------------------
 var nodes = new DataSet();
@@ -114,10 +117,78 @@ var options = {autoResize: true,height:'100%',width:'100%',
     }
 };
 
-function enable_keyboard_navigation(enable)
+function generate_cluster_id()
 {
-    options.interaction.keyboard.enabled=enable;
-    this.network.setOptions(options);
+    let cluster_id;
+    if(this.cluster_id_list.length==0)
+    {   cluster_id=0;}
+    else
+    {   
+        let last_cluster_id=this.cluster_id_list[this.cluster_id_list.length-1];
+        let num="";
+        for(let a=last_cluster_id.length-1;a>=0;a--)
+        {
+            if(last_cluster_id[a].localeCompare("_")!=0)
+            {   num=last_cluster_id[a]+num;}
+            else
+            {   break;}
+        }
+        cluster_id= Number(num);
+        cluster_id++;
+    }
+    return cluster_id;
+}
+
+function cluster_by_connection(node_id,cluster_name,cluster_color)
+{
+    let cluster_id=this.generate_cluster_id();
+    let cluster_options={
+        clusterNodeProperties: {
+            id:'cluster_'+cluster_id,
+            shape: 'circle',
+            label:cluster_name,
+            allowSingleNodeCluster: true,//i dont know what this is
+            color: {    border: cluster_color,},
+        }
+    }
+    this.network.clusterByConnection(node_id,cluster_options);
+    this.cluster_id_list.push('cluster_'+cluster_id);
+    let obj={
+        cid:'cluster_'+cluster_id,
+        node_id_list:[]
+    }
+    this.cluster_id_with_nodes.push(obj);
+}
+
+function cluster_by_id(node_list,cluster_name,cluster_color)
+{
+    let cluster_id=this.generate_cluster_id();
+    let node_id_list=[];
+    for(let a=0;a<node_list.length;a++)
+    {
+        let node=nodes.get(node_list[a].node_id);
+        node.cid=cluster_id;
+        nodes.update(node);
+        node_id_list.push(node_list[a].node_id);
+    }
+    let cluster_option={
+        joinCondition: function (childOptions) 
+        {   return childOptions.cid == cluster_id;},
+        clusterNodeProperties: {
+            id: "cluster_"+cluster_id,
+            shape: "circle",
+            label:cluster_name,
+            allowSingleNodeCluster: true,//i dont know what this is
+            color: {    border: cluster_color,},
+        },
+    }
+    this.network.cluster(cluster_option);
+    this.cluster_id_list.push('cluster_'+cluster_id);
+    let obj={
+        cid:'cluster_'+cluster_id,
+        node_id_list:node_id_list
+    }
+    this.cluster_id_with_nodes.push(obj);
 }
 
 function change_relation_type(data)
@@ -258,7 +329,8 @@ function add_node_to_network(node,js_index)
             shape:'circle',
             title:div,
             js_index:js_index,
-            node_type_id:node_type.id
+            node_type_id:node_type.id,
+            cid:-1,
         };
         nodes.add(node);
     }
@@ -298,11 +370,11 @@ function init_network()
 {
     this.create_full_network();
     this.network = new Network(this.net_ref.current,data,options);
-    var height = Math.round(window.innerHeight * 0.00) + 'px';
+    let height = Math.round(window.innerHeight * 0.00) + 'px';
     this.net_ref.current.style.height = height;
     this.center_focus(); 
     this.network.on('oncontext',(values)=>{
-        var node=this.network.getNodeAt(values.pointer.DOM);
+        let node=this.network.getNodeAt(values.pointer.DOM);
         if(node!=undefined)
         {
             this.context_node_id=node;
@@ -313,7 +385,7 @@ function init_network()
                 network_popup_bottom:values.pointer.DOM.x,
             });
         }
-        var edge=this.network.getEdgeAt(values.pointer.DOM);
+        let edge=this.network.getEdgeAt(values.pointer.DOM);
         if(edge!=undefined && node==undefined)
         {
             this.context_edge_id=edge;
@@ -329,14 +401,41 @@ function init_network()
     this.network.on('deselectNode',(values)=>{
         this.reset_node_color_settings();
     });
+    this.network.on('doubleClick',(values)=>{
+        let node=this.network.getNodeAt(values.pointer.DOM);
+        if(node!=undefined)
+        {
+            if(this.network.isCluster(node) == true)
+            {   
+                this.network.openCluster(node);
+                this.cluster_id_list=this.cluster_id_list.filter(item=>item!=node);
+                let index;
+                for(let a=0;a<this.cluster_id_with_nodes.length;a++)
+                {
+                    if(this.cluster_id_with_nodes[a].cid.localeCompare(node)==0)
+                    {
+                        for(let b=0;b<this.cluster_id_with_nodes[a].node_id_list.length;b++)
+                        {
+                            let node_obj=nodes.get(this.cluster_id_with_nodes[a].node_id_list[b]);
+                            node_obj.cid=-1;
+                            nodes.update(node_obj);
+                        }
+                        index=a;
+                        break;
+                    }
+                }
+                this.cluster_id_with_nodes.splice(index,1);
+            }
+        }
+    });
     //context menu handling
     this.context_menu_list=[];
-    var menuItem1={
+    let menuItem1={
         'id':0,
         'text':'Edit',
         'icon':EditIcon
     }  
-    var menuItem2={
+    let menuItem2={
         'id':1,
         'text':'Delete',
         'icon':DeleteIcon
@@ -344,7 +443,13 @@ function init_network()
     this.context_menu_list.push(menuItem1);
     this.context_menu_list.push(menuItem2);
 }
-//------------------------------Network Focus Functions-------------------------------
+//------------------------------Network Style Functions-------------------------------
+function enable_keyboard_navigation(enable)
+{
+    options.interaction.keyboard.enabled=enable;
+    this.network.setOptions(options);
+}
+
 function reset_node_color_settings()
 {
     for(let a=0;a<this.color_changed_node_id.length;a++)

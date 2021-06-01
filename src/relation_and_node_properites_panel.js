@@ -444,13 +444,13 @@ export function relation_node_properties_panel(THIS)
                                 if(item.show)
                                 {
                                     return(
-                                    <ListItem button key={item.id}
-                                    onClick={e=>
-                                    {
-                                        THIS.setState({node_type_name:item.node_type});
-                                        THIS.search_node_type(item.node_type);
-                                    }}>
-                                        <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} />
+                                    <ListItem button key={item.id}>
+                                        <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} 
+                                        onClick={e=>
+                                        {
+                                            THIS.setState({node_type_name:item.node_type});
+                                            THIS.search_node_type(item.node_type);
+                                        }}/>
                                         <IconButton color='primary' size='small'
                                             onClick={
                                             e=>{
@@ -654,13 +654,13 @@ export function relation_node_properties_panel(THIS)
                                 if(item.show)
                                 {
                                     return(
-                                    <ListItem button key={item.id}
-                                    onClick={E=>
-                                    {
-                                        THIS.setState({relation_type_name:item.relation_type});
-                                        THIS.search_relation_type(item.relation_type);
-                                    }}>
-                                        <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} />
+                                    <ListItem button key={item.id}>
+                                        <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} 
+                                        onClick={E=>
+                                        {
+                                            THIS.setState({relation_type_name:item.relation_type});
+                                            THIS.search_relation_type(item.relation_type);
+                                        }}/>
                                         <IconButton color='primary' size='small'
                                             onClick={
                                             e=>{

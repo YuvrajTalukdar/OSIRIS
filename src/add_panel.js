@@ -625,7 +625,13 @@ export function add_panel(THIS)
                                 {
                                     return(
                                         <ListItem button key={item.node_id}>
-                                            <ListItemText primary={<Typography type="body2" style={{ color:'#FFFFFF'}}>{item.node_name}</Typography>} />
+                                            <ListItemText primary={<Typography type="body2" style={{ color:'#FFFFFF'}}>{item.node_name}</Typography>} 
+                                            onClick={
+                                                e=>
+                                                {
+                                                    THIS.search_node_name(item.node_name);
+                                                    THIS.setState({new_node_name:item.node_name});
+                                            }}/>
                                             <IconButton color='primary' size='small'
                                             onClick={
                                                 e=>{
