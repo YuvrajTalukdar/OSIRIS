@@ -46,6 +46,19 @@ export class Relation_Node_Properties_Panel extends React.Component
     match_found_at2=-1;//for edit node type
     match_found_at3=-1;//for edit relation type
 
+    node_type_search_handler = () => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.search_node_type(this.state.node_type_name);
+        }, 250);
+    }
+    relation_type_search_handler = () => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.search_relation_type(this.state.relation_type_name);
+        }, 250);
+    }
+
     Delete_Relation_Type()
     {
         const relation_type_list=[...this.props.THIS.state.relation_type_data_list];
@@ -376,7 +389,7 @@ export class Relation_Node_Properties_Panel extends React.Component
                                     this.setState({
                                         node_type_name:e.target.value,
                                     });
-                                    this.search_node_type(e.target.value);
+                                    this.node_type_search_handler();
                                 }
                             }
                             InputLabelProps={
@@ -508,7 +521,7 @@ export class Relation_Node_Properties_Panel extends React.Component
                             onChange={
                                 e=>{
                                     this.setState({relation_type_name:e.target.value});
-                                    this.search_relation_type(e.target.value);
+                                    this.relation_type_search_handler();
                                 }
                             }
                             InputLabelProps={
