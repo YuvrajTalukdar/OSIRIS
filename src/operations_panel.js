@@ -7,49 +7,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import React from 'react';
 
 export function add_operations_func(CLASS)
-{
-    CLASS.prototype.find_shortest_path = find_shortest_path;
-    CLASS.prototype.find_MST = find_MST;
-}
-
-function find_shortest_path()
-{
-    if(this.state.shortest_path_node_source==null || this.state.shortest_path_node_source.length==0)
-    {
-        this.setState({
-            alert_dialog_text:"Source Node not entered !",
-            alert_dialog_open:true
-        });
-    }
-    else if(this.state.shortest_path_node_destination==null || this.state.shortest_path_node_destination.length==0)
-    {
-        this.setState({
-            alert_dialog_text:"Destination Node not entered !",
-            alert_dialog_open:true
-        });
-    }
-    else
-    {
-        let data={
-            source:this.state.shortest_path_node_source,
-            destination:this.state.shortest_path_node_destination
-        }
-        window.ipcRenderer.send('find_shortest_path',data);
-    }
-}
-
-function find_MST()
-{
-    if(this.state.mst_node_list==null || this.state.mst_node_list.length<2)
-    {
-        this.setState({
-            alert_dialog_text:"Add at least 2 nodes for finding MST !",
-            alert_dialog_open:true
-        });
-    }
-    else
-    {   window.ipcRenderer.send('find_mst',this.state.mst_node_list);}
-}
+{}
 
 export class Add_Operations_Panel extends React.Component
 {   
@@ -64,6 +22,7 @@ export class Add_Operations_Panel extends React.Component
                 {name:"Network",display:'block'},
                 {name:"Clustering",display:'block'}
             ],
+
             cluster_name:'',
             cluster_name_close_btn:'none',
             clustering_node:'',
@@ -72,10 +31,57 @@ export class Add_Operations_Panel extends React.Component
             clustering_select_node_width:'100%',
             clustering_type:0,
             clustering_id_mode:'none',
+
+            mst_node:undefined,
+            mst_node_list:[],
+
+            shortest_path_node_source:'',
+            shortest_path_node_destination:'',
         }
         this.search_operation=this.search_operation.bind(this);
         this.create_cluster=this.create_cluster.bind(this);
+        this.find_MST=this.find_MST.bind(this);
     }
+    
+    find_shortest_path()
+    {
+        if(this.state.shortest_path_node_source==null || this.state.shortest_path_node_source.length==0)
+        {
+            this.props.THIS.setState({
+                alert_dialog_text:"Source Node not entered !",
+                alert_dialog_open:true
+            });
+        }
+        else if(this.state.shortest_path_node_destination==null || this.state.shortest_path_node_destination.length==0)
+        {
+            this.props.THIS.setState({
+                alert_dialog_text:"Destination Node not entered !",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {
+            let data={
+                source:this.state.shortest_path_node_source,
+                destination:this.state.shortest_path_node_destination
+            }
+            window.ipcRenderer.send('find_shortest_path',data);
+        }
+    }
+
+    find_MST()
+    {
+        if(this.state.mst_node_list==null || this.state.mst_node_list.length<2)
+        {
+            this.props.THIS.setState({
+                alert_dialog_text:"Add at least 2 nodes for finding MST !",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {   window.ipcRenderer.send('find_mst',this.state.mst_node_list);}
+    }
+
     search_operation(op_name)
     {
         let operation_list=[...this.state.operation_list];
@@ -205,10 +211,10 @@ export class Add_Operations_Panel extends React.Component
                                     style={{ width: 300, marginTop:15,marginBottom:15}}
                                     onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
                                     onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                                    value={this.props.THIS.state.shortest_path_node_source}
+                                    value={this.state.shortest_path_node_source}
                                     onChange={(event,value)=>
                                         {
-                                            this.props.THIS.setState({shortest_path_node_source:value});
+                                            this.setState({shortest_path_node_source:value});
                                         }}
                                     renderInput=
                                     {
@@ -231,11 +237,8 @@ export class Add_Operations_Panel extends React.Component
                                     style={{ width: 300,marginBottom:15 }}
                                     onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
                                     onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                                    value={this.props.THIS.state.shortest_path_node_destination}
-                                    onChange={(event,value)=>
-                                        {
-                                            this.props.THIS.setState({shortest_path_node_destination:value});
-                                        }}
+                                    value={this.state.shortest_path_node_destination}
+                                    onChange={(event,value)=>{this.setState({shortest_path_node_destination:value});}}
                                     renderInput=
                                     {
                                         (params) => 
@@ -250,7 +253,7 @@ export class Add_Operations_Panel extends React.Component
                                     }
                                     />
                                     <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:5}}
-                                    onClick={e=>{this.props.THIS.find_shortest_path();}}
+                                    onClick={e=>{this.find_shortest_path();}}
                                     classes={{root: this.props.THIS.props.classes.button}}>
                                         Find Shortest Path
                                     </Button>
@@ -271,19 +274,19 @@ export class Add_Operations_Panel extends React.Component
                                         <IconButton color='primary' size="small"
                                             onClick={
                                                 e=>
-                                                {   if(this.props.THIS.state.mst_node!=undefined || this.props.THIS.state.mst_node.length==0)
+                                                {   if(this.state.mst_node!=undefined /*|| this.state.mst_node.length==0*/)
                                                     {
-                                                        let mst_node_list=[...this.props.THIS.state.mst_node_list];
+                                                        let mst_node_list=[...this.state.mst_node_list];
                                                         let found=false;
                                                         for(let a=0;a<mst_node_list.length;a++)
                                                         {
-                                                            if(mst_node_list[a].node_id==this.props.THIS.state.mst_node.node_id)
+                                                            if(mst_node_list[a].node_id==this.state.mst_node.node_id)
                                                             {   found=true;break;}
                                                         }
                                                         if(!found)
                                                         {
-                                                            mst_node_list.push(this.props.THIS.state.mst_node);
-                                                            this.props.THIS.setState({mst_node_list});
+                                                            mst_node_list.push(this.state.mst_node);
+                                                            this.setState({mst_node_list});
                                                         }
                                                     }
                                                 }}>
@@ -297,10 +300,10 @@ export class Add_Operations_Panel extends React.Component
                                         style={{ width:'86%', marginTop:15,marginBottom:15 }}
                                         onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
                                         onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                                        value={this.props.THIS.state.mst_node}
+                                        value={this.state.mst_node}
                                         onChange={(event,value)=>
                                             {
-                                                this.props.THIS.setState({mst_node:value});
+                                                this.setState({mst_node:value});
                                             }}
                                         renderInput=
                                         {
@@ -318,7 +321,7 @@ export class Add_Operations_Panel extends React.Component
                                     </Grid>
                                     <List className={this.props.THIS.props.classes.properties_list_class}> 
                                     {
-                                        this.props.THIS.state.mst_node_list.map(item=>
+                                        this.state.mst_node_list.map(item=>
                                         {
                                             return(
                                                 <ListItem button key={item.node_id}>
@@ -342,9 +345,9 @@ export class Add_Operations_Panel extends React.Component
                                                     onClick={
                                                         e=>
                                                         {
-                                                            let mst_node_list=[...this.props.THIS.state.mst_node_list];
+                                                            let mst_node_list=[...this.state.mst_node_list];
                                                             let new_mst_list=mst_node_list.filter(item2=>item2.node_id!=item.node_id);
-                                                            this.props.THIS.setState({mst_node_list:new_mst_list});
+                                                            this.setState({mst_node_list:new_mst_list});
                                                         }}>
                                                         <DeleteIcon/>
                                                     </IconButton>
@@ -354,7 +357,7 @@ export class Add_Operations_Panel extends React.Component
                                     }
                                     </List>
                                     <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:5}}
-                                    onClick={e=>{this.props.THIS.find_MST();}}
+                                    onClick={e=>{this.find_MST();}}
                                     classes={{root: this.props.THIS.props.classes.button}}>
                                         Find Network
                                     </Button>

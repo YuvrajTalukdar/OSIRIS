@@ -497,20 +497,20 @@ function highlight_node(node_id,color_code)
     this.color_changed_node_id.push(node_id);
 }
 
-function highlight_mst(mst)
+function highlight_mst(mst,mst_node_list)
 {   
-    for(let a=0;a<this.state.mst_node_list.length;a++)
-    {   mst.node_id_list.push(this.state.mst_node_list[a].node_id);}
+    for(let a=0;a<mst_node_list.length;a++)
+    {   mst.node_id_list.push(mst_node_list[a].node_id);}
     this.network.setSelection({nodes:mst.node_id_list,edges:mst.relation_id_list},{
         unselectAll: true,
         highlightEdges: false
     });
     this.reset_node_color_settings();
-    for(let a=0;a<this.state.mst_node_list.length;a++)
-    {   this.highlight_node(this.state.mst_node_list[a].node_id,"red");}
+    for(let a=0;a<mst_node_list.length;a++)
+    {   this.highlight_node(mst_node_list[a].node_id,"red");}
 }
 
-function highlight_path(path)
+function highlight_path(path,shortest_path_node_source,shortest_path_node_destination)
 {
     if(path.relation_id_list.length==0)
     {
@@ -526,8 +526,8 @@ function highlight_path(path)
             highlightEdges: false
         });
         this.reset_node_color_settings();
-        this.highlight_node(this.state.shortest_path_node_source.node_id,"red");
-        this.highlight_node(this.state.shortest_path_node_destination.node_id,"red");
+        this.highlight_node(shortest_path_node_source.node_id,"red");
+        this.highlight_node(shortest_path_node_destination.node_id,"red");
     }
 }
 

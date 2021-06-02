@@ -14,7 +14,7 @@ import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import CloseIcon from '@material-ui/icons/Close';
 
-import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
+import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
 import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
@@ -161,7 +161,6 @@ class Main extends React.Component
             operation_drawer_color:'primary',
             relation_node_properties_drawer_open:true,
             relation_node_properties_icon_color:'primary',
-            color_picker_hex_value:"#03DAC5",
             collaborate_drawer_open:false,
             
             /*Node data */
@@ -192,27 +191,8 @@ class Main extends React.Component
             relation_add_button_text:'Add',
             disable_relation_add_button:false,
             /*type data */
-                /*Node Type */
-            node_type_data_list:[],
-            node_type_name_edit:"",
-            node_type_search_close_button_visible:"none",
-            node_type_name:"",
-            edit_node_type_box_visible:'none',
-            add_node_type_button_text:'Add',
-            disable_add_node_type_button:false,
-            edit_node_type:undefined,
-            edit_node_type_name_close_button_visible:'none',
-                /*Relation Type */
-            relation_type_data_list:[],
-            vectored_relation:false,
-            edit_relation_type:"",
-            relation_type_close_button_visible:"none",
-            relation_type_name:"",
-            edit_relation_type_box_visible:'none',
-            edit_relation_type_close_button_visible:'none',
-            edit_relation_type_obj:undefined,
-            disabled_add_relation_type_button:false,
-            relation_type_add_button_text:'Add',
+            node_type_data_list:[],/*Node Type */
+            relation_type_data_list:[],/*Relation Type */
             /*Dialog Box Settings*/
             permission_dialog_open:false,
             permission_dialog_text:"",
@@ -225,13 +205,7 @@ class Main extends React.Component
             new_pass1_close_btn_show:'none',
             new_pass2:'',
             new_pass2_close_btn_show:'none',
-            /*Operation panel*/
-            shortest_path_node_source:'',
-            shortest_path_node_destination:'',
-            mst_node:undefined,
-            mst_node_list:[],
             /*Other UI components*/
-            //search_node_bar:'', 
             open_network_popup:false,
             network_popup_top:100,
             network_popup_bottom:100,
@@ -259,7 +233,6 @@ class Main extends React.Component
         //this.ctrlKey=false;
 
         this.handle_drawer=this.handle_drawer.bind(this);
-        this.color_picker_handler=this.color_picker_handler.bind(this);
         this.add_main_window_data=this.add_main_window_data.bind(this);
         
         this.permission_dialog_options=this.permission_dialog_options.bind(this);
@@ -277,6 +250,8 @@ class Main extends React.Component
 
     add_relation_ref=createRef();
     add_node_ref=createRef();
+    properties_panel_ref=createRef();
+    operations_panel_ref=createRef();
     
     delete_node_type_id=-1;
     delete_node_type_name="";
@@ -293,8 +268,6 @@ class Main extends React.Component
     delete_relation_type="";
 
     match_found_at=-1;//for edit node
-    match_found_at2=-1;//for edit node type
-    match_found_at3=-1;//for edit relation type
 
     source_node_id=-1;
     destination_node_id=-1;
@@ -393,13 +366,6 @@ class Main extends React.Component
         this.reset_context_menu_settings();
     }
 
-    color_picker_handler(color)
-    {
-        this.setState({
-            color_picker_hex_value:color
-        });
-    }
-
     rgbToHex(r, g, b) 
     {   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);}
 
@@ -456,9 +422,8 @@ class Main extends React.Component
                 relation_node_properties_drawer_open:false,
                 relation_node_properties_icon_color:'primary',
                 collaborate_drawer_open:false,
-
-                cluster_color:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))
             });
+            this.operations_panel_ref.current.setState({cluster_color:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))});
         }
         else if(drawer_id==3)
         {
@@ -476,9 +441,8 @@ class Main extends React.Component
                 relation_node_properties_drawer_open:!this.state.relation_node_properties_drawer_open,
                 relation_node_properties_icon_color:color,
                 collaborate_drawer_open:false,
-
-                color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))
             });
+            this.properties_panel_ref.current.setState({color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))});
         }
     }
 
@@ -489,9 +453,9 @@ class Main extends React.Component
             permission_dialog_open:false,
         });
         if(this.permission_dialog_purpose_code==1)
-        {   this.delete_node_type();}
+        {   this.properties_panel_ref.current.delete_node_type();}
         else if(this.permission_dialog_purpose_code==2)
-        {   this.Delete_Relation_Type();}
+        {   this.properties_panel_ref.current.Delete_Relation_Type();}
         else if(this.permission_dialog_purpose_code==3)
         {   this.delete_node();}
         else if(this.permission_dialog_purpose_code==4)
@@ -564,10 +528,10 @@ class Main extends React.Component
     componentDidMount() 
     {  
         window.ipcRenderer.on('find_mst',(event,data)=>
-        {   this.highlight_mst(data);});
+        {   this.highlight_mst(data,this.operations_panel_ref.current.state.mst_node_list);});
 
         window.ipcRenderer.on('shortest_path',(event,data)=>
-        {   this.highlight_path(data);});
+        {   this.highlight_path(data,this.operations_panel_ref.current.state.shortest_path_node_source,this.operations_panel_ref.current.state.shortest_path_node_destination);});
 
         window.ipcRenderer.on('main_window_data_received',(event,data)=>
         {   this.add_main_window_data(data);});
@@ -931,9 +895,9 @@ class Main extends React.Component
                 {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
                 {add_panel(this)}
                 {/*---------------------------------------------Operations Panel-----------------------------------------------------*/}
-                <Add_Operations_Panel THIS={this}/>
+                <Add_Operations_Panel THIS={this} ref={this.operations_panel_ref}/>
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
-                {relation_node_properties_panel(this)}
+                <Relation_Node_Properties_Panel THIS={this} ref={this.properties_panel_ref}/>
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
                 <Drawer variant="permanent" className={this.props.classes.drawer}
                  classes={{paper: this.props.classes.drawerPaper,}}>
