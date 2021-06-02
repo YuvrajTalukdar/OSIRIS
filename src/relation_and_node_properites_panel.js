@@ -2,6 +2,7 @@ import {Button,Toolbar,Typography,TextField,Grid,IconButton,Drawer,Divider,List,
 import ColorPicker from "material-ui-color-picker";
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
+import React from 'react';
 
 export function add_node_relation_props_func(CLASS)
 {
@@ -340,7 +341,7 @@ export function relation_node_properties_panel(THIS)
                             label='Node Type' 
                             variant='outlined' 
                             size='small'                                          
-                            style={{ width: '100%' }}
+                            style={{ width: '100%',marginBottom:15 }}
                             value={THIS.state.node_type_name}
                             onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                             onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
@@ -376,16 +377,12 @@ export function relation_node_properties_panel(THIS)
                                     </Box> 
                                 ),
                             }}/>
-                        </Grid>
-                    </ListItem>
-                    <ListItem>
-                        <Grid container direction="row" justify="center" alignItems="center">
                             <Box display={THIS.state.edit_node_type_box_visible}>
                                 <TextField         
                                 label='New Node Type Name' 
                                 variant='outlined' 
                                 size='small'                                          
-                                style={{ width: '100%' }}
+                                style={{ width: '100%',marginBottom:15 }}
                                 value={THIS.state.node_type_name_edit}
                                 onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                                 onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
@@ -426,48 +423,44 @@ export function relation_node_properties_panel(THIS)
                                     ),
                                 }}/>
                             </Box>
-                        </Grid>
-                    </ListItem>
-                    <ListItem>
-                        <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
+                            <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
                             onClick={
                                 e=>{    THIS.add_node_type();}}
                             classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
                             disabled={THIS.state.disable_add_node_type_button}>{THIS.state.add_node_type_button_text}
-                        </Button>
-                    </ListItem>
-                    <ListItem>
-                        <List className={THIS.props.classes.properties_list_class}>
-                        {
-                            THIS.state.node_type_data_list.map(item=>
+                            </Button>
+                            <List className={THIS.props.classes.properties_list_class}>
                             {
-                                if(item.show)
+                                THIS.state.node_type_data_list.map(item=>
                                 {
-                                    return(
-                                    <ListItem button key={item.id}>
-                                        <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} 
-                                        onClick={e=>
-                                        {
-                                            THIS.setState({node_type_name:item.node_type});
-                                            THIS.search_node_type(item.node_type);
-                                        }}/>
-                                        <IconButton color='primary' size='small'
-                                            onClick={
-                                            e=>{
-                                                THIS.delete_node_type_id=item.id;
-                                                THIS.delete_node_type_name=item.node_type;
-                                                THIS.permission_dialog_purpose_code=1;
-                                                THIS.permission_dialog_options(1);
-                                            } 
-                                            }>
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    </ListItem>
-                                    );
-                                }
-                            })
-                        }
-                        </List>
+                                    if(item.show)
+                                    {
+                                        return(
+                                        <ListItem button key={item.id}>
+                                            <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} 
+                                            onClick={e=>
+                                            {
+                                                THIS.setState({node_type_name:item.node_type});
+                                                THIS.search_node_type(item.node_type);
+                                            }}/>
+                                            <IconButton color='primary' size='small'
+                                                onClick={
+                                                e=>{
+                                                    THIS.delete_node_type_id=item.id;
+                                                    THIS.delete_node_type_name=item.node_type;
+                                                    THIS.permission_dialog_purpose_code=1;
+                                                    THIS.permission_dialog_options(1);
+                                                } 
+                                                }>
+                                                <DeleteIcon/>
+                                            </IconButton>
+                                        </ListItem>
+                                        );
+                                    }
+                                })
+                            }
+                            </List>
+                        </Grid>
                     </ListItem>
                     <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
                     <ListItem>
@@ -478,15 +471,11 @@ export function relation_node_properties_panel(THIS)
                             variant="caption">
                             Relation Properties
                             </Typography>
-                        </Grid>
-                    </ListItem>
-                    <ListItem>
-                        <Grid container direction="row" justify="center" alignItems="center">
                             <TextField         
                             label='Relation Type' 
                             variant='outlined' 
                             size='small'                                          
-                            style={{ width: '100%' }}
+                            style={{ width: '100%',marginTop:15,marginBottom:15}}
                             value={THIS.state.relation_type_name}
                             onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                             onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
@@ -519,16 +508,12 @@ export function relation_node_properties_panel(THIS)
                                     </Box> 
                                 ),
                             }}/>
-                        </Grid>
-                    </ListItem>
-                    <ListItem>
-                        <Grid container direction="row" justify="center" alignItems="center">
                             <Box display={THIS.state.edit_relation_type_box_visible}>
                                 <TextField         
                                 label='New Relation Type Name' 
                                 variant='outlined' 
                                 size='small'                                          
-                                style={{ width: '100%' }}
+                                style={{ width: '100%',marginBottom:15}}
                                 value={THIS.state.edit_relation_type}
                                 onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
                                 onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
@@ -567,37 +552,32 @@ export function relation_node_properties_panel(THIS)
                                     ),
                                 }}/>
                             </Box>
-                        </Grid>
-                    </ListItem>
-                    <ListItem>
-                        <div className="colorPickerStyle">
-                            <ColorPicker
-                                name="color"
-                                variant='outlined' 
-                                size="small"
-                                onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                onChange={color => 
-                                {
-                                    THIS.color_picker_handler(color);
-                                    if(THIS.state.disabled_add_relation_type_button)
-                                    {   THIS.relation_type_add_button_enabler(THIS.state.edit_relation_type,""+color,THIS.state.vectored_relation);}
-                                }}
-                                InputProps={{
-                                    value:THIS.state.color_picker_hex_value, 
-                                    style:{color:THIS.state.color_picker_hex_value},
-                                    classes:{
-                                        root:THIS.props.classes.root,
-                                        notchedOutline: THIS.props.classes.valueTextField,
-                                        disabled: THIS.props.classes.valueTextField
-                                    }
-                                }}
-                                value={THIS.state.color_picker_hex_value}
-                            />
-                        </div>
-                    </ListItem>
-                    <ListItem>
-                        <Grid container direction="row" justify="space-between" alignItems="center">
+                            <div className="colorPickerStyle">
+                                <ColorPicker
+                                    name="color"
+                                    variant='outlined' 
+                                    size="small"
+                                    style={{marginBottom:15}}
+                                    onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
+                                    onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
+                                    onChange={color => 
+                                    {
+                                        THIS.color_picker_handler(color);
+                                        if(THIS.state.disabled_add_relation_type_button)
+                                        {   THIS.relation_type_add_button_enabler(THIS.state.edit_relation_type,""+color,THIS.state.vectored_relation);}
+                                    }}
+                                    InputProps={{
+                                        value:THIS.state.color_picker_hex_value, 
+                                        style:{color:THIS.state.color_picker_hex_value},
+                                        classes:{
+                                            root:THIS.props.classes.root,
+                                            notchedOutline: THIS.props.classes.valueTextField,
+                                            disabled: THIS.props.classes.valueTextField
+                                        }
+                                    }}
+                                    value={THIS.state.color_picker_hex_value}
+                                />
+                            </div>
                             <Grid xs={6}>
                                 <Typography
                                     color="primary"
@@ -621,7 +601,7 @@ export function relation_node_properties_panel(THIS)
                                         if(THIS.state.edit_relation_type_obj!=undefined)
                                         {   THIS.relation_type_add_button_enabler(THIS.state.edit_relation_type,THIS.state.color_picker_hex_value,e.target.value);}
                                     }}
-                                    style={{width:'100%' }}
+                                    style={{width:'100%',marginBottom:15}}
                                     MenuProps={{classes:{paper: THIS.props.classes.menu_dropdown_style}}}
                                     className={THIS.props.classes.select_style}
                                     inputProps={{
@@ -635,49 +615,45 @@ export function relation_node_properties_panel(THIS)
                                     </Select>
                                 </FormControl>
                             </Grid>
-                        </Grid>
-                    </ListItem>
-                    <ListItem>
-                        <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                        onClick={
-                            e=>{THIS.add_relation_type();}}
-                            classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
-                            disabled={THIS.state.disabled_add_relation_type_button}>
-                            {THIS.state.relation_type_add_button_text}
-                        </Button>
-                    </ListItem>
-                    <ListItem>
-                        <List className={THIS.props.classes.properties_list_class}>
-                        {   
-                            THIS.state.relation_type_data_list.map(item=>
-                            {
-                                if(item.show)
+                            <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
+                            onClick={
+                                e=>{THIS.add_relation_type();}}
+                                classes={{root: THIS.props.classes.button, disabled: THIS.props.classes.disabled_button }}
+                                disabled={THIS.state.disabled_add_relation_type_button}>
+                                {THIS.state.relation_type_add_button_text}
+                            </Button>
+                            <List className={THIS.props.classes.properties_list_class}>
+                            {   
+                                THIS.state.relation_type_data_list.map(item=>
                                 {
-                                    return(
-                                    <ListItem button key={item.id}>
-                                        <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} 
-                                        onClick={E=>
-                                        {
-                                            THIS.setState({relation_type_name:item.relation_type});
-                                            THIS.search_relation_type(item.relation_type);
-                                        }}/>
-                                        <IconButton color='primary' size='small'
-                                            onClick={
-                                            e=>{
-                                                THIS.delete_relation_type_id=item.id;
-                                                THIS.delete_relation_type_name=item.relation_type;
-                                                THIS.permission_dialog_purpose_code=2;
-                                                THIS.permission_dialog_options(1);
-                                            } 
-                                            }>
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    </ListItem>
-                                    );
-                                }
-                            })
-                        }
-                        </List>
+                                    if(item.show)
+                                    {
+                                        return(
+                                        <ListItem button key={item.id}>
+                                            <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} 
+                                            onClick={E=>
+                                            {
+                                                THIS.setState({relation_type_name:item.relation_type});
+                                                THIS.search_relation_type(item.relation_type);
+                                            }}/>
+                                            <IconButton color='primary' size='small'
+                                                onClick={
+                                                e=>{
+                                                    THIS.delete_relation_type_id=item.id;
+                                                    THIS.delete_relation_type_name=item.relation_type;
+                                                    THIS.permission_dialog_purpose_code=2;
+                                                    THIS.permission_dialog_options(1);
+                                                } 
+                                                }>
+                                                <DeleteIcon/>
+                                            </IconButton>
+                                        </ListItem>
+                                        );
+                                    }
+                                })
+                            }
+                            </List>
+                        </Grid>
                     </ListItem>
                 </List>
             </Grid>

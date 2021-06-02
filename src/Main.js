@@ -17,7 +17,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,add_panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
-import {add_operations_func,add_operations_panel} from './operations_panel.js'
+import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
 
 const useStyles = (theme)=>
 ({
@@ -62,14 +62,8 @@ const useStyles = (theme)=>
         width: '100%',
         position: 'relative',
         overflow: 'auto',
-        border:'1px solid #03DAC5'
-    },
-    properties_list_class2:{
-        height: "25vh",
-        width: '100%',
-        position: 'relative',
-        overflow: 'auto',
-        border:'1px solid #03DAC5',marginBottom:10
+        border:'1px solid #03DAC5',
+        marginBottom:15,
     },
     formControl: {
         minWidth: '100%',
@@ -163,9 +157,9 @@ class Main extends React.Component
             add_drawer_open:false,
             add_icon_color:'primary',
             search_drawer_open:false,
-            operation_drawer_open:true,
+            operation_drawer_open:false,
             operation_drawer_color:'primary',
-            relation_node_properties_drawer_open:false,
+            relation_node_properties_drawer_open:true,
             relation_node_properties_icon_color:'primary',
             color_picker_hex_value:"#03DAC5",
             collaborate_drawer_open:false,
@@ -232,25 +226,10 @@ class Main extends React.Component
             new_pass2:'',
             new_pass2_close_btn_show:'none',
             /*Operation panel*/
-            search_operation_text:'',
-            search_operations_text_close_btn:'none',
-            operation_list:[
-                {name:"Shortest Path",display:'block'},
-                {name:"Network",display:'block'},
-                {name:"Clustering",display:'block'}
-            ],
             shortest_path_node_source:'',
             shortest_path_node_destination:'',
             mst_node:undefined,
             mst_node_list:[],
-            clustering_node:'',
-            clustering_node_list:[],
-            cluster_color:"#03DAC5",
-            clustering_select_node_width:'100%',
-            clustering_type:0,
-            clustering_id_mode:'none',
-            cluster_name:'',
-            cluster_name_close_btn:'none',
             /*Other UI components*/
             //search_node_bar:'', 
             open_network_popup:false,
@@ -952,7 +931,7 @@ class Main extends React.Component
                 {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
                 {add_panel(this)}
                 {/*---------------------------------------------Operations Panel-----------------------------------------------------*/}
-                {add_operations_panel(this)}
+                <Add_Operations_Panel THIS={this}/>
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
                 {relation_node_properties_panel(this)}
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }

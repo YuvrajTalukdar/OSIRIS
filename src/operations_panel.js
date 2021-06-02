@@ -4,26 +4,12 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import CloseIcon from '@material-ui/icons/Close';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import React from 'react';
 
 export function add_operations_func(CLASS)
 {
-    CLASS.prototype.search_operation = search_operation;
     CLASS.prototype.find_shortest_path = find_shortest_path;
     CLASS.prototype.find_MST = find_MST;
-    CLASS.prototype.create_cluster = create_cluster;
-}
-
-function search_operation(op_name)
-{
-    let operation_list=[...this.state.operation_list];
-    for(let a=0;a<operation_list.length;a++)
-    {
-        if(op_name.length==0 || operation_list[a].name.toUpperCase().includes(op_name.toUpperCase()))
-        {   operation_list[a].display='block';}
-        else
-        {   operation_list[a].display='none';}
-    }
-    this.setState({operation_list});
 }
 
 function find_shortest_path()
@@ -65,421 +51,290 @@ function find_MST()
     {   window.ipcRenderer.send('find_mst',this.state.mst_node_list);}
 }
 
-function create_cluster()
-{
-    if(this.state.cluster_name.length==0)
-    {
-        this.setState({
-            alert_dialog_text:"Cluster Name is empty !",
-            alert_dialog_open:true
-        });
-    }
-    else
-    {
-        if(this.state.clustering_type==0)
-        {
-            if(this.state.clustering_node==null || this.state.clustering_node.length==0)
-            {
-                this.setState({
-                    alert_dialog_text:"Select a Node !",
-                    alert_dialog_open:true
-                });
-            }
-            else
-            {   this.cluster_by_connection(this.state.clustering_node.node_id,this.state.cluster_name,this.state.cluster_color);}
-        }
-        else if(this.state.clustering_type==1)
-        {
-            if(this.state.clustering_node_list==null || this.state.clustering_node_list.length==0)
-            {
-                this.setState({
-                    alert_dialog_text:"Add atleast 1 node to cluster list !",
-                    alert_dialog_open:true
-                });
-            }
-            else
-            {   this.cluster_by_id(this.state.clustering_node_list,this.state.cluster_name,this.state.cluster_color);}
-        }
-    }   
-    //this.cluster_by_connection(18,"Test67","red");
-    //this.cluster_by_connection(2,"Test67","green");
-    //this.cluster_by_connection(24,"Test67","blue");
-    //this.cluster_by_id(this.state.clustering_node_list,"test90","red");
-}
-
-export function add_operations_panel(THIS)
+export class Add_Operations_Panel extends React.Component
 {   
-    return(
-        <Drawer variant="persistent"
-            anchor="left"
-            open={THIS.state.operation_drawer_open}
-            className={THIS.props.classes.drawer}
-            classes={{paper: THIS.props.classes.drawerPaper2,}}>
-            <Toolbar variant="dense"/>
-            <Grid container direction="column" className={THIS.props.classes.gridDrawer} xs={12} alignItems="center" justify="flex-start">
-                <TextField         
-                label='Search Operations' 
-                variant='outlined' 
-                size='small'                                          
-                style={{ width: '90%'}}
-                value={THIS.state.search_operation_text}
-                onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                onChange={
-                    e=>{
-                        let display_close_btn;
-                        if(e.target.value.length>0)
-                        {   display_close_btn='block';}
-                        else
-                        {   display_close_btn='none';}
-                        THIS.setState({
-                            search_operations_text_close_btn:display_close_btn,
-                            search_operation_text:e.target.value
-                        });
-                        THIS.search_operation(e.target.value);
-                    }
+    constructor(props) {
+        super(props);
+        this.state=
+        {
+            search_operation_text:'',
+            search_operations_text_close_btn:'none',
+            operation_list:[
+                {name:"Shortest Path",display:'block'},
+                {name:"Network",display:'block'},
+                {name:"Clustering",display:'block'}
+            ],
+            cluster_name:'',
+            cluster_name_close_btn:'none',
+            clustering_node:'',
+            clustering_node_list:[],
+            cluster_color:"#03DAC5",
+            clustering_select_node_width:'100%',
+            clustering_type:0,
+            clustering_id_mode:'none',
+        }
+        this.search_operation=this.search_operation.bind(this);
+        this.create_cluster=this.create_cluster.bind(this);
+    }
+    search_operation(op_name)
+    {
+        let operation_list=[...this.state.operation_list];
+        for(let a=0;a<operation_list.length;a++)
+        {
+            if(op_name.length==0 || operation_list[a].name.toUpperCase().includes(op_name.toUpperCase()))
+            {   operation_list[a].display='block';}
+            else
+            {   operation_list[a].display='none';}
+        }
+        this.setState({operation_list});
+    }
+
+    create_cluster()
+    {
+        if(this.state.cluster_name.length==0)
+        {
+            this.props.THIS.setState({
+                alert_dialog_text:"Cluster Name is empty !",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {
+            if(this.state.clustering_type==0)
+            {
+                if(this.state.clustering_node==null || this.state.clustering_node.length==0)
+                {
+                    this.props.THIS.setState({
+                        alert_dialog_text:"Select a Node !",
+                        alert_dialog_open:true
+                    });
                 }
-                InputLabelProps={
-                {   className: THIS.props.classes.textfield_label}}
-                InputProps={{
-                    className: THIS.props.classes.valueTextField,
-                    classes:{
-                        root:THIS.props.classes.root,
-                        notchedOutline: THIS.props.classes.valueTextField,
-                        disabled: THIS.props.classes.valueTextField
-                    },
-                    endAdornment: 
-                    (
-                        <Box display={THIS.state.search_operations_text_close_btn}> 
-                            <IconButton color='primary' size='small'
-                            onClick={
-                                e=>{
-                                    THIS.search_operation("");
-                                    THIS.setState({
-                                        search_operation_text:"",
-                                        search_operations_text_close_btn:'none'
-                                    })
-                                }
-                            }>
-                                <CloseIcon/>
-                            </IconButton>
-                        </Box> 
-                    ),
-                }}/>
-                <List className={THIS.props.classes.list_class}> 
-                    <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
-                    <Box display={THIS.state.operation_list[0].display}>
-                        <ListItem>
-                            <Grid container direction="row" justify="center" alignItems="center">
-                                <Typography
-                                color="primary"
-                                display="block"
-                                variant="caption">
-                                    {THIS.state.operation_list[0].name}
-                                </Typography>
-                                <Autocomplete
-                                size="small"
-                                classes={THIS.props.classes}
-                                options={THIS.state.node_data_list}
-                                getOptionLabel={(option) => option.node_name}
-                                style={{ width: 300, paddingTop:10}}
-                                onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                value={THIS.state.shortest_path_node_source}
-                                onChange={(event,value)=>
-                                    {
-                                        THIS.setState({shortest_path_node_source:value});
-                                    }}
-                                renderInput=
-                                {
-                                    (params) => 
-                                        <TextField 
-                                        {...params} label="Source Node" variant="outlined" 
-                                        InputLabelProps=
-                                        {{   
-                                                ...params.InputLabelProps,
-                                                className: THIS.props.classes.textfield_label
-                                        }}
-                                        />
-                                }
-                                />
-                                <Autocomplete
-                                size="small"
-                                classes={THIS.props.classes}
-                                options={THIS.state.node_data_list}
-                                getOptionLabel={(option) => option.node_name}
-                                style={{ width: 300, paddingTop:10,paddingBottom:10 }}
-                                onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                value={THIS.state.shortest_path_node_destination}
-                                onChange={(event,value)=>
-                                    {
-                                        THIS.setState({shortest_path_node_destination:value});
-                                    }}
-                                renderInput=
-                                {
-                                    (params) => 
-                                        <TextField 
-                                        {...params} label="Destination Node" variant="outlined" 
-                                        InputLabelProps=
-                                        {{   
-                                                ...params.InputLabelProps,
-                                                className: THIS.props.classes.textfield_label
-                                        }}
-                                        />
-                                }
-                                />
-                                <Button variant="contained" size="small" color="primary" style={{width:'100%'}}
-                                onClick={e=>{THIS.find_shortest_path();}}
-                                classes={{root: THIS.props.classes.button}}>
-                                    Find Shortest Path
-                                </Button>
-                            </Grid>
-                        </ListItem>
-                        <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
-                    </Box>
-                    <Box display={THIS.state.operation_list[1].display}>
-                        <ListItem>
-                            <Grid container direction="row" justify="center" alignItems="center">
-                                <Typography
-                                color="primary"
-                                display="block"
-                                variant="caption">
-                                    {THIS.state.operation_list[1].name}
-                                </Typography>
+                else
+                {   this.props.THIS.cluster_by_connection(this.state.clustering_node.node_id,this.state.cluster_name,this.state.cluster_color);}
+            }
+            else if(this.state.clustering_type==1)
+            {
+                if(this.state.clustering_node_list==null || this.state.clustering_node_list.length==0)
+                {
+                    this.props.THIS.setState({
+                        alert_dialog_text:"Add atleast 1 node to cluster list !",
+                        alert_dialog_open:true
+                    });
+                }
+                else
+                {   this.props.THIS.cluster_by_id(this.state.clustering_node_list,this.state.cluster_name,this.state.cluster_color);}
+            }
+        }
+    }
+
+    render()
+    {
+        return(
+            <Drawer variant="persistent"
+                anchor="left"
+                open={this.props.THIS.state.operation_drawer_open}
+                className={this.props.THIS.props.classes.drawer}
+                classes={{paper: this.props.THIS.props.classes.drawerPaper2,}}>
+                <Toolbar variant="dense"/>
+                <Grid container direction="column" className={this.props.THIS.props.classes.gridDrawer} xs={12} alignItems="center" justify="flex-start">
+                    <TextField         
+                    label='Search Operations' 
+                    variant='outlined' 
+                    size='small'                                          
+                    style={{ width: '90%',marginBottom:5}}
+                    value={this.state.search_operation_text}
+                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                    onChange={
+                        e=>{
+                            let display_close_btn;
+                            if(e.target.value.length>0)
+                            {   display_close_btn='block';}
+                            else
+                            {   display_close_btn='none';}
+                            this.setState({
+                                search_operations_text_close_btn:display_close_btn,
+                                search_operation_text:e.target.value
+                            });
+                            this.search_operation(e.target.value);
+                        }
+                    }
+                    InputLabelProps={
+                    {   className: this.props.THIS.props.classes.textfield_label}}
+                    InputProps={{
+                        className: this.props.THIS.props.classes.valueTextField,
+                        classes:{
+                            root:this.props.THIS.props.classes.root,
+                            notchedOutline: this.props.THIS.props.classes.valueTextField,
+                            disabled: this.props.THIS.props.classes.valueTextField
+                        },
+                        endAdornment: 
+                        (
+                            <Box display={this.state.search_operations_text_close_btn}> 
+                                <IconButton color='primary' size='small'
+                                onClick={
+                                    e=>{
+                                        this.search_operation("");
+                                        this.setState({
+                                            search_operation_text:"",
+                                            search_operations_text_close_btn:'none'
+                                        })
+                                    }
+                                }>
+                                    <CloseIcon/>
+                                </IconButton>
+                            </Box> 
+                        ),
+                    }}/>
+                    <List className={this.props.THIS.props.classes.list_class}> 
+                        <Divider light style={{paddingTop:1}} classes={{root:this.props.THIS.props.classes.divider}}/>
+                        <Box display={this.state.operation_list[0].display}>
+                            <ListItem>
                                 <Grid container direction="row" justify="center" alignItems="center">
-                                    <IconButton color='primary' size="small"
-                                        onClick={
-                                            e=>
-                                            {   if(THIS.state.mst_node!=undefined || THIS.state.mst_node.length==0)
-                                                {
-                                                    let mst_node_list=[...THIS.state.mst_node_list];
-                                                    let found=false;
-                                                    for(let a=0;a<mst_node_list.length;a++)
-                                                    {
-                                                        if(mst_node_list[a].node_id==THIS.state.mst_node.node_id)
-                                                        {   found=true;break;}
-                                                    }
-                                                    if(!found)
-                                                    {
-                                                        mst_node_list.push(THIS.state.mst_node);
-                                                        THIS.setState({mst_node_list});
-                                                    }
-                                                }
-                                            }}>
-                                        <AddIcon/>
-                                    </IconButton>
+                                    <Typography
+                                    color="primary"
+                                    display="block"
+                                    variant="caption">
+                                        {this.state.operation_list[0].name}
+                                    </Typography>
                                     <Autocomplete
                                     size="small"
-                                    classes={THIS.props.classes}
-                                    options={THIS.state.node_data_list}
+                                    classes={this.props.THIS.props.classes}
+                                    options={this.props.THIS.state.node_data_list}
                                     getOptionLabel={(option) => option.node_name}
-                                    style={{ width:'86%', paddingTop:10,paddingBottom:10 }}
-                                    onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                    onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                    value={THIS.state.mst_node}
+                                    style={{ width: 300, marginTop:15,marginBottom:15}}
+                                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                    value={this.props.THIS.state.shortest_path_node_source}
                                     onChange={(event,value)=>
                                         {
-                                            THIS.setState({mst_node:value});
+                                            this.props.THIS.setState({shortest_path_node_source:value});
                                         }}
                                     renderInput=
                                     {
                                         (params) => 
                                             <TextField 
-                                            {...params} label="Add Node" variant="outlined" 
+                                            {...params} label="Source Node" variant="outlined" 
                                             InputLabelProps=
                                             {{   
                                                     ...params.InputLabelProps,
-                                                    className: THIS.props.classes.textfield_label
+                                                    className: this.props.THIS.props.classes.textfield_label
                                             }}
                                             />
                                     }
                                     />
-                                </Grid>
-                                <List className={THIS.props.classes.properties_list_class}> 
-                                {
-                                    THIS.state.mst_node_list.map(item=>
-                                    {
-                                        return(
-                                            <ListItem button key={item.node_id}>
-                                                <TextField         
-                                                variant='outlined' 
-                                                size='small'                                          
-                                                style={{ width: '85%' }}
-                                                value={item.node_name}
-                                                InputLabelProps={
-                                                {   className: THIS.props.classes.textfield_label}}
-                                                InputProps={{
-                                                    className: THIS.props.classes.valueTextField,
-                                                    classes:{
-                                                        root:THIS.props.classes.root,
-                                                        notchedOutline: THIS.props.classes.valueTextField,
-                                                        disabled: THIS.props.classes.valueTextField
-                                                    }
-                                                }}/>
-    
-                                                <IconButton color='primary' size='small'
-                                                onClick={
-                                                    e=>
-                                                    {
-                                                        let mst_node_list=[...THIS.state.mst_node_list];
-                                                        let new_mst_list=mst_node_list.filter(item2=>item2.node_id!=item.node_id);
-                                                        THIS.setState({mst_node_list:new_mst_list});
-                                                    }}>
-                                                    <DeleteIcon/>
-                                                </IconButton>
-                                            </ListItem>
-                                        );
-                                    })
-                                }
-                                </List>
-                                <Button variant="contained" size="small" color="primary" style={{width:'100%',marginTop:10}}
-                                onClick={e=>{THIS.find_MST();}}
-                                classes={{root: THIS.props.classes.button}}>
-                                    Find Network
-                                </Button>
-                            </Grid>
-                        </ListItem>
-                        <Divider light style={{paddingTop:1}} classes={{root:THIS.props.classes.divider}}/>
-                    </Box>
-                    <Box display={THIS.state.operation_list[2].display}>
-                        <ListItem>
-                            <Grid container direction="row" justify="center" alignItems="center">
-                                <Typography
-                                color="primary"
-                                display="block"
-                                variant="caption">
-                                    {THIS.state.operation_list[2].name}
-                                </Typography>
-                                <FormControl variant="outlined" 
-                                className={THIS.props.classes.formControl}
-                                size='small'>
-                                    <Select
-                                    labelId="encryption_status_select"
-                                    id="encryption_status_select"
-                                    size='small'
-                                    value={THIS.state.clustering_type}
-                                    onChange={e=>
-                                    {   
-                                        let width,mode;
-                                        if(e.target.value==0)
-                                        {   width="100%";mode='none';}
-                                        else
-                                        {   width="86%";mode='block'}
-                                        THIS.setState({
-                                            clustering_type:e.target.value,
-                                            clustering_select_node_width:width,
-                                            clustering_id_mode:mode
-                                        });
-                                    }}
-                                    style={{width:'100%' }}
-                                    MenuProps={{classes:{paper: THIS.props.classes.menu_dropdown_style}}}
-                                    className={THIS.props.classes.select_style}
-                                    inputProps={{
-                                        classes: {
-                                            root: THIS.props.classes.select_style,
-                                            icon:THIS.props.classes.select_style
-                                        },
-                                    }}>
-                                        <MenuItem value={0}>By Connection</MenuItem>
-                                        <MenuItem value={1}>By Name</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <div className="colorPickerStyle">
-                                    <ColorPicker
-                                        name="color"
-                                        variant='outlined' 
-                                        size="small"
-                                        style={{paddingTop:10}}
-                                        onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                        onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                        onChange={color => {THIS.setState({cluster_color:color});}}
-                                        InputProps={{
-                                            value:THIS.state.cluster_color, 
-                                            style:{color:THIS.state.cluster_color},
-                                            classes:{
-                                                root:THIS.props.classes.root,
-                                                notchedOutline: THIS.props.classes.valueTextField,
-                                                disabled: THIS.props.classes.valueTextField
-                                            }
+                                    <Autocomplete
+                                    size="small"
+                                    classes={this.props.THIS.props.classes}
+                                    options={this.props.THIS.state.node_data_list}
+                                    getOptionLabel={(option) => option.node_name}
+                                    style={{ width: 300,marginBottom:15 }}
+                                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                    value={this.props.THIS.state.shortest_path_node_destination}
+                                    onChange={(event,value)=>
+                                        {
+                                            this.props.THIS.setState({shortest_path_node_destination:value});
                                         }}
-                                        value={THIS.state.cluster_color}
+                                    renderInput=
+                                    {
+                                        (params) => 
+                                            <TextField 
+                                            {...params} label="Destination Node" variant="outlined" 
+                                            InputLabelProps=
+                                            {{   
+                                                    ...params.InputLabelProps,
+                                                    className: this.props.THIS.props.classes.textfield_label
+                                            }}
+                                            />
+                                    }
                                     />
-                                </div>
+                                    <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:5}}
+                                    onClick={e=>{this.props.THIS.find_shortest_path();}}
+                                    classes={{root: this.props.THIS.props.classes.button}}>
+                                        Find Shortest Path
+                                    </Button>
+                                </Grid>
+                            </ListItem>
+                            <Divider light style={{paddingTop:1}} classes={{root:this.props.THIS.props.classes.divider}}/>
+                        </Box>
+                        <Box display={this.state.operation_list[1].display}>
+                            <ListItem>
                                 <Grid container direction="row" justify="center" alignItems="center">
-                                    <Box display={THIS.state.clustering_id_mode}>
+                                    <Typography
+                                    color="primary"
+                                    display="block"
+                                    variant="caption">
+                                        {this.state.operation_list[1].name}
+                                    </Typography>
+                                    <Grid container direction="row" justify="center" alignItems="center">
                                         <IconButton color='primary' size="small"
                                             onClick={
                                                 e=>
-                                                {   if(THIS.state.clustering_node!=undefined)
+                                                {   if(this.props.THIS.state.mst_node!=undefined || this.props.THIS.state.mst_node.length==0)
                                                     {
-                                                        let clustering_node_list=[...THIS.state.clustering_node_list];
+                                                        let mst_node_list=[...this.props.THIS.state.mst_node_list];
                                                         let found=false;
-                                                        for(let a=0;a<clustering_node_list.length;a++)
+                                                        for(let a=0;a<mst_node_list.length;a++)
                                                         {
-                                                            if(clustering_node_list[a].node_id==THIS.state.clustering_node.node_id)
+                                                            if(mst_node_list[a].node_id==this.props.THIS.state.mst_node.node_id)
                                                             {   found=true;break;}
                                                         }
                                                         if(!found)
                                                         {
-                                                            clustering_node_list.push(THIS.state.clustering_node);
-                                                            THIS.setState({
-                                                                clustering_node:undefined,
-                                                                clustering_node_list
-                                                            });
+                                                            mst_node_list.push(this.props.THIS.state.mst_node);
+                                                            this.props.THIS.setState({mst_node_list});
                                                         }
                                                     }
                                                 }}>
                                             <AddIcon/>
                                         </IconButton>
-                                    </Box>
-                                    <Autocomplete
-                                    size="small"
-                                    classes={THIS.props.classes}
-                                    options={THIS.state.node_data_list}
-                                    getOptionLabel={(option) => option.node_name}
-                                    style={{ width:THIS.state.clustering_select_node_width, paddingTop:10,paddingBottom:10 }}
-                                    onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                    onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                    value={THIS.state.clustering_node}
-                                    onChange={(event,value)=>
-                                        {
-                                            THIS.setState({clustering_node:value});
-                                        }}
-                                    renderInput=
-                                    {
-                                        (params) => 
-                                            <TextField 
-                                            {...params} label="Select Node.." variant="outlined" 
-                                            InputLabelProps=
-                                            {{   
-                                                    ...params.InputLabelProps,
-                                                    className: THIS.props.classes.textfield_label
+                                        <Autocomplete
+                                        size="small"
+                                        classes={this.props.THIS.props.classes}
+                                        options={this.props.THIS.state.node_data_list}
+                                        getOptionLabel={(option) => option.node_name}
+                                        style={{ width:'86%', marginTop:15,marginBottom:15 }}
+                                        onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                        onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                        value={this.props.THIS.state.mst_node}
+                                        onChange={(event,value)=>
+                                            {
+                                                this.props.THIS.setState({mst_node:value});
                                             }}
-                                            />
-                                    }
-                                    />
-                                </Grid>
-                                <Box display={THIS.state.clustering_id_mode} style={{ width: '100%' }}>
-                                    <List className={THIS.props.classes.properties_list_class2}> 
+                                        renderInput=
+                                        {
+                                            (params) => 
+                                                <TextField 
+                                                {...params} label="Add Node" variant="outlined" 
+                                                InputLabelProps=
+                                                {{   
+                                                        ...params.InputLabelProps,
+                                                        className: this.props.THIS.props.classes.textfield_label
+                                                }}
+                                                />
+                                        }
+                                        />
+                                    </Grid>
+                                    <List className={this.props.THIS.props.classes.properties_list_class}> 
                                     {
-                                        THIS.state.clustering_node_list.map(item=>
+                                        this.props.THIS.state.mst_node_list.map(item=>
                                         {
                                             return(
                                                 <ListItem button key={item.node_id}>
                                                     <TextField         
                                                     variant='outlined' 
                                                     size='small'                                          
-                                                    style={{ width: '85%' }}
+                                                    style={{ width: '85%'}}
                                                     value={item.node_name}
                                                     InputLabelProps={
-                                                    {   className: THIS.props.classes.textfield_label}}
+                                                    {   className: this.props.THIS.props.classes.textfield_label}}
                                                     InputProps={{
-                                                        className: THIS.props.classes.valueTextField,
+                                                        className: this.props.THIS.props.classes.valueTextField,
                                                         classes:{
-                                                            root:THIS.props.classes.root,
-                                                            notchedOutline: THIS.props.classes.valueTextField,
-                                                            disabled: THIS.props.classes.valueTextField
+                                                            root:this.props.THIS.props.classes.root,
+                                                            notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                                            disabled: this.props.THIS.props.classes.valueTextField
                                                         }
                                                     }}/>
         
@@ -487,9 +342,9 @@ export function add_operations_panel(THIS)
                                                     onClick={
                                                         e=>
                                                         {
-                                                            let clustering_node_list=[...THIS.state.clustering_node_list];
-                                                            let new_mst_list=clustering_node_list.filter(item2=>item2.node_id!=item.node_id);
-                                                            THIS.setState({clustering_node_list:new_mst_list});
+                                                            let mst_node_list=[...this.props.THIS.state.mst_node_list];
+                                                            let new_mst_list=mst_node_list.filter(item2=>item2.node_id!=item.node_id);
+                                                            this.props.THIS.setState({mst_node_list:new_mst_list});
                                                         }}>
                                                         <DeleteIcon/>
                                                     </IconButton>
@@ -498,52 +353,218 @@ export function add_operations_panel(THIS)
                                         })
                                     }
                                     </List>
-                                </Box>
-                                <TextField         
-                                label='Cluster Name' 
-                                variant='outlined' 
-                                size='small'                                          
-                                style={{ width: '100%'}}
-                                value={THIS.state.cluster_name}
-                                onFocus={e=>{THIS.enable_keyboard_navigation(false);}}
-                                onBlur={e=>{THIS.enable_keyboard_navigation(true);}}
-                                onChange={
-                                    e=>{
-                                        let visible='block';
-                                        if(e.target.value.length==0)
-                                        {   visible='none';}
-                                        THIS.setState({cluster_name:e.target.value,cluster_name_close_btn:visible});
-                                    }}
-                                InputLabelProps={
-                                {   className: THIS.props.classes.textfield_label}}
-                                InputProps={{
-                                    className: THIS.props.classes.valueTextField,
-                                    classes:{
-                                        root:THIS.props.classes.root,
-                                        notchedOutline: THIS.props.classes.valueTextField,
-                                        disabled: THIS.props.classes.valueTextField
-                                    },
-                                    endAdornment: 
-                                    (
-                                        <Box display={THIS.state.cluster_name_close_btn}> 
-                                            <IconButton color='primary' size='small'
-                                            onClick={e=>
-                                            {THIS.setState({cluster_name:"",cluster_name_close_btn:'none'});}}>
-                                                <CloseIcon/>
+                                    <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:5}}
+                                    onClick={e=>{this.props.THIS.find_MST();}}
+                                    classes={{root: this.props.THIS.props.classes.button}}>
+                                        Find Network
+                                    </Button>
+                                </Grid>
+                            </ListItem>
+                            <Divider light style={{paddingTop:1}} classes={{root:this.props.THIS.props.classes.divider}}/>
+                        </Box>
+                        <Box display={this.state.operation_list[2].display}>
+                            <ListItem>
+                                <Grid container direction="row" justify="center" alignItems="center">
+                                    <Typography
+                                    color="primary"
+                                    display="block"
+                                    variant="caption">
+                                        {this.state.operation_list[2].name}
+                                    </Typography>
+                                    <FormControl variant="outlined" 
+                                    className={this.props.THIS.props.classes.formControl}
+                                    size='small'>
+                                        <Select
+                                        labelId="encryption_status_select"
+                                        id="encryption_status_select"
+                                        size='small'
+                                        value={this.state.clustering_type}
+                                        onChange={e=>
+                                        {   
+                                            let width,mode;
+                                            if(e.target.value==0)
+                                            {   width="100%";mode='none';}
+                                            else
+                                            {   width="86%";mode='block'}
+                                            this.setState({
+                                                clustering_type:e.target.value,
+                                                clustering_select_node_width:width,
+                                                clustering_id_mode:mode
+                                            });
+                                        }}
+                                        style={{width:'100%',marginTop:15,marginBottom:15 }}
+                                        MenuProps={{classes:{paper: this.props.THIS.props.classes.menu_dropdown_style}}}
+                                        className={this.props.THIS.props.classes.select_style}
+                                        inputProps={{
+                                            classes: {
+                                                root: this.props.THIS.props.classes.select_style,
+                                                icon:this.props.THIS.props.classes.select_style
+                                            },
+                                        }}>
+                                            <MenuItem value={0}>By Connection</MenuItem>
+                                            <MenuItem value={1}>By Name</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                    <div className="colorPickerStyle">
+                                        <ColorPicker
+                                            name="color"
+                                            variant='outlined' 
+                                            size="small"
+                                            style={{marginBottom:15}}
+                                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                            onChange={color => {this.setState({cluster_color:color});}}
+                                            InputProps={{
+                                                value:this.state.cluster_color, 
+                                                style:{color:this.state.cluster_color},
+                                                classes:{
+                                                    root:this.props.THIS.props.classes.root,
+                                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                                    disabled: this.props.THIS.props.classes.valueTextField
+                                                }
+                                            }}
+                                            value={this.state.cluster_color}
+                                        />
+                                    </div>
+                                    <Grid container direction="row" justify="center" alignItems="center">
+                                        <Box display={this.state.clustering_id_mode}>
+                                            <IconButton color='primary' size="small"
+                                                onClick={
+                                                    e=>
+                                                    {   if(this.state.clustering_node!=undefined)
+                                                        {
+                                                            let clustering_node_list=[...this.state.clustering_node_list];
+                                                            let found=false;
+                                                            for(let a=0;a<clustering_node_list.length;a++)
+                                                            {
+                                                                if(clustering_node_list[a].node_id==this.state.clustering_node.node_id)
+                                                                {   found=true;break;}
+                                                            }
+                                                            if(!found)
+                                                            {
+                                                                clustering_node_list.push(this.state.clustering_node);
+                                                                this.setState({
+                                                                    clustering_node:undefined,
+                                                                    clustering_node_list
+                                                                });
+                                                            }
+                                                        }
+                                                    }}>
+                                                <AddIcon/>
                                             </IconButton>
-                                        </Box> 
-                                    ),
-                                }}/>
-                                <Button variant="contained" size="small" color="primary" style={{width:'100%',marginTop:10}}
-                                onClick={e=>{THIS.create_cluster();}}
-                                classes={{root: THIS.props.classes.button}}>
-                                    Create Cluster
-                                </Button>
-                            </Grid>
-                        </ListItem>
-                    </Box>
-                </List>
-            </Grid>
-        </Drawer>
-    );
+                                        </Box>
+                                        <Autocomplete
+                                        size="small"
+                                        classes={this.props.THIS.props.classes}
+                                        options={this.props.THIS.state.node_data_list}
+                                        getOptionLabel={(option) => option.node_name}
+                                        style={{ width:this.state.clustering_select_node_width,marginBottom:15 }}
+                                        onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                        onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                        value={this.state.clustering_node}
+                                        onChange={(event,value)=>
+                                            {
+                                                this.setState({clustering_node:value});
+                                            }}
+                                        renderInput=
+                                        {
+                                            (params) => 
+                                                <TextField 
+                                                {...params} label="Select Node.." variant="outlined" 
+                                                InputLabelProps=
+                                                {{   
+                                                        ...params.InputLabelProps,
+                                                        className: this.props.THIS.props.classes.textfield_label
+                                                }}
+                                                />
+                                        }
+                                        />
+                                    </Grid>
+                                    <Box display={this.state.clustering_id_mode} style={{ width: '100%' }}>
+                                        <List className={this.props.THIS.props.classes.properties_list_class}> 
+                                        {
+                                            this.state.clustering_node_list.map(item=>
+                                            {
+                                                return(
+                                                    <ListItem button key={item.node_id}>
+                                                        <TextField         
+                                                        variant='outlined' 
+                                                        size='small'                                          
+                                                        style={{ width: '85%' }}
+                                                        value={item.node_name}
+                                                        InputLabelProps={
+                                                        {   className: this.props.THIS.props.classes.textfield_label}}
+                                                        InputProps={{
+                                                            className: this.props.THIS.props.classes.valueTextField,
+                                                            classes:{
+                                                                root:this.props.THIS.props.classes.root,
+                                                                notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                                                disabled: this.props.THIS.props.classes.valueTextField
+                                                            }
+                                                        }}/>
+            
+                                                        <IconButton color='primary' size='small'
+                                                        onClick={
+                                                            e=>
+                                                            {
+                                                                let clustering_node_list=[...this.state.clustering_node_list];
+                                                                let new_mst_list=clustering_node_list.filter(item2=>item2.node_id!=item.node_id);
+                                                                this.setState({clustering_node_list:new_mst_list});
+                                                            }}>
+                                                            <DeleteIcon/>
+                                                        </IconButton>
+                                                    </ListItem>
+                                                );
+                                            })
+                                        }
+                                        </List>
+                                    </Box>
+                                    <TextField         
+                                    label='Cluster Name' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '100%',marginBottom:15}}
+                                    value={this.state.cluster_name}
+                                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                    onChange={
+                                        e=>{
+                                            let visible='block';
+                                            if(e.target.value.length==0)
+                                            {   visible='none';}
+                                            this.setState({cluster_name:e.target.value,cluster_name_close_btn:visible});
+                                        }}
+                                    InputLabelProps={
+                                    {   className: this.props.THIS.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: this.props.THIS.props.classes.valueTextField,
+                                        classes:{
+                                            root:this.props.THIS.props.classes.root,
+                                            notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                            disabled: this.props.THIS.props.classes.valueTextField
+                                        },
+                                        endAdornment: 
+                                        (
+                                            <Box display={this.state.cluster_name_close_btn}> 
+                                                <IconButton color='primary' size='small'
+                                                onClick={e=>
+                                                {this.setState({cluster_name:"",cluster_name_close_btn:'none'});}}>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </Box> 
+                                        ),
+                                    }}/>
+                                    <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
+                                    onClick={e=>{this.create_cluster();}}
+                                    classes={{root: this.props.THIS.props.classes.button}}>
+                                        Create Cluster
+                                    </Button>
+                                </Grid>
+                            </ListItem>
+                        </Box>
+                    </List>
+                </Grid>
+            </Drawer>
+        );
+    }
 }
