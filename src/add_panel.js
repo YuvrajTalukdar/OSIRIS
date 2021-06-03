@@ -60,6 +60,8 @@ export class Add_Panel extends React.Component
         super(props);
         this.state=
         {
+            add_drawer_open:false,
+
             new_node_name_close_button_visible:'none',
             new_node_name:"",
             new_node_type:"",
@@ -613,7 +615,7 @@ export class Add_Panel extends React.Component
         return(
             <Drawer variant="persistent"
                 anchor="left"
-                open={this.props.THIS.state.add_drawer_open}
+                open={this.state.add_drawer_open}
                 className={this.props.THIS.props.classes.drawer}
                 classes={{paper: this.props.THIS.props.classes.drawerPaper2,}}>
                 <Toolbar variant="dense" ref={this.props.THIS.add_node_ref}/>

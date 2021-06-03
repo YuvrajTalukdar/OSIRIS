@@ -1,16 +1,11 @@
 import React,{createRef} from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Popover,Box,Typography,Slider} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Tooltip,Popover,Box,Typography,Slider} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import theme from './theme';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import SpeedIcon from '@material-ui/icons/Speed';
 import CenterFocusStrongIcon from '@material-ui/icons/CenterFocusStrong';
-import AddIcon from '@material-ui/icons/Add';
-import SearchIcon from '@material-ui/icons/Search';
-import GroupIcon from '@material-ui/icons/Group';
-import CategoryIcon from '@material-ui/icons/Category';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import CloseIcon from '@material-ui/icons/Close';
 
@@ -18,6 +13,7 @@ import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './rel
 import {add_add_panel_func,Add_Panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
 import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
+import {Side_Bar_Buttons} from './other_ui_components.js';
 
 const useStyles = (theme)=>
 ({
@@ -154,14 +150,8 @@ class Main extends React.Component
         this.state=
         {
             /*Drawer Settings*/
-            add_drawer_open:true,
-            add_icon_color:'primary',
-            search_drawer_open:false,
-            operation_drawer_open:false,
-            operation_drawer_color:'primary',
-            relation_node_properties_drawer_open:false,
-            relation_node_properties_icon_color:'primary',
-            collaborate_drawer_open:false,
+            //search_drawer_open:false,
+            //collaborate_drawer_open:false,
             /*Node data */
             node_data_list:[],
             /*Relation Data*/
@@ -229,6 +219,7 @@ class Main extends React.Component
     add_panel_ref=createRef();
     properties_panel_ref=createRef();
     operations_panel_ref=createRef();
+    side_bar_ref=createRef();
     //CURRENTLY THE TYPE IDS CA BE SHIFTED IN THE PROPERTIES PANEL, BUT MAYBE IN FUTURE THEY MIGHT BE REQUIRED FOR COMMUNICATING WITH THE NETWORK
     delete_node_type_id=-1;
     delete_node_type_name="";
@@ -364,57 +355,51 @@ class Main extends React.Component
         if(drawer_id==0)
         {
             var color;
-            if(this.state.add_drawer_open)
+            if(this.add_panel_ref.current.state.add_drawer_open)
             {   color='primary';}
             else
             {   color='secondary'}
-            this.setState({
-                add_drawer_open:!this.state.add_drawer_open,
+            this.side_bar_ref.current.setState({
                 add_icon_color:color,
-                search_drawer_open:false,
-                operation_drawer_open:false,
                 operation_drawer_color:'primary',
-                relation_node_properties_drawer_open:false,
                 relation_node_properties_icon_color:'primary',
-                collaborate_drawer_open:false,
             });
+            this.add_panel_ref.current.setState({add_drawer_open:!this.add_panel_ref.current.state.add_drawer_open,});
+            this.operations_panel_ref.current.setState({operation_drawer_open:false,});
+            this.properties_panel_ref.current.setState({relation_node_properties_drawer_open:false,});
         }
         else if(drawer_id==2)
         {
             var color;
-            if(this.state.operation_drawer_open)
+            if(this.operations_panel_ref.current.state.operation_drawer_open)
             {   color='primary';}
             else
             {   color='secondary'}
-            this.setState({
-                add_drawer_open:false,
+            this.side_bar_ref.current.setState({
                 add_icon_color:'primary',
-                search_drawer_open:false,
-                operation_drawer_open:!this.state.operation_drawer_open,
                 operation_drawer_color:color,
-                relation_node_properties_drawer_open:false,
                 relation_node_properties_icon_color:'primary',
-                collaborate_drawer_open:false,
             });
+            this.add_panel_ref.current.setState({add_drawer_open:false,});
+            this.operations_panel_ref.current.setState({operation_drawer_open:!this.operations_panel_ref.current.state.operation_drawer_open,});
+            this.properties_panel_ref.current.setState({relation_node_properties_drawer_open:false,});
             this.operations_panel_ref.current.setState({cluster_color:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))});
         }
         else if(drawer_id==3)
         {
             var color;
-            if(this.state.relation_node_properties_drawer_open)
+            if(this.properties_panel_ref.current.state.relation_node_properties_drawer_open)
             {   color='primary';}
             else
             {   color='secondary'}
-            this.setState({
-                add_drawer_open:false,
+            this.side_bar_ref.current.setState({
                 add_icon_color:'primary',
-                search_drawer_open:false,
-                operation_drawer_open:false,
                 operation_drawer_color:'primary',
-                relation_node_properties_drawer_open:!this.state.relation_node_properties_drawer_open,
                 relation_node_properties_icon_color:color,
-                collaborate_drawer_open:false,
             });
+            this.add_panel_ref.current.setState({add_drawer_open:false,});
+            this.operations_panel_ref.current.setState({operation_drawer_open:false,});
+            this.properties_panel_ref.current.setState({ relation_node_properties_drawer_open:!this.properties_panel_ref.current.state.relation_node_properties_drawer_open,});
             this.properties_panel_ref.current.setState({color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))});
         }
     }
@@ -872,41 +857,7 @@ class Main extends React.Component
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
                 <Relation_Node_Properties_Panel THIS={this} ref={this.properties_panel_ref}/>
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
-                <Drawer variant="permanent" className={this.props.classes.drawer}
-                 classes={{paper: this.props.classes.drawerPaper,}}>
-                    <Toolbar variant="dense"/>
-                    <Grid container direction="column"   xs={1} alignItems="center" justify="flex-start">
-                        <Tooltip title="Add Node or Relation">
-                            <IconButton color={this.state.add_icon_color} onClick={()=>this.handle_drawer(0)}>
-                                <AddIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        {/*
-                        <Tooltip title="Search">
-                            <IconButton color="primary">
-                                <SearchIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        */}
-                        <Tooltip title="Perform Operations">
-                            <IconButton color="primary" color={this.state.operation_drawer_color} onClick={()=>this.handle_drawer(2)}>
-                                <AccountTreeIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Relation and Node Properties">
-                            <IconButton color={this.state.relation_node_properties_icon_color} onClick={()=>this.handle_drawer(3)}>
-                                <CategoryIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        {/*
-                        <Tooltip title="Collaborate">
-                            <IconButton color="primary">
-                                <GroupIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        */}
-                    </Grid>
-                </Drawer>   
+                <Side_Bar_Buttons THIS={this} ref={this.side_bar_ref}/>
                 {Add_Network(this)}
             </header>
         </ThemeProvider>

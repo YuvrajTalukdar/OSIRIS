@@ -13,6 +13,8 @@ export class Relation_Node_Properties_Panel extends React.Component
         super(props);
         this.state=
         {
+            relation_node_properties_drawer_open:false,
+
             node_type_name_edit:"",
             node_type_search_close_button_visible:"none",
             node_type_name:"",
@@ -360,7 +362,7 @@ export class Relation_Node_Properties_Panel extends React.Component
         return(
             <Drawer variant="persistent"
                 anchor="left"
-                open={this.props.THIS.state.relation_node_properties_drawer_open}
+                open={this.state.relation_node_properties_drawer_open}
                 className={this.props.THIS.props.classes.drawer}
                 classes={{paper: this.props.THIS.props.classes.drawerPaper2,}}>
                 <Toolbar variant="dense"/>

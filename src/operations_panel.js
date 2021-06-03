@@ -15,6 +15,8 @@ export class Add_Operations_Panel extends React.Component
         super(props);
         this.state=
         {
+            operation_drawer_open:false,
+
             search_operation_text:'',
             search_operations_text_close_btn:'none',
             operation_list:[
@@ -138,7 +140,7 @@ export class Add_Operations_Panel extends React.Component
         return(
             <Drawer variant="persistent"
                 anchor="left"
-                open={this.props.THIS.state.operation_drawer_open}
+                open={this.state.operation_drawer_open}
                 className={this.props.THIS.props.classes.drawer}
                 classes={{paper: this.props.THIS.props.classes.drawerPaper2,}}>
                 <Toolbar variant="dense"/>
