@@ -1,5 +1,5 @@
 import React,{createRef} from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Tooltip,Popover,Box,Typography,Slider} from '@material-ui/core';
+import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Tooltip} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import theme from './theme';
@@ -7,7 +7,6 @@ import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import SpeedIcon from '@material-ui/icons/Speed';
 import CenterFocusStrongIcon from '@material-ui/icons/CenterFocusStrong';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
-import CloseIcon from '@material-ui/icons/Close';
 
 import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './relation_and_node_properites_panel.js';
 import {add_add_panel_func,Add_Panel} from './add_panel.js'
