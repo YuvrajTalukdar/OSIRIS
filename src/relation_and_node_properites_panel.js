@@ -357,214 +357,39 @@ export class Relation_Node_Properties_Panel extends React.Component
 
     render()
     {
-    return(
-        <Drawer variant="persistent"
-            anchor="left"
-            open={this.props.THIS.state.relation_node_properties_drawer_open}
-            className={this.props.THIS.props.classes.drawer}
-            classes={{paper: this.props.THIS.props.classes.drawerPaper2,}}>
-            <Toolbar variant="dense"/>
-            <Grid container direction="column" className={this.props.THIS.props.classes.gridDrawer} xs={12} alignItems="flex-start" justify="flex-start">
-                <List className={this.props.THIS.props.classes.list_class}> 
-                    <Grid container direction="row" justify="center" alignItems="center">
-                        <Typography
-                        color="primary"
-                        display="block"
-                        variant="caption">
-                        Node Type
-                        </Typography>
-                    </Grid>
-                    <ListItem>
-                        <Grid container direction="row" justify="center" alignItems="center">
-                            <TextField         
-                            label='Node Type' 
-                            variant='outlined' 
-                            size='small'                                          
-                            style={{ width: '100%',marginBottom:15 }}
-                            value={this.state.node_type_name}
-                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e=>{
-                                    this.setState({
-                                        node_type_name:e.target.value,
-                                    });
-                                    this.node_type_search_handler();
-                                }
-                            }
-                            InputLabelProps={
-                            {   className: this.props.THIS.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.THIS.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.THIS.props.classes.root,
-                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
-                                    disabled: this.props.THIS.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.node_type_search_close_button_visible}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={
-                                            e=>{
-                                                this.search_node_type("");
-                                                this.setState({node_type_name:""})
-                                            }
-                                        }>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}/>
-                            <Box display={this.state.edit_node_type_box_visible}>
-                                <TextField         
-                                label='New Node Type Name' 
-                                variant='outlined' 
-                                size='small'                                          
-                                style={{ width: '100%',marginBottom:15 }}
-                                value={this.state.node_type_name_edit}
-                                onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
-                                onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                                onChange={
-                                    e=>{
-                                        var visible;
-                                        if(e.target.value.length==0)
-                                        {   visible='none';}
-                                        else
-                                        {   visible='block';}
-                                        var dis_ad_no_ty_btn=false;
-                                        if(e.target.value.toUpperCase().localeCompare(this.state.node_type_name.toUpperCase())==0)
-                                        {   dis_ad_no_ty_btn=true;}
-                                        this.setState({
-                                            node_type_name_edit:e.target.value,
-                                            disable_add_node_type_button:dis_ad_no_ty_btn,
-                                            edit_node_type_name_close_button_visible:visible
-                                        });
-                                    }
-                                }
-                                InputLabelProps={
-                                {   className: this.props.THIS.props.classes.textfield_label}}
-                                InputProps={{
-                                    className: this.props.THIS.props.classes.valueTextField,
-                                    classes:{
-                                        root:this.props.THIS.props.classes.root,
-                                        notchedOutline: this.props.THIS.props.classes.valueTextField,
-                                        disabled: this.props.THIS.props.classes.valueTextField
-                                    },
-                                    endAdornment: 
-                                    (
-                                        <Box display={this.state.edit_node_type_name_close_button_visible}> 
-                                            <IconButton color='primary' size='small'
-                                            onClick={e=>{this.setState({node_type_name_edit:'',edit_node_type_name_close_button_visible:'none'})}}>
-                                                <CloseIcon/>
-                                            </IconButton>
-                                        </Box> 
-                                    ),
-                                }}/>
-                            </Box>
-                            <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
-                            onClick={
-                                e=>{    this.add_node_type();}}
-                            classes={{root: this.props.THIS.props.classes.button, disabled: this.props.THIS.props.classes.disabled_button }}
-                            disabled={this.state.disable_add_node_type_button}>{this.state.add_node_type_button_text}
-                            </Button>
-                            <List className={this.props.THIS.props.classes.properties_list_class}>
-                            {
-                                this.props.THIS.state.node_type_data_list.map(item=>
-                                {
-                                    if(item.show)
-                                    {
-                                        return(
-                                        <ListItem button key={item.id}>
-                                            <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} 
-                                            onClick={e=>
-                                            {
-                                                this.setState({node_type_name:item.node_type});
-                                                this.search_node_type(item.node_type);
-                                            }}/>
-                                            <IconButton color='primary' size='small'
-                                                onClick={
-                                                e=>{
-                                                    this.props.THIS.delete_node_type_id=item.id;
-                                                    this.props.THIS.delete_node_type_name=item.node_type;
-                                                    this.props.THIS.permission_dialog_purpose_code=1;
-                                                    this.props.THIS.permission_dialog_options(1);
-                                                } 
-                                                }>
-                                                <DeleteIcon/>
-                                            </IconButton>
-                                        </ListItem>
-                                        );
-                                    }
-                                })
-                            }
-                            </List>
-                        </Grid>
-                    </ListItem>
-                    <Divider light style={{paddingTop:1}} classes={{root:this.props.THIS.props.classes.divider}}/>
-                    <ListItem>
+        return(
+            <Drawer variant="persistent"
+                anchor="left"
+                open={this.props.THIS.state.relation_node_properties_drawer_open}
+                className={this.props.THIS.props.classes.drawer}
+                classes={{paper: this.props.THIS.props.classes.drawerPaper2,}}>
+                <Toolbar variant="dense"/>
+                <Grid container direction="column" className={this.props.THIS.props.classes.gridDrawer} xs={12} alignItems="flex-start" justify="flex-start">
+                    <List className={this.props.THIS.props.classes.list_class}> 
                         <Grid container direction="row" justify="center" alignItems="center">
                             <Typography
                             color="primary"
                             display="block"
                             variant="caption">
-                            Relation Properties
+                            Node Type
                             </Typography>
-                            <TextField         
-                            label='Relation Type' 
-                            variant='outlined' 
-                            size='small'                                          
-                            style={{ width: '100%',marginTop:15,marginBottom:15}}
-                            value={this.state.relation_type_name}
-                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e=>{
-                                    this.setState({relation_type_name:e.target.value});
-                                    this.relation_type_search_handler();
-                                }
-                            }
-                            InputLabelProps={
-                            {   className: this.props.THIS.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.THIS.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.THIS.props.classes.root,
-                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
-                                    disabled: this.props.THIS.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.relation_type_close_button_visible}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>
-                                        {
-                                            this.setState({relation_type_name:"",relation_type_close_button_visible:'none'});
-                                            this.search_relation_type("");
-                                        }}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}/>
-                            <Box display={this.state.edit_relation_type_box_visible}>
+                        </Grid>
+                        <ListItem>
+                            <Grid container direction="row" justify="center" alignItems="center">
                                 <TextField         
-                                label='New Relation Type Name' 
+                                label='Node Type' 
                                 variant='outlined' 
                                 size='small'                                          
-                                style={{ width: '100%',marginBottom:15}}
-                                value={this.state.edit_relation_type}
+                                style={{ width: '100%',marginBottom:15 }}
+                                value={this.state.node_type_name}
                                 onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
                                 onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
                                 onChange={
                                     e=>{
-                                        var visible;
-                                        if(e.target.value.length==0)
-                                        {   visible='none';}
-                                        else
-                                        {   visible='block';}
-                                        this.setState({edit_relation_type:e.target.value,edit_relation_type_close_button_visible:visible});
-                                        this.relation_type_add_button_enabler(e.target.value,this.state.color_picker_hex_value,this.state.vectored_relation);
+                                        this.setState({
+                                            node_type_name:e.target.value,
+                                        });
+                                        this.node_type_search_handler();
                                     }
                                 }
                                 InputLabelProps={
@@ -578,125 +403,300 @@ export class Relation_Node_Properties_Panel extends React.Component
                                     },
                                     endAdornment: 
                                     (
-                                        <Box display={this.state.edit_relation_type_close_button_visible}> 
+                                        <Box display={this.state.node_type_search_close_button_visible}> 
+                                            <IconButton color='primary' size='small'
+                                            onClick={
+                                                e=>{
+                                                    this.search_node_type("");
+                                                    this.setState({node_type_name:""})
+                                                }
+                                            }>
+                                                <CloseIcon/>
+                                            </IconButton>
+                                        </Box> 
+                                    ),
+                                }}/>
+                                <Box display={this.state.edit_node_type_box_visible}>
+                                    <TextField         
+                                    label='New Node Type Name' 
+                                    variant='outlined' 
+                                    size='small'                                          
+                                    style={{ width: '100%',marginBottom:15 }}
+                                    value={this.state.node_type_name_edit}
+                                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                    onChange={
+                                        e=>{
+                                            var visible;
+                                            if(e.target.value.length==0)
+                                            {   visible='none';}
+                                            else
+                                            {   visible='block';}
+                                            var dis_ad_no_ty_btn=false;
+                                            if(e.target.value.toUpperCase().localeCompare(this.state.node_type_name.toUpperCase())==0)
+                                            {   dis_ad_no_ty_btn=true;}
+                                            this.setState({
+                                                node_type_name_edit:e.target.value,
+                                                disable_add_node_type_button:dis_ad_no_ty_btn,
+                                                edit_node_type_name_close_button_visible:visible
+                                            });
+                                        }
+                                    }
+                                    InputLabelProps={
+                                    {   className: this.props.THIS.props.classes.textfield_label}}
+                                    InputProps={{
+                                        className: this.props.THIS.props.classes.valueTextField,
+                                        classes:{
+                                            root:this.props.THIS.props.classes.root,
+                                            notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                            disabled: this.props.THIS.props.classes.valueTextField
+                                        },
+                                        endAdornment: 
+                                        (
+                                            <Box display={this.state.edit_node_type_name_close_button_visible}> 
+                                                <IconButton color='primary' size='small'
+                                                onClick={e=>{this.setState({node_type_name_edit:'',edit_node_type_name_close_button_visible:'none'})}}>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </Box> 
+                                        ),
+                                    }}/>
+                                </Box>
+                                <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
+                                onClick={
+                                    e=>{    this.add_node_type();}}
+                                classes={{root: this.props.THIS.props.classes.button, disabled: this.props.THIS.props.classes.disabled_button }}
+                                disabled={this.state.disable_add_node_type_button}>{this.state.add_node_type_button_text}
+                                </Button>
+                                <List className={this.props.THIS.props.classes.properties_list_class}>
+                                {
+                                    this.props.THIS.state.node_type_data_list.map(item=>
+                                    {
+                                        if(item.show)
+                                        {
+                                            return(
+                                            <ListItem button key={item.id}>
+                                                <ListItemText primary={<Typography type="body2" style={{ color: '#FFFFFF' }}>{item.node_type}</Typography>} 
+                                                onClick={e=>
+                                                {
+                                                    this.setState({node_type_name:item.node_type});
+                                                    this.search_node_type(item.node_type);
+                                                }}/>
+                                                <IconButton color='primary' size='small'
+                                                    onClick={
+                                                    e=>{
+                                                        this.props.THIS.delete_node_type_id=item.id;
+                                                        this.props.THIS.delete_node_type_name=item.node_type;
+                                                        this.props.THIS.permission_dialog_purpose_code=1;
+                                                        this.props.THIS.permission_dialog_options(1);
+                                                    } 
+                                                    }>
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            </ListItem>
+                                            );
+                                        }
+                                    })
+                                }
+                                </List>
+                            </Grid>
+                        </ListItem>
+                        <Divider light style={{paddingTop:1}} classes={{root:this.props.THIS.props.classes.divider}}/>
+                        <ListItem>
+                            <Grid container direction="row" justify="center" alignItems="center">
+                                <Typography
+                                color="primary"
+                                display="block"
+                                variant="caption">
+                                Relation Properties
+                                </Typography>
+                                <TextField         
+                                label='Relation Type' 
+                                variant='outlined' 
+                                size='small'                                          
+                                style={{ width: '100%',marginTop:15,marginBottom:15}}
+                                value={this.state.relation_type_name}
+                                onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                onChange={
+                                    e=>{
+                                        this.setState({relation_type_name:e.target.value});
+                                        this.relation_type_search_handler();
+                                    }
+                                }
+                                InputLabelProps={
+                                {   className: this.props.THIS.props.classes.textfield_label}}
+                                InputProps={{
+                                    className: this.props.THIS.props.classes.valueTextField,
+                                    classes:{
+                                        root:this.props.THIS.props.classes.root,
+                                        notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                        disabled: this.props.THIS.props.classes.valueTextField
+                                    },
+                                    endAdornment: 
+                                    (
+                                        <Box display={this.state.relation_type_close_button_visible}> 
                                             <IconButton color='primary' size='small'
                                             onClick={e=>
                                             {
-                                                this.setState({edit_relation_type:"",edit_relation_type_close_button_visible:'none'});
-                                                this.props.THIS.relation_type_add_button_enabler("",this.state.color_picker_hex_value,this.state.vectored_relation);
+                                                this.setState({relation_type_name:"",relation_type_close_button_visible:'none'});
+                                                this.search_relation_type("");
                                             }}>
                                                 <CloseIcon/>
                                             </IconButton>
                                         </Box> 
                                     ),
                                 }}/>
-                            </Box>
-                            <div className="colorPickerStyle">
-                                <ColorPicker
-                                    name="color"
+                                <Box display={this.state.edit_relation_type_box_visible}>
+                                    <TextField         
+                                    label='New Relation Type Name' 
                                     variant='outlined' 
-                                    size="small"
-                                    style={{marginBottom:15}}
+                                    size='small'                                          
+                                    style={{ width: '100%',marginBottom:15}}
+                                    value={this.state.edit_relation_type}
                                     onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
                                     onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
-                                    onChange={color => 
-                                    {
-                                        this.setState({color_picker_hex_value:color});
-                                        if(this.state.disabled_add_relation_type_button)
-                                        {   this.relation_type_add_button_enabler(this.state.edit_relation_type,""+color,this.state.vectored_relation);}
-                                    }}
+                                    onChange={
+                                        e=>{
+                                            var visible;
+                                            if(e.target.value.length==0)
+                                            {   visible='none';}
+                                            else
+                                            {   visible='block';}
+                                            this.setState({edit_relation_type:e.target.value,edit_relation_type_close_button_visible:visible});
+                                            this.relation_type_add_button_enabler(e.target.value,this.state.color_picker_hex_value,this.state.vectored_relation);
+                                        }
+                                    }
+                                    InputLabelProps={
+                                    {   className: this.props.THIS.props.classes.textfield_label}}
                                     InputProps={{
-                                        value:this.state.color_picker_hex_value, 
-                                        style:{color:this.state.color_picker_hex_value},
+                                        className: this.props.THIS.props.classes.valueTextField,
                                         classes:{
                                             root:this.props.THIS.props.classes.root,
                                             notchedOutline: this.props.THIS.props.classes.valueTextField,
                                             disabled: this.props.THIS.props.classes.valueTextField
-                                        }
-                                    }}
-                                    value={this.state.color_picker_hex_value}
-                                />
-                            </div>
-                            <Grid xs={6}>
-                                <Typography
-                                    color="primary"
-                                    display="block"
-                                    variant="caption">
-                                    Vectored Relation:
-                                </Typography>
-                            </Grid>
-                            <Grid xs={6}>
-                                <FormControl variant="outlined" 
-                                className={this.props.THIS.props.classes.formControl}
-                                size='small'>
-                                    <Select
-                                    labelId="encryption_status_select"
-                                    id="encryption_status_select"
-                                    size='small'
-                                    value={this.state.vectored_relation}
-                                    onChange={e=>
-                                    {
-                                        this.setState({vectored_relation:e.target.value});
-                                        if(this.state.edit_relation_type_obj!=undefined)
-                                        {   this.relation_type_add_button_enabler(this.state.edit_relation_type,this.state.color_picker_hex_value,e.target.value);}
-                                    }}
-                                    style={{width:'100%',marginBottom:15}}
-                                    MenuProps={{classes:{paper: this.props.THIS.props.classes.menu_dropdown_style}}}
-                                    className={this.props.THIS.props.classes.select_style}
-                                    inputProps={{
-                                        classes: {
-                                            root: this.props.THIS.props.classes.select_style,
-                                            icon:this.props.THIS.props.classes.select_style
                                         },
-                                    }}>
-                                        <MenuItem value={true}>True</MenuItem>
-                                        <MenuItem value={false}>False</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                            <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
-                            onClick={
-                                e=>{this.add_relation_type();}}
-                                classes={{root: this.props.THIS.props.classes.button, disabled: this.props.THIS.props.classes.disabled_button }}
-                                disabled={this.state.disabled_add_relation_type_button}>
-                                {this.state.relation_type_add_button_text}
-                            </Button>
-                            <List className={this.props.THIS.props.classes.properties_list_class}>
-                            {   
-                                this.props.THIS.state.relation_type_data_list.map(item=>
-                                {
-                                    if(item.show)
+                                        endAdornment: 
+                                        (
+                                            <Box display={this.state.edit_relation_type_close_button_visible}> 
+                                                <IconButton color='primary' size='small'
+                                                onClick={e=>
+                                                {
+                                                    this.setState({edit_relation_type:"",edit_relation_type_close_button_visible:'none'});
+                                                    this.props.THIS.relation_type_add_button_enabler("",this.state.color_picker_hex_value,this.state.vectored_relation);
+                                                }}>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </Box> 
+                                        ),
+                                    }}/>
+                                </Box>
+                                <div className="colorPickerStyle">
+                                    <ColorPicker
+                                        name="color"
+                                        variant='outlined' 
+                                        size="small"
+                                        style={{marginBottom:15}}
+                                        onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                        onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                        onChange={color => 
+                                        {
+                                            this.setState({color_picker_hex_value:color});
+                                            if(this.state.disabled_add_relation_type_button)
+                                            {   this.relation_type_add_button_enabler(this.state.edit_relation_type,""+color,this.state.vectored_relation);}
+                                        }}
+                                        InputProps={{
+                                            value:this.state.color_picker_hex_value, 
+                                            style:{color:this.state.color_picker_hex_value},
+                                            classes:{
+                                                root:this.props.THIS.props.classes.root,
+                                                notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                                disabled: this.props.THIS.props.classes.valueTextField
+                                            }
+                                        }}
+                                        value={this.state.color_picker_hex_value}
+                                    />
+                                </div>
+                                <Grid xs={6}>
+                                    <Typography
+                                        color="primary"
+                                        display="block"
+                                        variant="caption">
+                                        Vectored Relation:
+                                    </Typography>
+                                </Grid>
+                                <Grid xs={6}>
+                                    <FormControl variant="outlined" 
+                                    className={this.props.THIS.props.classes.formControl}
+                                    size='small'>
+                                        <Select
+                                        labelId="encryption_status_select"
+                                        id="encryption_status_select"
+                                        size='small'
+                                        value={this.state.vectored_relation}
+                                        onChange={e=>
+                                        {
+                                            this.setState({vectored_relation:e.target.value});
+                                            if(this.state.edit_relation_type_obj!=undefined)
+                                            {   this.relation_type_add_button_enabler(this.state.edit_relation_type,this.state.color_picker_hex_value,e.target.value);}
+                                        }}
+                                        style={{width:'100%',marginBottom:15}}
+                                        MenuProps={{classes:{paper: this.props.THIS.props.classes.menu_dropdown_style}}}
+                                        className={this.props.THIS.props.classes.select_style}
+                                        inputProps={{
+                                            classes: {
+                                                root: this.props.THIS.props.classes.select_style,
+                                                icon:this.props.THIS.props.classes.select_style
+                                            },
+                                        }}>
+                                            <MenuItem value={true}>True</MenuItem>
+                                            <MenuItem value={false}>False</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Button variant="contained" size="small" color="primary" style={{width:'100%',marginBottom:15}}
+                                onClick={
+                                    e=>{this.add_relation_type();}}
+                                    classes={{root: this.props.THIS.props.classes.button, disabled: this.props.THIS.props.classes.disabled_button }}
+                                    disabled={this.state.disabled_add_relation_type_button}>
+                                    {this.state.relation_type_add_button_text}
+                                </Button>
+                                <List className={this.props.THIS.props.classes.properties_list_class}>
+                                {   
+                                    this.props.THIS.state.relation_type_data_list.map(item=>
                                     {
-                                        return(
-                                        <ListItem button key={item.id}>
-                                            <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} 
-                                            onClick={E=>
-                                            {
-                                                this.setState({relation_type_name:item.relation_type});
-                                                this.search_relation_type(item.relation_type);
-                                            }}/>
-                                            <IconButton color='primary' size='small'
-                                                onClick={
-                                                e=>{
-                                                    this.props.THIS.delete_relation_type_id=item.id;
-                                                    this.props.THIS.delete_relation_type_name=item.relation_type;
-                                                    this.props.THIS.permission_dialog_purpose_code=2;
-                                                    this.props.THIS.permission_dialog_options(1);
-                                                } 
-                                                }>
-                                                <DeleteIcon/>
-                                            </IconButton>
-                                        </ListItem>
-                                        );
-                                    }
-                                })
-                            }
-                            </List>
-                        </Grid>
-                    </ListItem>
-                </List>
-            </Grid>
-        </Drawer>
-    );
+                                        if(item.show)
+                                        {
+                                            return(
+                                            <ListItem button key={item.id}>
+                                                <ListItemText primary={<Typography type="body2" style={{ color: item.color_code }}>{item.relation_type}</Typography>} 
+                                                onClick={E=>
+                                                {
+                                                    this.setState({relation_type_name:item.relation_type});
+                                                    this.search_relation_type(item.relation_type);
+                                                }}/>
+                                                <IconButton color='primary' size='small'
+                                                    onClick={
+                                                    e=>{
+                                                        this.props.THIS.delete_relation_type_id=item.id;
+                                                        this.props.THIS.delete_relation_type_name=item.relation_type;
+                                                        this.props.THIS.permission_dialog_purpose_code=2;
+                                                        this.props.THIS.permission_dialog_options(1);
+                                                    } 
+                                                    }>
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            </ListItem>
+                                            );
+                                        }
+                                    })
+                                }
+                                </List>
+                            </Grid>
+                        </ListItem>
+                    </List>
+                </Grid>
+            </Drawer>
+        );
     }
 }

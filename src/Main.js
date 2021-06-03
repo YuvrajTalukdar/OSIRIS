@@ -15,7 +15,7 @@ import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import CloseIcon from '@material-ui/icons/Close';
 
 import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './relation_and_node_properites_panel.js';
-import {add_add_panel_func,add_panel} from './add_panel.js'
+import {add_add_panel_func,Add_Panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
 import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
 
@@ -154,42 +154,18 @@ class Main extends React.Component
         this.state=
         {
             /*Drawer Settings*/
-            add_drawer_open:false,
+            add_drawer_open:true,
             add_icon_color:'primary',
             search_drawer_open:false,
             operation_drawer_open:false,
             operation_drawer_color:'primary',
-            relation_node_properties_drawer_open:true,
+            relation_node_properties_drawer_open:false,
             relation_node_properties_icon_color:'primary',
             collaborate_drawer_open:false,
-            
             /*Node data */
             node_data_list:[],
-            new_node_name:"",
-            new_node_name_close_button_visible:'none',
-            new_node_type:"",
-            add_button_text:'Add',
-            disable_add_button:false,
-            matched_node:undefined,
-            edit_node_name_box_visible:'none',
-            edit_node_name_close_button:'none',
-            edit_node_name:'',
-
             /*Relation Data*/
             relation_data_list:[],
-            source_node:"",
-            destination_node:"",
-            new_relation_type:"",
-            source_url:"",
-            source_url_close_button_visible:'none',
-            source_url_list:[],
-            file_dir:"",
-            file_dir_list:[],
-            grouped_relation_search:"",//will bw used later
-            edit_relation_id:'',
-            edit_mode_on:false,
-            relation_add_button_text:'Add',
-            disable_relation_add_button:false,
             /*type data */
             node_type_data_list:[],/*Node Type */
             relation_type_data_list:[],/*Relation Type */
@@ -250,15 +226,16 @@ class Main extends React.Component
 
     add_relation_ref=createRef();
     add_node_ref=createRef();
+    add_panel_ref=createRef();
     properties_panel_ref=createRef();
     operations_panel_ref=createRef();
-    
+    //CURRENTLY THE TYPE IDS CA BE SHIFTED IN THE PROPERTIES PANEL, BUT MAYBE IN FUTURE THEY MIGHT BE REQUIRED FOR COMMUNICATING WITH THE NETWORK
     delete_node_type_id=-1;
     delete_node_type_name="";
 
     delete_relation_type_id=-1;
     delete_relation_type_name="";
-    
+    //DELETE IDS CANNOT BE SHIFTER FROM HERE
     delete_node_id=-1;
     delete_node_name="";
 
@@ -267,13 +244,9 @@ class Main extends React.Component
     delete_relation_destination_node="";
     delete_relation_type="";
 
-    match_found_at=-1;//for edit node
-
     source_node_id=-1;
     destination_node_id=-1;
     relation_type_id=-1;
-    url_list=[];
-    source_local=[];
 
     change_password()
     {
@@ -338,14 +311,14 @@ class Main extends React.Component
                 behavior: 'smooth',
                 block: 'start',
             });
-            this.search_node_name(this.context_node_name);
-            this.setState({
+            this.add_panel_ref.current.search_node_name(this.context_node_name);
+            this.add_panel_ref.current.setState({
                 new_node_name:this.context_node_name,
                 source_node:'',
                 destination_node:'',
                 new_relation_type:''
             });
-            this.edit_relation_switch_toggle(false);
+            this.add_panel_ref.current.edit_relation_switch_toggle(false);
         }
         else if(section_id==1)
         {
@@ -353,15 +326,15 @@ class Main extends React.Component
                 behavior: 'smooth',
                 block: 'start',
             });
-            this.search_node_name("");
+            this.add_panel_ref.current.search_node_name("");
             var obj=this.get_node_indexes_from_edge_id(this.context_edge_id);
-            this.setState({
+            this.add_panel_ref.current.setState({
                 new_node_name:"",
                 source_node:this.state.node_data_list[obj.from_node_index],
                 destination_node:this.state.node_data_list[obj.to_node_index],
                 new_relation_type:obj.relation_type
             });
-            this.edit_relation_switch_toggle(true);   
+            this.add_panel_ref.current.edit_relation_switch_toggle(true);   
         }
         this.reset_context_menu_settings();
     }
@@ -457,9 +430,9 @@ class Main extends React.Component
         else if(this.permission_dialog_purpose_code==2)
         {   this.properties_panel_ref.current.Delete_Relation_Type();}
         else if(this.permission_dialog_purpose_code==3)
-        {   this.delete_node();}
+        {   this.add_panel_ref.current.delete_node();}
         else if(this.permission_dialog_purpose_code==4)
-        {   this.delete_relation();}
+        {   this.add_panel_ref.current.delete_relation();}
         this.permission_dialog_purpose_code=0;
     }
 
@@ -543,7 +516,7 @@ class Main extends React.Component
         {   this.add_new_node_body(data);});
 
         window.ipcRenderer.on('add_file_dir',(event,data)=>
-        {   this.add_file_dir(data);});
+        {   this.add_panel_ref.current.add_file_dir(data);});
 
         window.ipcRenderer.on('change_pass_dialog',(event,data)=>
         {   this.setState({
@@ -893,7 +866,7 @@ class Main extends React.Component
                     </Toolbar>
                 </AppBar>
                 {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
-                {add_panel(this)}
+                <Add_Panel THIS={this} ref={this.add_panel_ref}/>
                 {/*---------------------------------------------Operations Panel-----------------------------------------------------*/}
                 <Add_Operations_Panel THIS={this} ref={this.operations_panel_ref}/>
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
