@@ -563,10 +563,10 @@ function center_focus()
 
 function set_speed()
 {
-    options.interaction.keyboard.speed.x=this.state.navigation_speed;
-    options.interaction.keyboard.speed.y=this.state.navigation_speed;
-    options.interaction.zoomSpeed=this.state.mouse_zoom;
-    options.interaction.keyboard.speed.zoom=this.state.keyboard_zoom;
+    options.interaction.keyboard.speed.x=this.speed_menu_ref.current.state.navigation_speed;
+    options.interaction.keyboard.speed.y=this.speed_menu_ref.current.state.navigation_speed;
+    options.interaction.zoomSpeed=this.speed_menu_ref.current.state.mouse_zoom;
+    options.interaction.keyboard.speed.zoom=this.speed_menu_ref.current.state.keyboard_zoom;
     this.network.setOptions(options);
 }
 

@@ -13,7 +13,7 @@ import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './rel
 import {add_add_panel_func,Add_Panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
 import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
-import {Side_Bar_Buttons} from './other_ui_components.js';
+import {Side_Bar_Buttons,Speed_Menu,Change_Password_Dialog} from './other_ui_components.js';
 
 const useStyles = (theme)=>
 ({
@@ -164,22 +164,8 @@ class Main extends React.Component
             permission_dialog_text:"",
             alert_dialog_open:false,
             alert_dialog_text:"",
-            change_pass_dialog:false,
-            current_pass:'',
-            current_pass_close_btn_show:'none',
-            new_pass1:'',
-            new_pass1_close_btn_show:'none',
-            new_pass2:'',
-            new_pass2_close_btn_show:'none',
             /*Other UI components*/
             open_network_popup:false,
-            network_popup_top:100,
-            network_popup_bottom:100,
-            open_speed_popover:false,
-            speed_popover_anchor:'',
-            keyboard_zoom:0.05,
-            mouse_zoom:1,
-            navigation_speed:10,
         };
 
         this.net_ref=createRef();
@@ -206,7 +192,6 @@ class Main extends React.Component
 
         this.rgbToHex=this.rgbToHex.bind(this);
         this.getRndInteger=this.getRndInteger.bind(this);
-        this.change_password=this.change_password.bind(this);
 
         add_node_relation_props_func(Main);
         add_operations_func(Main);
@@ -220,6 +205,8 @@ class Main extends React.Component
     properties_panel_ref=createRef();
     operations_panel_ref=createRef();
     side_bar_ref=createRef();
+    speed_menu_ref=createRef();
+    password_dialog_ref=createRef();
     //CURRENTLY THE TYPE IDS CA BE SHIFTED IN THE PROPERTIES PANEL, BUT MAYBE IN FUTURE THEY MIGHT BE REQUIRED FOR COMMUNICATING WITH THE NETWORK
     delete_node_type_id=-1;
     delete_node_type_name="";
@@ -238,46 +225,6 @@ class Main extends React.Component
     source_node_id=-1;
     destination_node_id=-1;
     relation_type_id=-1;
-
-    change_password()
-    {
-        if(this.state.current_pass.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Enter the current Password !",
-                alert_dialog_open:true
-            });
-        }
-        else if(this.state.new_pass1.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Enter the new password !",
-                alert_dialog_open:true
-            });
-        }
-        else if(this.state.new_pass2.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Type the new password again !",
-                alert_dialog_open:true
-            });
-        }
-        else if(this.state.new_pass1.localeCompare(this.state.new_pass2)!=0)
-        {
-            this.setState({
-                alert_dialog_text:"Password didnot match !",
-                alert_dialog_open:true
-            });
-        }
-        else
-        {
-            var data={
-                current_pass:this.state.current_pass,
-                new_pass:this.state.new_pass1,
-            };
-            window.ipcRenderer.send('change_password', data);
-        }
-    }
 
     reset_context_menu_settings()
     {
@@ -504,7 +451,7 @@ class Main extends React.Component
         {   this.add_panel_ref.current.add_file_dir(data);});
 
         window.ipcRenderer.on('change_pass_dialog',(event,data)=>
-        {   this.setState({
+        {   this.password_dialog_ref.current.setState({
             change_pass_dialog:true,
             current_pass:'',
             new_pass1:'',
@@ -524,7 +471,7 @@ class Main extends React.Component
                 });
             }
             else
-            {   this.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}
+            {   this.password_dialog_ref.current.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}
         });
 
         var dummy="";
@@ -540,150 +487,7 @@ class Main extends React.Component
             <header className="Main_Style">
                 {/*-----------------------------------------Dialogs----------------------------------------------------- */ }
                 {/*Password change dialog*/}
-                <Dialog
-                    open={this.state.change_pass_dialog}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                    PaperProps={{
-                        style:{
-                            backgroundColor:'#191919'
-                        }
-                    }}
-                >
-                    <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Change Password</span></DialogTitle>
-                    <DialogContent>
-                        <TextField 
-                            label='Current Password'
-                            variant='outlined' 
-                            size='small' 
-                            value={this.state.current_pass}
-                            type="password"
-                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e => 
-                                {
-                                    var btn_visible='';
-                                    if(e.target.value.length>0)
-                                    {   btn_visible='block';}
-                                    else
-                                    {   btn_visible='none';}
-                                    this.setState({current_pass:e.target.value,current_pass_close_btn_show:btn_visible});
-                                }}                                            
-                            style={{width:300}} 
-                            InputLabelProps={
-                            {   className: this.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.classes.root,
-                                    notchedOutline: this.props.classes.valueTextField,
-                                    disabled: this.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.current_pass_close_btn_show}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>{this.setState({current_pass:"",current_pass_close_btn_show:'none'});}}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <TextField 
-                            label='New Password'
-                            variant='outlined' 
-                            size='small' 
-                            value={this.state.new_pass1}
-                            type="password"
-                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e => 
-                                {
-                                    var btn_visible='';
-                                    if(e.target.value.length>0)
-                                    {   btn_visible='block';}
-                                    else
-                                    {   btn_visible='none';}
-                                    this.setState({new_pass1:e.target.value,new_pass1_close_btn_show:btn_visible});
-                                }}                                            
-                            style={{width:300}} 
-                            InputLabelProps={
-                            {   className: this.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.classes.root,
-                                    notchedOutline: this.props.classes.valueTextField,
-                                    disabled: this.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.new_pass1_close_btn_show}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>{this.setState({new_pass1:"",new_pass1_close_btn_show:'none'});}}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <TextField 
-                            label='Confirm Password'
-                            variant='outlined' 
-                            size='small' 
-                            value={this.state.new_pass2}
-                            type="password"
-                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e => 
-                                {
-                                    var btn_visible='';
-                                    if(e.target.value.length>0)
-                                    {   btn_visible='block';}
-                                    else
-                                    {   btn_visible='none';}
-                                    this.setState({new_pass2:e.target.value,new_pass2_close_btn_show:btn_visible});
-                                }}                                            
-                            style={{width:300}} 
-                            InputLabelProps={
-                            {   className: this.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.classes.root,
-                                    notchedOutline: this.props.classes.valueTextField,
-                                    disabled: this.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.new_pass2_close_btn_show}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>{this.setState({new_pass2:"",new_pass2_close_btn_show:'none'});}}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}
-                        />
-                    </DialogContent>
-                    
-                    <DialogActions>
-                        <Button onClick={e=>{this.change_password()}} color="primary">
-                            Change Password
-                        </Button>
-                        <Button onClick={e=>{this.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}} color="primary">
-                            Cancel
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                <Change_Password_Dialog THIS={this} ref={this.password_dialog_ref}/>
                 {/*Alert Dialog*/}
                 <Dialog
                     open={this.state.alert_dialog_open}
@@ -733,57 +537,7 @@ class Main extends React.Component
                         </Button>
                     </DialogActions>
                 </Dialog>
-                <Popover
-                open={this.state.open_speed_popover}
-                anchorEl={this.state.speed_popover_anchor}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                }}
-                onClose={e=>
-                {
-                    this.setState({open_speed_popover:false});
-                    this.set_speed();
-                }}>
-                    <div className="speedMenu">
-                        <Typography color="primary">Keyboard Zoom</Typography>
-                        <Slider
-                            valueLabelDisplay="auto"
-                            marks
-                            min={0.01}
-                            step={0.01}
-                            max={0.1}
-                            value={this.state.keyboard_zoom}
-                            onChange={(e,value)=>{
-                                this.setState({keyboard_zoom:value});
-                            }}
-                        />
-                        <Typography color="primary">Mouse Wheel Zoom</Typography>
-                        <Slider
-                            valueLabelDisplay="auto"
-                            marks
-                            min={1}
-                            step={1}
-                            max={8}
-                            value={this.state.mouse_zoom}
-                            onChange={(e,value)=>{
-                                this.setState({mouse_zoom:value});
-                            }}
-                        />
-                        <Typography color="primary">Keyboard Navigation</Typography>
-                        <Slider
-                            valueLabelDisplay="auto"
-                            marks
-                            min={5}
-                            step={5}
-                            max={40}
-                            value={this.state.navigation_speed}
-                            onChange={(e,value)=>{
-                                this.setState({navigation_speed:value});
-                            }}
-                        />
-                    </div>
-                </Popover>
+                <Speed_Menu THIS={this} ref={this.speed_menu_ref}/>
                 {/*-----------------------------------------App Bar--------------------------------------------------- */ }
                 <AppBar  style={{ background: '#242527',paddingLeft: 40 }} className={this.props.classes.appBar}>
                     <Toolbar variant="dense">
@@ -831,7 +585,7 @@ class Main extends React.Component
                                 <IconButton color="primary"
                                 onClick={
                                     e=>{
-                                        this.setState(
+                                        this.speed_menu_ref.current.setState(
                                         {
                                             open_speed_popover:true,
                                             speed_popover_anchor:e.target,
