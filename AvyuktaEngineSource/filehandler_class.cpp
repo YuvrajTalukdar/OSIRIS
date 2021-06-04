@@ -1500,6 +1500,53 @@ void filehandler_class::add_new_data_to_relation_file_list(file_info &new_file)
     encrypt_file(relation_file_list_dir,temp_data);
 }
 
+void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//the problem of duplicate file is prevented in js body.
+{
+    string attached_file_dir=database_dir+"attached_files/";
+    if(!check_if_file_is_present("attached_files"))
+    {   fs::create_directory(attached_file_dir);}
+    attached_failed_files.clear();
+    for(int a=relation_obj.source_local.size()-1;a>=0;a--)
+    {
+        if(!strcasestr(relation_obj.source_local.at(a).c_str(),attached_file_dir.c_str()))
+        {
+            auto fsize = fs::file_size(relation_obj.source_local.at(a));
+            if((float)(((float)fsize)/(1024.0*1024.0))>attached_file_size_in_MiB)
+            {
+                attached_failed_files.push_back(relation_obj.source_local.at(a));
+                relation_obj.source_local.erase(relation_obj.source_local.begin()+a);
+            }
+            else
+            {
+                //orig file meta data
+                string orig_file_name=get_name_from_path(relation_obj.source_local.at(a));
+                string relation_folder_name="r"+to_string(relation_obj.relation_id);
+                //encrypted file meta data
+                string encrypted_file_name=encrypt_text(orig_file_name,password);
+                string encrypted_relation_folder_name=encrypt_text(relation_folder_name,password);
+                if(!check_if_file_is_present(attached_file_dir+encrypted_relation_folder_name))
+                {   fs::create_directory(attached_file_dir+encrypted_relation_folder_name);}
+                //encrypt and copy the file
+                string data="",line;
+                ifstream in_file(relation_obj.source_local.at(a),ios::in);
+                while(in_file)
+                {
+                    getline(in_file,line);
+                    data+=line;
+                    data+="\n";
+                    if(in_file.eof())
+                    {    break;}
+                }
+                in_file.close();
+                encrypt_file(attached_file_dir+encrypted_relation_folder_name+"/"+encrypted_file_name,data);
+                relation_obj.source_local.at(a)=attached_file_dir+relation_folder_name+"/"+orig_file_name;
+            }
+        }
+        else
+        {   cout<<"\ndup file!!";}
+    }
+}
+
 void filehandler_class::add_new_relation(relation &relation)
 {
     unsigned int no_of_relation_in_current_file=0,current_file_id;
@@ -1513,6 +1560,8 @@ void filehandler_class::add_new_relation(relation &relation)
         new_file.start_id=0;
         new_file.end_id=0;
         relation.relation_id=0;
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         if(no_of_nodes_in_one_node_file==1)
         {   new_file.file_full=true;}
         else
@@ -1524,6 +1573,9 @@ void filehandler_class::add_new_relation(relation &relation)
     else if(gap_relation_id_map.size()>0)
     {   //cout<<"\n\ncheck2";
         gap_relation_iterator=gap_relation_id_map.begin();
+        relation.relation_id=gap_relation_iterator->first;
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         relation_list.at(gap_relation_iterator->first).relation_id=gap_relation_iterator->first;
         relation_list.at(gap_relation_iterator->first).gap_relation=false;
         relation_list.at(gap_relation_iterator->first).weight=relation.weight;
@@ -1538,7 +1590,6 @@ void filehandler_class::add_new_relation(relation &relation)
 
         string file_name=relation_file_list.at(gap_relation_iterator->first/no_of_relation_in_one_file).file_name;
         current_file_id=gap_relation_iterator->first/no_of_relation_in_one_file;
-        relation.relation_id=gap_relation_iterator->first;
         no_of_relation_in_current_file=write_relationdata_to_file(file_name,relation);
         gap_relation_id_map.erase(gap_relation_iterator->first);
         total_no_of_relations++;
@@ -1557,6 +1608,8 @@ void filehandler_class::add_new_relation(relation &relation)
         else
         {   new_file.file_full=false;}
         add_new_data_to_relation_file_list(new_file);
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         no_of_relation_in_current_file=write_relationdata_to_file(new_file.file_name,relation);
         current_file_id=relation_file_list.size()-1;
     }
@@ -1564,11 +1617,13 @@ void filehandler_class::add_new_relation(relation &relation)
     {   //cout<<"\n\ncheck4";
         relation.relation_id=total_no_of_relations;
         unsigned int free_file_index;
-        for(unsigned int a=0;a<relation_file_list.size();a++)
+        for(unsigned int a=0;a<relation_file_list.size();a++)//optimization may be done here in future
         {
             if(!relation_file_list.at(a).file_full)
             {   free_file_index=a;break;}
         }
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         no_of_relation_in_current_file=write_relationdata_to_file(relation_file_list.at(free_file_index).file_name,relation);
         change_settings(relation_file_list_dir,"NO_OF_RELATIONS",to_string((free_file_index)*no_of_relation_in_one_file+no_of_relation_in_current_file));
         total_no_of_relations++;
@@ -1660,6 +1715,10 @@ void filehandler_class::delete_relation(unsigned int relation_id)
         relation_list.at(relation_id).gap_relation=true;
         total_no_of_relations--;
         gap_relation_id_map.insert(make_pair(relation_id,gap_relation_id_map.size()));
+        //delete files
+        relation r_temp=relation_list.at(relation_id);
+        r_temp.source_local.clear();
+        delete_attached_file_if_required(r_temp);
         //change all the settings from node_file_list.csv
         change_settings(relation_file_list_dir,"NO_OF_RELATIONS",to_string(total_no_of_relations));
         set_file_full_status(relation_id/no_of_relation_in_one_file,false,1);
@@ -1670,8 +1729,50 @@ void filehandler_class::delete_relation(unsigned int relation_id)
     }
 }
 
+void filehandler_class::delete_attached_file_if_required(relation& relation)
+{   
+    string attached_file_dir=database_dir+"attached_files/";
+    for(int a=0;a<relation_list.at(relation.relation_id).source_local.size();a++)
+    {   
+        string old_file_name=get_name_from_path(relation_list.at(relation.relation_id).source_local.at(a));
+        bool file_found=false;
+        for(int b=0;b<relation.source_local.size();b++)
+        {
+            if(strcmp(old_file_name.c_str(),get_name_from_path(relation.source_local.at(b)).c_str())==0)
+            {   file_found=true;break;}
+        }
+        if(!file_found)//delete the file
+        {
+            //finding the relation folder name
+            int count=0;
+            string relation_folder_name="";
+            for(int b=relation_list.at(relation.relation_id).source_local.at(a).size()-1;b>=0;b--)
+            {
+                if(relation_list.at(relation.relation_id).source_local.at(a).at(b)=='/')
+                {
+                    if(count!=1)
+                    {   relation_folder_name="";}
+                    count++;
+                }
+                else
+                {   relation_folder_name=relation_list.at(relation.relation_id).source_local.at(a).at(b)+relation_folder_name;}
+                if(count==2)
+                {   break;}
+            }
+            cout<<"\ndir==="<<relation_list.at(relation.relation_id).source_local.at(a);
+            cout<<"\nfoldername="<<relation_folder_name;
+            fs::remove(attached_file_dir+encrypt_text(relation_folder_name,password)+"/"+encrypt_text(old_file_name,password));
+            cout<<"\ncheck3---"<<attached_file_dir+encrypt_text(relation_folder_name,password)+"/"+encrypt_text(old_file_name,password);
+        }
+    }
+}
+
 void filehandler_class::edit_relation(relation& relation_obj)
 {
+    //file delete
+    delete_attached_file_if_required(relation_obj);
+    check_size_encrypt_copy_file(relation_obj);
+    //check size encrypt and copy file
     //graph editing
     int position;
     for(int a=0;a<data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.size();a++)

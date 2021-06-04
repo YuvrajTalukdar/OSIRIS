@@ -55,6 +55,8 @@ class filehandler_class
     //relation related file
     unsigned int write_relationdata_to_file(string file_name,relation &relation);
     void add_new_data_to_relation_file_list(file_info &new_file);
+    void check_size_encrypt_copy_file(relation& relation_obj);
+    void delete_attached_file_if_required(relation& relation_obj);
     //both node_relation_functions
     void load_node_relation_file_list(int node_or_relation);//aes ok tested 0 means node 1 means relation.
     void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//aes ok tested
@@ -70,6 +72,8 @@ class filehandler_class
     //relation related data
     vector<relation> relation_list;
     relation last_entered_relation;
+    int attached_file_size_in_MiB=100;
+    vector<string> attached_failed_files;
     //settings data
     string settings_file_dir;//="./database/settings.csv";
     unsigned int total_no_of_nodes=0;

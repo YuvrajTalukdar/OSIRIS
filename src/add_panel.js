@@ -123,7 +123,7 @@ export class Add_Panel extends React.Component
     delete_relation()
     {
         const relation_data_list=[...this.props.THIS.state.relation_data_list];
-        const new_relation_data_list=relation_data_list.filter(item=>item.relation_id!=this.delete_relation_id);
+        const new_relation_data_list=relation_data_list.filter(item=>item.relation_id!=this.props.THIS.delete_relation_id);
 
         window.ipcRenderer.send('delete_relation',this.props.THIS.delete_relation_id);
         this.props.THIS.delete_relation_from_network(this.props.THIS.delete_relation_id);
@@ -150,17 +150,32 @@ export class Add_Panel extends React.Component
     add_file_dir(data)
     {
         const file_dir_list=[...this.state.file_dir_list];
-        var data={
-            'id':file_dir_list.length,
-            'file_name':data.file_name,
-            'new_file_dir':data.new_file_dir,
-            'file_dir':""+data.file_dir
-        };
-        file_dir_list.push(data);
-        this.setState({file_dir_list});
-        this.props.THIS.sleep(1).then(() => {
-            this.enable_disable_save_relation_button();
-        });
+        let duplicate=false;
+        for(let a=0;a<file_dir_list.length;a++)
+        {
+            if(data.file_name.localeCompare(file_dir_list[a].file_name)==0)
+            {   duplicate=true;break;}
+        }
+        if(duplicate)
+        {
+            this.props.THIS.setState({
+                alert_dialog_text:"Another file with name '"+data.file_name+"' already present !",
+                alert_dialog_open:true
+            });
+        }
+        else
+        {
+            var data={
+                'id':file_dir_list.length,
+                'file_name':data.file_name,
+                'file_dir':""+data.file_dir,
+            };
+            file_dir_list.push(data);
+            this.setState({file_dir_list});
+            this.props.THIS.sleep(1).then(() => {
+                this.enable_disable_save_relation_button();
+            });
+        }
     }
 
     edit_relation_switch_toggle(switch_on)
@@ -193,8 +208,7 @@ export class Add_Panel extends React.Component
                     var data={
                         'id':file_dir_list.length,
                         'file_name':this.props.THIS.get_filename_from_path(this.props.THIS.state.relation_data_list[obj.js_index].source_local[a]),
-                        'new_file_dir':this.props.THIS.state.relation_data_list[obj.js_index].source_local[a],
-                        'file_dir':""+this.props.THIS.state.relation_data_list[obj.js_index].source_local[a]
+                        'file_dir':""+this.props.THIS.state.relation_data_list[obj.js_index].source_local[a],
                     };
                     file_dir_list.push(data);
                 }
@@ -328,7 +342,7 @@ export class Add_Panel extends React.Component
             {
                 for(a=0;a<this.source_local.length;a++)
                 {
-                    if(this.source_local[a].new_file_dir.localeCompare(this.state.file_dir_list[a].new_file_dir)!=0)
+                    if(this.source_local[a].file_name.localeCompare(this.state.file_dir_list[a].file_name)!=0)
                     {   disabled=false;break;}
                 }
             }
@@ -444,7 +458,7 @@ export class Add_Panel extends React.Component
                     relation_data_list[relation_index].source_url_list=relation.source_url_list;
                     relation_data_list[relation_index].source_local=[];
                     for(var a=0;a<relation.source_local.length;a++)
-                    {   relation_data_list[relation_index].source_local.push(relation.source_local[a].new_file_dir);}
+                    {   relation_data_list[relation_index].source_local.push(relation.source_local[a].file_dir);}
                     this.props.THIS.setState({relation_data_list});
                     //edit the relation in the network.
                     this.props.THIS.delete_relation_from_network(relation.relation_id);
