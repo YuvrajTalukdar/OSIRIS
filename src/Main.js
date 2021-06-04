@@ -285,15 +285,17 @@ class Main extends React.Component
     check_if_drawer_is_open(drawer_id)
     {
         if(drawer_id==0)
-        {   return this.state.add_drawer_open;}
-        else if(drawer_id==1)
-        {   return this.state.search_drawer_open;}
+        {   return this.add_panel_ref.current.state.add_drawer_open;}
+        //else if(drawer_id==1)
+        //{   return this.state.search_drawer_open;}
         else if(drawer_id==2)
-        {   return this.state.operation_drawer_open;}
+        {   return this.operations_panel_ref.current.state.operation_drawer_open;}
         else if(drawer_id==3)
-        {   return this.state.relation_node_properties_drawer_open;}
-        else if(drawer_id==4)
-        {   return this.state.collaborate_drawer_open;}
+        {   return this.properties_panel_ref.current.state.relation_node_properties_drawer_open;}
+        //else if(drawer_id==4)
+        //{   return this.state.collaborate_drawer_open;}
+        else
+        {   return false;}
     }
 
     handle_drawer(drawer_id)

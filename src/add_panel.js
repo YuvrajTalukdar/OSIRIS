@@ -386,7 +386,7 @@ export class Add_Panel extends React.Component
                 if(source_found && destination_found && relation_type_found)
                 {   break;}
             }
-            if(source_found && destination_found && relation_type_found /*&& !this.state.edit_mode_on*/)
+            if(source_found && destination_found && relation_type_found && !this.state.edit_mode_on)
             {
                 this.props.THIS.setState({
                     alert_dialog_text:"This relation is already present !",
