@@ -238,9 +238,7 @@ ipcMain.on('open_save_folder_picker',(event,todo)=>{
     ).then(function (response) 
     {   
         if (!response.canceled) 
-        {
-            console.log(response);
-            
+        { 
             let data={
                 'file_name':get_filename_from_path(response.filePath)+".odb",
                 'file_dir':response.filePath+".odb"
@@ -249,6 +247,24 @@ ipcMain.on('open_save_folder_picker',(event,todo)=>{
         } 
     });
 });
+
+ipcMain.on('open_save_file_picker',(event,data)=>{
+    dialog.showSaveDialog({
+        title:'Save File',
+        defaultPath:data.file_name
+    },
+    ).then(function (response) 
+    {   
+        if(!response.canceled)
+        {
+            AvyuktaEngine.save_file(data.relation_id,data.file_name,response.filePath);
+            mainWindow.webContents.send('file_saved',data.file_name);
+        }
+    });
+});
+
+ipcMain.on('copy_text',(event,data)=>
+{   electron.clipboard.writeText(data);});
 
 /*Settings window functions and variables*/ 
 function startSettingsWindow()

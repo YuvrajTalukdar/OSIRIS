@@ -92,6 +92,7 @@ class filehandler_class
     void set_password_and_dir(string current_db_dir,string password);
     bool password_same(string current_passowrd);
     void change_password(string new_password);
+    void save_file(unsigned int relation_id,string file_name,string destination_dir);
 
     //settings related functions
     void change_settings(string file_dir,string settings_name,string settings_value);//aes ok tested, Function for changing individual settings of a file.

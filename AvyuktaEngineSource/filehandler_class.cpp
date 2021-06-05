@@ -1549,12 +1549,22 @@ void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//th
                 }
                 in_file.close();
                 encrypt_file(attached_file_dir+encrypted_relation_folder_name+"/"+encrypted_file_name,data);
-                relation_obj.source_local.at(a)=relation_folder_name+"/"+orig_file_name;
+                relation_obj.source_local.at(a)="attached_files/"+relation_folder_name+"/"+orig_file_name;
             }
         }
         else
         {   cout<<"\ndup file!!";}
     }
+}
+
+void filehandler_class::save_file(unsigned int relation_id,string file_name,string destination_dir)
+{
+    string attached_file_dir=database_dir+"attached_files/";
+    string encrypted_dir=attached_file_dir+encrypt_text("r"+to_string(relation_id),password)+"/"+encrypt_text(file_name,password);
+    stringstream in_file=decrypt_file(encrypted_dir);
+    ofstream out_file(destination_dir,ios::out);
+    out_file<<in_file.rdbuf();
+    out_file.close();
 }
 
 void filehandler_class::add_new_relation(relation &relation)
@@ -1769,10 +1779,7 @@ void filehandler_class::delete_attached_file_if_required(relation& relation)
                 if(count==2)
                 {   break;}
             }
-            cout<<"\ndir==="<<relation_list.at(relation.relation_id).source_local.at(a);
-            cout<<"\nfoldername="<<relation_folder_name;
             fs::remove(attached_file_dir+encrypt_text(relation_folder_name,password)+"/"+encrypt_text(old_file_name,password));
-            cout<<"\ncheck3---"<<attached_file_dir+encrypt_text(relation_folder_name,password)+"/"+encrypt_text(old_file_name,password);
         }
     }
 }

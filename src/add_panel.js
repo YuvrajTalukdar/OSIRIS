@@ -1016,12 +1016,14 @@ export class Add_Panel extends React.Component
                                         if(item.show)
                                         {
                                             return(
-                                                <ListItem button key={item.id}>
+                                                <ListItem key={item.id}>
                                                     <TextField         
                                                     variant='outlined' 
                                                     size='small'                                          
                                                     style={{ width: '85%' }}
                                                     value={item.url}
+                                                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
                                                     InputLabelProps={
                                                     {   className: this.props.THIS.props.classes.textfield_label}}
                                                     InputProps={{
@@ -1059,13 +1061,15 @@ export class Add_Panel extends React.Component
                                     this.state.file_dir_list.map(item=>
                                     {
                                         return(
-                                            <ListItem button key={item.id}>
+                                            <ListItem key={item.id}>
                                                 <Tooltip title={item.file_dir}>
                                                     <TextField         
                                                     variant='outlined' 
                                                     size='small'                                          
                                                     style={{ width: '85%'}}
                                                     value={item.file_name}
+                                                    onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                                    onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
                                                     InputLabelProps={
                                                     {   className: this.props.THIS.props.classes.textfield_label}}
                                                     InputProps={{

@@ -470,6 +470,19 @@ void find_mst(const FunctionCallbackInfo<Value>& args)
     args.GetReturnValue().Set(obj);
 }
 
+void save_file(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = args.GetIsolate();
+    int relation_id=args[0].As<Number>()->Value();
+    v8::Local<v8::String> v8_file_name=args[1].As<v8::String>();
+    v8::String::Utf8Value str1(isolate, v8_file_name);
+    string file_name(*str1);
+    v8::Local<v8::String> v8_dest_dir=args[2].As<v8::String>();
+    v8::String::Utf8Value str2(isolate, v8_dest_dir);
+    string dest_dir(*str2);
+    db.file_handler.save_file(relation_id,file_name,dest_dir);
+}
+
 void Initialize(Local<Object> exports)
 {
     NODE_SET_METHOD(exports,"change_password",change_password);
@@ -493,6 +506,7 @@ void Initialize(Local<Object> exports)
     NODE_SET_METHOD(exports,"edit_relation",edit_relation);    
     NODE_SET_METHOD(exports,"find_shortest_path",find_shortest_path); 
     NODE_SET_METHOD(exports,"find_mst",find_mst); 
+    NODE_SET_METHOD(exports,"save_file",save_file); 
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME,Initialize);

@@ -402,17 +402,18 @@ function init_network()
         this.reset_node_color_settings();
     });
     this.network.on('doubleClick',(values)=>{
-        let node=this.network.getNodeAt(values.pointer.DOM);
-        if(node!=undefined)
+        let nodeId=this.network.getNodeAt(values.pointer.DOM);
+        let edgeId=this.network.getEdgeAt(values.pointer.DOM);
+        if(nodeId!=undefined)
         {
-            if(this.network.isCluster(node) == true)
+            if(this.network.isCluster(nodeId) == true)
             {   
-                this.network.openCluster(node);
-                this.cluster_id_list=this.cluster_id_list.filter(item=>item!=node);
+                this.network.openCluster(nodeId);
+                this.cluster_id_list=this.cluster_id_list.filter(item=>item!=nodeId);
                 let index;
                 for(let a=0;a<this.cluster_id_with_nodes.length;a++)
                 {
-                    if(this.cluster_id_with_nodes[a].cid.localeCompare(node)==0)
+                    if(this.cluster_id_with_nodes[a].cid.localeCompare(nodeId)==0)
                     {
                         for(let b=0;b<this.cluster_id_with_nodes[a].node_id_list.length;b++)
                         {
@@ -426,6 +427,39 @@ function init_network()
                 }
                 this.cluster_id_with_nodes.splice(index,1);
             }
+        }
+        else if(edgeId!=undefined)
+        {
+            let edge=edges.get(edgeId);
+            let url_list=[];
+            for(let a=0;a<this.state.relation_data_list[edgeId].source_url_list.length;a++)
+            {
+                let url={
+                    id:a,
+                    show:true,
+                    url:this.state.relation_data_list[edgeId].source_url_list[a]
+                }
+                url_list.push(url);
+            }
+            let file_list=[];
+            for(let a=0;a<this.state.relation_data_list[edgeId].source_local.length;a++)
+            {
+                let file={
+                    id:a,
+                    show:true,
+                    file_name:this.get_filename_from_path(this.state.relation_data_list[edgeId].source_local[a])
+                }
+                file_list.push(file);
+            }
+            this.attached_file_dialog_ref.current.setState({
+                Attached_File_Save_Dialog:true,
+                source_name_name:this.state.node_data_list[edge.from].node_name,
+                destination_node_name:this.state.node_data_list[edge.to].node_name,
+                relation_type:this.state.relation_type_data_list[edge.relation_type_id].relation_type,
+                url_list:url_list,
+                file_list:file_list,
+                relation_id:edgeId
+            });
         }
     });
     //context menu handling

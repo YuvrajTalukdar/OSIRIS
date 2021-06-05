@@ -1,11 +1,361 @@
 import React from 'react';
-import {Grid,Dialog,DialogTitle,DialogActions,Button,Tooltip,IconButton,Drawer,Toolbar,Popover,Typography,Slider,DialogContent,TextField,Box} from '@material-ui/core';
+import {List,ListItem,Grid,Dialog,DialogTitle,DialogActions,Button,Tooltip,IconButton,Drawer,Toolbar,Popover,Typography,Slider,DialogContent,TextField,Box} from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import SearchIcon from '@material-ui/icons/Search';
 import GroupIcon from '@material-ui/icons/Group';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import CloseIcon from '@material-ui/icons/Close';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
+import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
+import SaveAltIcon from '@material-ui/icons/SaveAlt';
+
+export class Attached_File_Save_UI extends React.Component
+{
+    constructor(props)
+    {
+        super(props);
+        this.state=
+        {
+            Attached_File_Save_Dialog:false,
+            source_name_name:'',
+            destination_node_name:'',
+            relation_type:'',
+            url_list:[],
+            file_list:[],
+            relation_id:-1,
+
+            search_url_text:'',
+            search_url_close_btn:'none',
+            search_filename_text:'',
+            search_filename_text_close_btn:'none'
+        }
+        this.search_url=this.search_url.bind(this);
+        this.search_file=this.search_file.bind(this);
+    }
+
+    file_name_search_handler = () => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.search_file(this.state.search_filename_text);
+        }, 250);
+    }
+
+    url_search_handler = () => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.search_url(this.state.search_url_text);
+        }, 250);
+    }
+
+    search_file(file_name)
+    {
+        let file_list=[...this.state.file_list];
+        for(let a=0;a<file_list.length;a++)
+        {
+            if(file_name.length==0 || file_list[a].file_name.toUpperCase().includes(file_name.toUpperCase()))
+            {   file_list[a].show=true;}
+            else
+            {   file_list[a].show=false;}
+        }
+        this.setState({file_list});
+    }
+
+    search_url(url)
+    {
+        let url_list=[...this.state.url_list];
+        for(let a=0;a<url_list.length;a++)
+        {
+            if(url.length==0 || url_list[a].url.toUpperCase().includes(url.toUpperCase()))
+            {   url_list[a].show=true;}
+            else
+            {   url_list[a].show=false;}
+        }
+        this.setState({url_list});
+    }
+
+    render()
+    {
+        return(
+            <Dialog
+                open={this.state.Attached_File_Save_Dialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                maxWidth={"sm"}
+                fullWidth={true}
+                PaperProps={{
+                    style:{
+                        backgroundColor:'#191919'
+                    }
+                }}>
+                <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Relation Viewer</span></DialogTitle>
+                <DialogContent>
+                    <Grid container direction="row" justify="space-between" alignItems="center">
+                        <Typography
+                            color="primary"
+                            display="block"
+                            variant="body1">
+                            Source Node:
+                        </Typography>
+                        <TextField 
+                        variant='outlined' 
+                        size='small' 
+                        value={this.state.source_name_name}
+                        style={{width:'50%',marginBottom:15}} 
+                        InputLabelProps={
+                        {   className: this.props.THIS.props.classes.textfield_label}}
+                        InputProps={{
+                            className: this.props.THIS.props.classes.valueTextField,
+                            classes:{
+                                root:this.props.THIS.props.classes.root,
+                                notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                disabled: this.props.THIS.props.classes.valueTextField
+                            },
+                        }}/>
+                    </Grid>
+                    <Grid container direction="row" justify="space-between" alignItems="center">
+                        <Typography
+                            color="primary"
+                            display="block"
+                            variant="body1">
+                            Destination Node:
+                        </Typography>
+                        <TextField 
+                        variant='outlined' 
+                        size='small' 
+                        value={this.state.destination_node_name}
+                        style={{width:'50%',marginBottom:15}} 
+                        InputLabelProps={
+                        {   className: this.props.THIS.props.classes.textfield_label}}
+                        InputProps={{
+                            className: this.props.THIS.props.classes.valueTextField,
+                            classes:{
+                                root:this.props.THIS.props.classes.root,
+                                notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                disabled: this.props.THIS.props.classes.valueTextField
+                            },
+                        }}/>
+                    </Grid>
+                    <Grid container direction="row" justify="space-between" alignItems="center">
+                        <Typography
+                            color="primary"
+                            display="block"
+                            variant="body1">
+                            Relation Type:
+                        </Typography>
+                        <TextField 
+                        variant='outlined' 
+                        size='small' 
+                        value={this.state.relation_type}
+                        style={{width:'50%',marginBottom:15}} 
+                        InputLabelProps={
+                        {   className: this.props.THIS.props.classes.textfield_label}}
+                        InputProps={{
+                            className: this.props.THIS.props.classes.valueTextField,
+                            classes:{
+                                root:this.props.THIS.props.classes.root,
+                                notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                disabled: this.props.THIS.props.classes.valueTextField
+                            },
+                        }}/>
+                    </Grid>
+                    <Grid container direction="row" justify="space-around" alignItems="center">
+                        <Typography
+                            color="primary"
+                            display="block"
+                            style={{marginBottom:15}} 
+                            variant="body1">
+                            URL List
+                        </Typography>
+                        <Typography
+                            color="primary"
+                            display="block"
+                            style={{marginBottom:15}} 
+                            variant="body1">
+                            Attached File List
+                        </Typography>
+                    </Grid>
+                    <Grid container direction="row" justify="space-around" alignItems="center">
+                        <TextField         
+                            variant='outlined' 
+                            size='small'
+                            label='Search URL'                                          
+                            style={{ width: '49%',marginBottom:10}}
+                            value={this.state.search_url_text}
+                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                            onChange={
+                                e=>{
+                                    let display='none';
+                                    if(e.target.value.length>0)
+                                    {   display='block'}
+                                    this.setState({search_url_text:e.target.value,search_url_close_btn:display});
+                                    this.url_search_handler();
+                                }
+                            }
+                            InputLabelProps={
+                            {   className: this.props.THIS.props.classes.textfield_label}}
+                            InputProps={{
+                                className: this.props.THIS.props.classes.valueTextField,
+                                classes:{
+                                    root:this.props.THIS.props.classes.root,
+                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                    disabled: this.props.THIS.props.classes.valueTextField
+                                },
+                                endAdornment: 
+                                (
+                                    <Box display={this.state.search_url_close_btn}> 
+                                        <IconButton color='primary' size='small'
+                                        onClick={
+                                            e=>{
+                                                this.setState({search_url_text:"",search_url_close_btn:'none'});
+                                                this.search_url("");
+                                                }}>
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Box> 
+                                ),
+                            }}/>
+                        <TextField         
+                            variant='outlined' 
+                            size='small'     
+                            label='Search File'                                     
+                            style={{ width: '49%',marginBottom:10}}
+                            value={this.state.search_filename_text}
+                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                            onChange={
+                                e=>{
+                                    let display='none';
+                                    if(e.target.value.length>0)
+                                    {   display='block'}
+                                    this.setState({search_filename_text:e.target.value,search_filename_text_close_btn:display})
+                                    this.file_name_search_handler();
+                                }
+                            }
+                            InputLabelProps={
+                            {   className: this.props.THIS.props.classes.textfield_label}}
+                            InputProps={{
+                                className: this.props.THIS.props.classes.valueTextField,
+                                classes:{
+                                    root:this.props.THIS.props.classes.root,
+                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                    disabled: this.props.THIS.props.classes.valueTextField
+                                },
+                                endAdornment: 
+                                (
+                                    <Box display={this.state.search_filename_text_close_btn}> 
+                                        <IconButton color='primary' size='small'
+                                        onClick={
+                                            e=>
+                                            {
+                                                this.setState({search_filename_text:"",search_filename_text_close_btn:'none'});
+                                                this.search_file("");
+                                            }}>
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Box> 
+                                ),
+                            }}/>
+                    </Grid>
+                    <Grid container direction="row" justify="space-around" alignItems="center">
+                        <List className={this.props.THIS.props.classes.properties_list_class2}> 
+                        {
+                            this.state.url_list.map(item=>
+                            {
+                                if(item.show)
+                                {
+                                    return(
+                                        <ListItem key={item.id}>
+                                            <TextField         
+                                            variant='outlined' 
+                                            size='small'                                          
+                                            style={{ width: '85%' }}
+                                            value={item.url}
+                                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                            InputLabelProps={
+                                            {   className: this.props.THIS.props.classes.textfield_label}}
+                                            InputProps={{
+                                                className: this.props.THIS.props.classes.valueTextField,
+                                                classes:{
+                                                    root:this.props.THIS.props.classes.root,
+                                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                                    disabled: this.props.THIS.props.classes.valueTextField
+                                                }
+                                            }}/>
+                                            <IconButton color='primary' size='small'
+                                            onClick={
+                                                e=>
+                                                {
+                                                    window.ipcRenderer.send('copy_text',item.url);
+                                                    this.props.THIS.setState({snack_bar_text:'URL copied.',snack_bar_open:true});
+                                                }}>
+                                                <FileCopyIcon/>
+                                            </IconButton>
+                                            <IconButton color='primary' size='small'
+                                            onClick={e=>{window.ipcRenderer.send('open_link',item.url);}}>
+                                                <OpenInBrowserIcon/>
+                                            </IconButton>
+                                        </ListItem>
+                                    )
+                                }
+                            })
+                        }
+                        </List>
+                        <List className={this.props.THIS.props.classes.properties_list_class2}> 
+                        {
+                            this.state.file_list.map(item=>
+                            {
+                                if(item.show)
+                                {
+                                    return(
+                                        <ListItem key={item.id}>
+                                            <TextField         
+                                            variant='outlined' 
+                                            size='small'                                          
+                                            style={{ width: '85%' }}
+                                            value={item.file_name}
+                                            onFocus={e=>{this.props.THIS.enable_keyboard_navigation(false);}}
+                                            onBlur={e=>{this.props.THIS.enable_keyboard_navigation(true);}}
+                                            InputLabelProps={
+                                            {   className: this.props.THIS.props.classes.textfield_label}}
+                                            InputProps={{
+                                                className: this.props.THIS.props.classes.valueTextField,
+                                                classes:{
+                                                    root:this.props.THIS.props.classes.root,
+                                                    notchedOutline: this.props.THIS.props.classes.valueTextField,
+                                                    disabled: this.props.THIS.props.classes.valueTextField
+                                                }
+                                            }}/>
+                                            <IconButton color='primary' size='small'
+                                            onClick={
+                                                e=>{
+                                                    let data={
+                                                        relation_id:this.state.relation_id,
+                                                        file_name:item.file_name
+                                                    }
+                                                    window.ipcRenderer.send('open_save_file_picker',data);
+                                                }}>
+                                                <SaveAltIcon/>
+                                            </IconButton>
+                                        </ListItem>
+                                    )
+                                }
+                            })
+                        }
+                        </List>
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={e=>{this.setState({Attached_File_Save_Dialog:false,source_name_name:'',destination_node_name:'',relation_type:'',url_list:[],file_list:[]});}} color="primary">
+                        Ok
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        );
+    }
+}
 
 export class Change_Password_Dialog extends React.Component
 {

@@ -1,5 +1,5 @@
 import React,{createRef} from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Tooltip} from '@material-ui/core';
+import {Button,Snackbar,SnackbarContent,Toolbar,AppBar,TextField,Grid,IconButton,Tooltip} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import theme from './theme';
@@ -12,7 +12,7 @@ import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './rel
 import {add_add_panel_func,Add_Panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
 import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
-import {Side_Bar_Buttons,Speed_Menu,Change_Password_Dialog} from './other_ui_components.js';
+import {Side_Bar_Buttons,Speed_Menu,Change_Password_Dialog,Attached_File_Save_UI} from './other_ui_components.js';
 
 const useStyles = (theme)=>
 ({
@@ -55,6 +55,14 @@ const useStyles = (theme)=>
     properties_list_class:{
         height: "25vh",
         width: '100%',
+        position: 'relative',
+        overflow: 'auto',
+        border:'1px solid #03DAC5',
+        marginBottom:15,
+    },
+    properties_list_class2:{
+        height: "25vh",
+        width: '49%',
         position: 'relative',
         overflow: 'auto',
         border:'1px solid #03DAC5',
@@ -165,6 +173,8 @@ class Main extends React.Component
             alert_dialog_text:"",
             /*Other UI components*/
             open_network_popup:false,
+            snack_bar_text:'',
+            snack_bar_open:false
         };
 
         this.net_ref=createRef();
@@ -191,6 +201,7 @@ class Main extends React.Component
 
         this.rgbToHex=this.rgbToHex.bind(this);
         this.getRndInteger=this.getRndInteger.bind(this);
+        this.get_filename_from_path=this.get_filename_from_path.bind(this);
 
         add_node_relation_props_func(Main);
         add_operations_func(Main);
@@ -206,6 +217,7 @@ class Main extends React.Component
     side_bar_ref=createRef();
     speed_menu_ref=createRef();
     password_dialog_ref=createRef();
+    attached_file_dialog_ref=createRef();
     //CURRENTLY THE TYPE IDS CA BE SHIFTED IN THE PROPERTIES PANEL, BUT MAYBE IN FUTURE THEY MIGHT BE REQUIRED FOR COMMUNICATING WITH THE NETWORK
     delete_node_type_id=-1;
     delete_node_type_name="";
@@ -224,6 +236,19 @@ class Main extends React.Component
     source_node_id=-1;
     destination_node_id=-1;
     relation_type_id=-1;
+
+    get_filename_from_path(path)
+    {
+        let file_name="";
+        for(let a=path.length-1;a>=0;a--)
+        {
+            if(path[a].localeCompare("/")!=0)
+            {   file_name=path[a]+file_name;}
+            else
+            {   break;}
+        }
+        return file_name;
+    }
 
     reset_context_menu_settings()
     {
@@ -433,6 +458,9 @@ class Main extends React.Component
     
     componentDidMount() 
     {  
+        window.ipcRenderer.on('file_saved',(event,data)=>
+        {   this.setState({snack_bar_text:'File '+data+' Saved.',snack_bar_open:true})});
+
         window.ipcRenderer.on('attach_failed_files',(event,data)=>
         {  
             let msg="Failed to attach the following files:- ";
@@ -492,13 +520,20 @@ class Main extends React.Component
 
         this.init_network();
     }
-    
+
     render()
     {
         return(
         <ThemeProvider theme={theme}>
             <header className="Main_Style">
+                <Snackbar open={this.state.snack_bar_open} autoHideDuration={3000}
+                onClose={e=>{this.setState({snack_bar_text:'',snack_bar_open:false})}}>
+                    <SnackbarContent style={{backgroundColor:'#191919',color: '#03DAC5'}}
+                    message={this.state.snack_bar_text}/>
+                </Snackbar>
                 {/*-----------------------------------------Dialogs----------------------------------------------------- */ }
+                {/*Attached File Save UI*/}
+                <Attached_File_Save_UI THIS={this} ref={this.attached_file_dialog_ref}/>
                 {/*Password change dialog*/}
                 <Change_Password_Dialog THIS={this} ref={this.password_dialog_ref}/>
                 {/*Alert Dialog*/}
