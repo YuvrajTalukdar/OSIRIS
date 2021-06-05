@@ -433,6 +433,18 @@ class Main extends React.Component
     
     componentDidMount() 
     {  
+        window.ipcRenderer.on('attach_failed_files',(event,data)=>
+        {  
+            let msg="Failed to attach the following files:- ";
+            for(let a=0;a<data.length;a++)
+            {   msg=msg+(a+1)+". "+data[a].file_name+", ";}
+            msg=msg+" because they are larger than 100 MB."
+            this.setState({
+                alert_dialog_text:msg,
+                alert_dialog_open:true
+            });
+        });
+
         window.ipcRenderer.on('find_mst',(event,data)=>
         {   this.highlight_mst(data,this.operations_panel_ref.current.state.mst_node_list);});
 

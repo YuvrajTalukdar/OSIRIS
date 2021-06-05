@@ -7,7 +7,7 @@ const electron = require('electron')
 const path=require('path');
 const is_dev=require('electron-is-dev');
 const {app,BrowserWindow,Menu,ipcMain,screen,dialog} = electron;
-//const fs = require('fs');
+const fs = require('fs');
 
 let mainWindow;
 let settingsWindow=null;
@@ -52,7 +52,7 @@ ipcMain.on('change_password',(enent,data)=>{
 ipcMain.on('get_main_window_data',(event,todo)=>{
     let obj1=AvyuktaEngine.get_type_data();
     let obj2=AvyuktaEngine.get_node_relation_data();
-    var data={
+    let data={
         'node_type_list':obj1.node_type_list,
         'relation_type_list':obj1.relation_type_list,
         'node_list':obj2.node_list,
@@ -81,7 +81,7 @@ ipcMain.on('add_new_node',(enent,data)=>{
     AvyuktaEngine.add_new_node(data.node_name,data.node_type_id);
     let obj=AvyuktaEngine.get_last_entered_node_data();
     //send the data to top
-    var last_entered_node={
+    let last_entered_node={
         'node_id':obj.node_id,
         'node_type_id':obj.node_type_id,
         'node_name':obj.node_name,
@@ -92,8 +92,8 @@ ipcMain.on('add_new_node',(enent,data)=>{
 });
 
 ipcMain.on('edit_relation',(enent,data)=>{
-    var source_local=[];
-    for(var a=0;a<data.source_local.length;a++)
+    let source_local=[];
+    for(let a=0;a<data.source_local.length;a++)
     {   source_local.push(data.source_local[a].file_dir);}
     AvyuktaEngine.edit_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local,data.relation_id);
 });
@@ -108,8 +108,8 @@ ipcMain.on('delete_relation',(enent,data)=>{
 
 function get_filename_from_path(path)
 {
-    var file_name="";
-    for(var a=path.length-1;a>=0;a--)
+    let file_name="";
+    for(let a=path.length-1;a>=0;a--)
     {
         if(path[a].localeCompare("/")!=0)
         {   file_name=path[a]+file_name;}
@@ -129,8 +129,8 @@ function get_filename_from_path(path)
     });
 }*/
 ipcMain.on('add_new_relation',(event,data)=>{
-    var source_local=[];
-    for(var a=0;a<data.source_local.length;a++)
+    let source_local=[];
+    for(let a=0;a<data.source_local.length;a++)
     {   source_local.push(data.source_local[a].file_dir);}
     AvyuktaEngine.add_new_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local);
     let obj=AvyuktaEngine.get_last_entered_relation_data();
@@ -144,15 +144,23 @@ ipcMain.on('open_file_picker',(event,todo)=>{
     {   
         if (!response.canceled) 
         {
-            for(var a=0;a<response.filePaths.length;a++)    
+            let failed_file_list=[];
+            for(let a=0;a<response.filePaths.length;a++)    
             {
-                var file_name=get_filename_from_path(response.filePaths[a]);
-                var data={
+                let stats = fs.statSync(response.filePaths[a]);
+                let fileSizeInMegaBytes = stats.size/(1024*1024);
+                let file_name=get_filename_from_path(response.filePaths[a]);
+                let data={
                     'file_name':file_name,
                     'file_dir':response.filePaths[a]
                 }
-                mainWindow.webContents.send('add_file_dir',data);
+                if(fileSizeInMegaBytes<=100)
+                {   mainWindow.webContents.send('add_file_dir',data);}
+                else
+                {   failed_file_list.push(data);}
             }
+            if(failed_file_list.length>0)
+            {   mainWindow.webContents.send('attach_failed_files',failed_file_list);}
         } 
     });
 });
@@ -183,7 +191,7 @@ ipcMain.on('find_mst',(enent,data)=>{
 ipcMain.on('login_create',(enent,data)=>{
     if(data.login_create_code==0)
     {   
-        var error=AvyuktaEngine.initialize_engine(data.db_dir,data.password);
+        let error=AvyuktaEngine.initialize_engine(data.db_dir,data.password);
         if(error.error_code==-1)
         {   
             mainWindow.loadURL(is_dev? 'http://localhost:3000':`file://${path.join(__dirname,"../build/index.html")}`);
@@ -196,7 +204,7 @@ ipcMain.on('login_create',(enent,data)=>{
     }
     else if(data.login_create_code==1)
     {   
-        var error=AvyuktaEngine.create_new_odb(data.db_dir,data.file_name,data.password);
+        let error=AvyuktaEngine.create_new_odb(data.db_dir,data.file_name,data.password);
         if(error.error_code==1)
         {   mainWindow.webContents.send('login_create_error',error);}
     }
@@ -212,8 +220,8 @@ ipcMain.on('open_db_picker',(event,todo)=>{
     {   
         if (!response.canceled) 
         {
-            var file_name=get_filename_from_path(response.filePaths);
-            var data={
+            let file_name=get_filename_from_path(response.filePaths);
+            let data={
                 'file_name':get_filename_from_path(file_name),
                 'file_dir':response.filePaths[0]
             }
@@ -233,7 +241,7 @@ ipcMain.on('open_save_folder_picker',(event,todo)=>{
         {
             console.log(response);
             
-            var data={
+            let data={
                 'file_name':get_filename_from_path(response.filePath)+".odb",
                 'file_dir':response.filePath+".odb"
             }
@@ -274,7 +282,7 @@ ipcMain.on('cancelButton:pressed',(event,todo)=>{
 });
 
 ipcMain.on('get_settings_data',(event,todo)=>{
-    var settings_obj=AvyuktaEngine.load_settings();
+    let settings_obj=AvyuktaEngine.load_settings();
     settingsWindow.webContents.send('settings_data_received',settings_obj);
 });
 
@@ -313,14 +321,14 @@ function startAboutWindow()
 
 ipcMain.on('get_about_data',(event,data)=>
 {   
-    var data={
+    let data1={
         version:version.toPrecision(2),
         electron_version:process.versions.electron,
         chrome_version:process.versions.chrome,
         node_version:process.versions.node,
         v8_version:process.versions.v8,
     }
-    aboutWindow.webContents.send('get_about_data',data);
+    aboutWindow.webContents.send('get_about_data',data1);
 
 });
 

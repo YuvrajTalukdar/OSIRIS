@@ -1,5 +1,15 @@
 #include "filehandler_class.h"
 
+bool filehandler_class::strcasestr(string str,string substr)
+{
+    transform(str.begin(), str.end(), str.begin(),::toupper);
+    transform(substr.begin(), substr.end(), substr.begin(),::toupper);
+    if(str.find(substr) != string::npos)
+    {   return true;}
+    else 
+    {   return false;}
+}
+
 string filehandler_class::get_name_from_path(string path)
 {
     string name;
@@ -231,7 +241,7 @@ void filehandler_class::change_settings(string file_dir,string settings_name,str
             getline(settings_file,line);
             if(settings_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),settings_name.c_str()))
+            if(strcasestr(line,settings_name))
             {
                 temp_data+=settings_name;
                 temp_data+=":,";
@@ -258,7 +268,7 @@ void filehandler_class::change_settings(string file_dir,string settings_name,str
             getline(settings_file,line);
             if(settings_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),settings_name.c_str()))
+            if(strcasestr(line,settings_name))
             {
                 temp_data+=settings_name;
                 temp_data+=":,";
@@ -1233,18 +1243,18 @@ void filehandler_class::load_relations()
             getline(in_file,line);
             if(in_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),"RELATION_ID"))
+            if(strcasestr(line,"RELATION_ID"))
             {
                 relation r1;
                 line_count=0;
                 unsigned int current_line;
                 bool local_source_list_lock=false,source_url_list_lock=false;
-                while(!strcasestr(line.c_str(),"#END"))
+                while(!strcasestr(line,"#END"))
                 {   
                     comma_count=0;
-                    if(strcasestr(line.c_str(),"SOURCE_URL_LIST"))
+                    if(strcasestr(line,"SOURCE_URL_LIST"))
                     {   current_line=line_count;source_url_list_lock=true;local_source_list_lock=false;}
-                    else if(strcasestr(line.c_str(),"LOCAL_SOURCE_LIST"))
+                    else if(strcasestr(line,"LOCAL_SOURCE_LIST"))
                     {   current_line=line_count;source_url_list_lock=false;local_source_list_lock=true;}
                     if(!source_url_list_lock && !local_source_list_lock)
                     {   
@@ -1362,7 +1372,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
         if(in_file.eof() && no_of_relation_in_this_file!=1)
         {   break;}
         point1:
-        if((strcasestr(line.c_str(),"RELATION_ID") && !strcasestr(line.c_str(),"GROUPED_RELATION_ID_LIST") && !strcasestr(line.c_str(),"RELATION_ID_LIST")) || !file_found || last_entry || no_of_relation_in_this_file==1)
+        if((strcasestr(line,"RELATION_ID") && !strcasestr(line,"GROUPED_RELATION_ID_LIST") && !strcasestr(line,"RELATION_ID_LIST")) || !file_found || last_entry || no_of_relation_in_this_file==1)
         {
             if(relation_count==insertion_point)
             {
@@ -1417,7 +1427,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
             temp_data+="\n";
         }
         last_entry=false;
-        if(strcasestr(line.c_str(),"#END"))
+        if(strcasestr(line,"#END"))
         {
             end_counter++;
             if(end_counter==insertion_point)
@@ -1508,7 +1518,7 @@ void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//th
     attached_failed_files.clear();
     for(int a=relation_obj.source_local.size()-1;a>=0;a--)
     {
-        if(!strcasestr(relation_obj.source_local.at(a).c_str(),attached_file_dir.c_str()))
+        if(!strcasestr(relation_obj.source_local.at(a),"attached_files/r"))
         {
             auto fsize = fs::file_size(relation_obj.source_local.at(a));
             if((float)(((float)fsize)/(1024.0*1024.0))>attached_file_size_in_MiB)
@@ -1539,7 +1549,7 @@ void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//th
                 }
                 in_file.close();
                 encrypt_file(attached_file_dir+encrypted_relation_folder_name+"/"+encrypted_file_name,data);
-                relation_obj.source_local.at(a)=attached_file_dir+relation_folder_name+"/"+orig_file_name;
+                relation_obj.source_local.at(a)=relation_folder_name+"/"+orig_file_name;
             }
         }
         else
@@ -1665,7 +1675,7 @@ void filehandler_class::delete_relation(unsigned int relation_id)
             getline(in_file,line);
             if(in_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),"RELATION_ID") && !strcasestr(line.c_str(),"GROUPED_RELATION_ID_LIST") && !strcasestr(line.c_str(),"RELATION_ID_LIST"))
+            if(strcasestr(line,"RELATION_ID") && !strcasestr(line,"GROUPED_RELATION_ID_LIST") && !strcasestr(line,"RELATION_ID_LIST"))
             {   
                 word="";
                 comma_count=0;
@@ -1684,7 +1694,7 @@ void filehandler_class::delete_relation(unsigned int relation_id)
             }
             if(relation_id==current_id)
             {
-                while(!strcasestr(line.c_str(),"#END"))
+                while(!strcasestr(line,"#END"))
                 {   getline(in_file,line);}
             }
             else
@@ -1811,7 +1821,7 @@ void filehandler_class::edit_relation(relation& relation_obj)
         getline(infile,line);
         if(infile.eof())
         {   break;}
-        if(strcasestr(line.c_str(),"RELATION_ID"))
+        if(strcasestr(line,"RELATION_ID"))
         {
             word="";
             comma_count=0;
@@ -1868,7 +1878,7 @@ void filehandler_class::edit_relation(relation& relation_obj)
                     getline(infile,line);
                     if(infile.eof())
                     {   break;}
-                    if(strcasestr(line.c_str(),"#END"))
+                    if(strcasestr(line,"#END"))
                     {   break;}
                 }
             }
