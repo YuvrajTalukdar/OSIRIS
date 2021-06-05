@@ -1565,6 +1565,7 @@ void filehandler_class::save_file(unsigned int relation_id,string file_name,stri
     ofstream out_file(destination_dir,ios::out);
     out_file<<in_file.rdbuf();
     out_file.close();
+    in_file.clear();
 }
 
 void filehandler_class::add_new_relation(relation &relation)
