@@ -184,6 +184,16 @@ error database_class::open_odb(string dir,string password)
     return obj;
 }
 
+bool database_class::strcasestr(string str,string substr)
+{
+    transform(str.begin(), str.end(), str.begin(),::toupper);
+    transform(substr.begin(), substr.end(), substr.begin(),::toupper);
+    if(str.find(substr) != string::npos)
+    {   return true;}
+    else 
+    {   return false;}
+}
+
 error database_class::change_password(string current_password,string new_password)
 {
     error err;
@@ -198,17 +208,44 @@ error database_class::change_password(string current_password,string new_passwor
         string temp_dir=current_db_dir+"temp_files";
         fs::create_directory(temp_dir);
         create_odb(temp_dir+"/"+database_name,database_name,new_password);
+        fs::create_directory(temp_dir+"/attached_files");
         current_db_dir=dir_temp;
         file_handler.change_password(new_password);
+        //remove the old files
         for(auto& p: fs::directory_iterator(current_db_dir))
         {
-            if(!p.is_directory())
-            {
-                fs::remove(p.path());
-                string file_name=get_name_from_path(p.path());
-                fs::copy_file(temp_dir+"/"+file_name,current_db_dir+file_name);
-            }
+            if(!strcasestr(get_name_from_path(p.path()),"temp_files"))
+            {   fs::remove_all(p.path());}   
         }
+        fs::create_directory(current_db_dir+"attached_files");
+        for(auto& p: fs::recursive_directory_iterator(temp_dir))
+        {
+            if(!p.is_directory())
+            {   
+                string folder_name="",path=p.path().string();
+                int count=0;
+                for(int a=path.length()-1;a>=0;a--)
+                {
+                    if(path.at(a)!='/')
+                    {   folder_name=path.at(a)+folder_name;}
+                    else
+                    {   
+                        if(count!=1)
+                        {   folder_name="";}
+                        count++;
+                    }
+                    if(count==2)
+                    {   break;}
+                }
+                if(strcmp(folder_name.c_str(),"temp_files")==0)
+                {   fs::rename(p.path(),current_db_dir+get_name_from_path(p.path()));}
+                else
+                {   fs::rename(p.path(),current_db_dir+"attached_files/"+folder_name+"/"+get_name_from_path(p.path()));}
+            }
+            else
+            {   fs::create_directory(current_db_dir+"attached_files/"+get_name_from_path(p.path()));}
+        }
+        fs::remove_all(current_db_dir+"attached_files/attached_files");
         fs::remove_all(temp_dir);
         err.error_code=-1;
     }

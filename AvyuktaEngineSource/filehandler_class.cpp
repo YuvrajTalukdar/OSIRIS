@@ -57,7 +57,7 @@ void filehandler_class::close_db()
 
 void filehandler_class::change_password(string new_password)
 {
-    string temp_dir=database_dir+"/temp_files";
+    string temp_dir=database_dir+"temp_files";
     decrypted_data obj;
     //setting the new password
     string old_password=password;
@@ -97,6 +97,42 @@ void filehandler_class::change_password(string new_password)
         obj=decrypt_file_text(database_dir+"/"+relation_file_list.at(a).file_name);
         password=new_password;
         encrypt_file(temp_dir+"/"+relation_file_list.at(a).file_name,obj.decrypted_text);
+    }
+    //re encrypting attached files
+    string attached_file_dir=database_dir+"attached_files/";
+    for(auto& p: fs::recursive_directory_iterator(attached_file_dir))
+    {
+        if(!p.is_directory())
+        {
+            password=old_password;
+            obj=decrypt_file_text(p.path());
+            password=new_password;
+            //get folder name from path
+            string folder_name,path=p.path().string();
+            int count=0;
+            for(int a=path.length()-1;a>=0;a--)
+            {
+                if(path.at(a)!='/')
+                {   folder_name=path.at(a)+folder_name;}
+                else
+                {   
+                    if(count!=1)
+                    {   folder_name="";}
+                    count++;
+                }
+                if(count==2)
+                {   break;}
+            }
+            folder_name=decrypt_text(folder_name,old_password).decrypted_text;
+            folder_name=encrypt_text(folder_name,new_password);
+            string file_name=encrypt_text(decrypt_text(get_name_from_path(p.path()),old_password).decrypted_text,new_password);
+            encrypt_file(temp_dir+"/attached_files/"+folder_name+"/"+file_name,obj.decrypted_text);
+        }
+        else
+        {   
+            string folder_name=encrypt_text(decrypt_text(get_name_from_path(p.path()),old_password).decrypted_text,new_password);
+            fs::create_directory(temp_dir+"/attached_files/"+folder_name);
+        }
     }
 }
 
@@ -1533,7 +1569,15 @@ void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//th
                 string relation_folder_name="r"+to_string(relation_obj.relation_id);
                 //encrypted file meta data
                 string encrypted_file_name=encrypt_text(orig_file_name,password);
-                string encrypted_relation_folder_name=encrypt_text(relation_folder_name,password);
+                string encrypted_relation_folder_name;//=encrypt_text(relation_folder_name,password);
+                for(auto& p: fs::directory_iterator(attached_file_dir))
+                {
+                    string cur_folder=get_name_from_path(p.path());
+                    if(strcmp(relation_folder_name.c_str(),decrypt_text(cur_folder,password).decrypted_text.c_str())==0)
+                    {   encrypted_relation_folder_name=cur_folder;break;}
+                }
+                if(encrypted_relation_folder_name.length()==0)
+                {   encrypted_relation_folder_name=encrypt_text(relation_folder_name,password);}
                 if(!check_if_file_is_present(attached_file_dir+encrypted_relation_folder_name))
                 {   fs::create_directory(attached_file_dir+encrypted_relation_folder_name);}
                 //encrypt and copy the file
@@ -1560,7 +1604,22 @@ void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//th
 void filehandler_class::save_file(unsigned int relation_id,string file_name,string destination_dir)
 {
     string attached_file_dir=database_dir+"attached_files/";
-    string encrypted_dir=attached_file_dir+encrypt_text("r"+to_string(relation_id),password)+"/"+encrypt_text(file_name,password);
+    string folder_name="r"+to_string(relation_id),encrypted_folder_name,encrypted_file_name;
+    //getting encrypted folder name
+    for(auto& p: fs::directory_iterator(attached_file_dir))
+    {
+        string cur_folder=get_name_from_path(p.path());
+        if(strcmp(folder_name.c_str(),decrypt_text(cur_folder,password).decrypted_text.c_str())==0)
+        {   encrypted_folder_name=cur_folder;break;}
+    }
+    //getting encrypted file name
+    for(auto& p: fs::directory_iterator(attached_file_dir+encrypted_folder_name))
+    {
+        string cur_file=get_name_from_path(p.path());
+        if(strcmp(file_name.c_str(),decrypt_text(cur_file,password).decrypted_text.c_str())==0)
+        {   encrypted_file_name=cur_file;break;}
+    }
+    string encrypted_dir=attached_file_dir+encrypted_folder_name+"/"+encrypted_file_name;
     stringstream in_file=decrypt_file(encrypted_dir);
     ofstream out_file(destination_dir,ios::out);
     out_file<<in_file.rdbuf();
@@ -1780,7 +1839,23 @@ void filehandler_class::delete_attached_file_if_required(relation& relation)
                 if(count==2)
                 {   break;}
             }
-            fs::remove(attached_file_dir+encrypt_text(relation_folder_name,password)+"/"+encrypt_text(old_file_name,password));
+            //getting encrypted folder name
+            string encrypted_folder_name;
+            for(auto& p: fs::recursive_directory_iterator(attached_file_dir))
+            {
+                string cur_folder=get_name_from_path(p.path());
+                if(strcmp(relation_folder_name.c_str(),decrypt_text(cur_folder,password).decrypted_text.c_str())==0)
+                {   encrypted_folder_name=cur_folder;break;}
+            }
+            //getting encrypted file name
+            string encrypted_file_name;
+            for(auto& p: fs::directory_iterator(attached_file_dir+encrypted_folder_name))
+            {
+                string cur_file=get_name_from_path(p.path());
+                if(strcmp(old_file_name.c_str(),decrypt_text(cur_file,password).decrypted_text.c_str())==0)
+                {   encrypted_file_name=cur_file;break;}
+            }
+            fs::remove(attached_file_dir+encrypted_folder_name+"/"+encrypted_file_name);
         }
     }
 }

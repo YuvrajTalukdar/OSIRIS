@@ -18,6 +18,7 @@ export function add_network_func(CLASS)
     CLASS.prototype.check_if_relation_is_already_present = check_if_relation_is_already_present;
     CLASS.prototype.get_node_indexes_from_edge_id = get_node_indexes_from_edge_id;
     CLASS.prototype.get_relation_indexed_from_relation_id = get_relation_indexed_from_relation_id;
+    CLASS.prototype.get_node_index_fron_node_id = get_node_index_fron_node_id;
     CLASS.prototype.focus_on_node = focus_on_node;
     CLASS.prototype.set_speed = set_speed;
     CLASS.prototype.change_node_type = change_node_type;
@@ -240,9 +241,15 @@ function get_node_indexes_from_edge_id(edge_id)
     return obj;
 }
 
+function get_node_index_fron_node_id(node_id)
+{
+    let node=nodes.get(node_id);
+    return node.js_index;
+}
+
 function get_relation_indexed_from_relation_id(relation_id)
 {   
-    var edge=edges.get(relation_id);
+    let edge=edges.get(relation_id);
     return edge.js_index;
 }
 
@@ -432,22 +439,22 @@ function init_network()
         {
             let edge=edges.get(edgeId);
             let url_list=[];
-            for(let a=0;a<this.state.relation_data_list[edgeId].source_url_list.length;a++)
+            for(let a=0;a<this.state.relation_data_list[edge.js_index].source_url_list.length;a++)
             {
                 let url={
                     id:a,
                     show:true,
-                    url:this.state.relation_data_list[edgeId].source_url_list[a]
+                    url:this.state.relation_data_list[edge.js_index].source_url_list[a]
                 }
                 url_list.push(url);
             }
             let file_list=[];
-            for(let a=0;a<this.state.relation_data_list[edgeId].source_local.length;a++)
+            for(let a=0;a<this.state.relation_data_list[edge.js_index].source_local.length;a++)
             {
                 let file={
                     id:a,
                     show:true,
-                    file_name:this.get_filename_from_path(this.state.relation_data_list[edgeId].source_local[a])
+                    file_name:this.get_filename_from_path(this.state.relation_data_list[edge.js_index].source_local[a])
                 }
                 file_list.push(file);
             }

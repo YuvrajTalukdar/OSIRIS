@@ -123,12 +123,22 @@ export class Add_Panel extends React.Component
     delete_relation()
     {
         const relation_data_list=[...this.props.THIS.state.relation_data_list];
-        const new_relation_data_list=relation_data_list.filter(item=>item.relation_id!=this.props.THIS.delete_relation_id);
+        //const new_relation_data_list=relation_data_list.filter(item=>item.relation_id!=this.props.THIS.delete_relation_id);
+        let r_index=this.props.THIS.get_relation_indexed_from_relation_id(this.props.THIS.delete_relation_id);
+        relation_data_list[r_index].relation_id=-1;
+        relation_data_list[r_index].relation_type_id=-1;
+        relation_data_list[r_index].source_node_id=-1;
+        relation_data_list[r_index].destination_node_id=-1;
+        relation_data_list[r_index].weight=-1;
+        relation_data_list[r_index].source_url_list=[];
+        relation_data_list[r_index].source_local=[];
+        relation_data_list[r_index].relation_id_list=[];
+        relation_data_list[r_index].grouped_relation_id_list=[];
 
         window.ipcRenderer.send('delete_relation',this.props.THIS.delete_relation_id);
         this.props.THIS.delete_relation_from_network(this.props.THIS.delete_relation_id);
 
-        this.props.THIS.setState({relation_data_list:new_relation_data_list});
+        this.props.THIS.setState({relation_data_list:relation_data_list});
 
         this.props.THIS.delete_relation_id=-1;
         this.props.THIS.delete_relation_source_node_name="";
@@ -500,16 +510,18 @@ export class Add_Panel extends React.Component
     delete_node()
     {
         const node_data_list=[...this.props.THIS.state.node_data_list];
-        const new_node_data_list=node_data_list.filter(item=>item.node_id!=this.props.THIS.delete_node_id);
+        //const new_node_data_list=node_data_list.filter(item=>item.node_id!=this.props.THIS.delete_node_id);
+        let n_index=this.props.THIS.get_node_index_fron_node_id(this.props.THIS.delete_node_id);
+        node_data_list[n_index].node_id=-1;
+        node_data_list[n_index].node_type_id=-1;
+        node_data_list[n_index].node_name="";
 
         window.ipcRenderer.send('delete_node',this.props.THIS.delete_node_id);
         var edgeIds=this.props.THIS.delete_node_from_network(this.props.THIS.delete_node_id);
         
         this.delete_multiple_relation(edgeIds);//START FROM HERE
 
-        this.props.THIS.setState({
-            node_data_list:new_node_data_list
-        });
+        this.props.THIS.setState({node_data_list:node_data_list});
 
         this.props.THIS.delete_node_id=-1;
         this.props.THIS.delete_node_name="";

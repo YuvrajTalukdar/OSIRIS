@@ -512,7 +512,10 @@ class Main extends React.Component
                 });
             }
             else
-            {   this.password_dialog_ref.current.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}
+            {   
+                this.password_dialog_ref.current.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});
+                this.setState({snack_bar_text:'Pasword Changed.',snack_bar_open:true});
+            }
         });
 
         var dummy="";
