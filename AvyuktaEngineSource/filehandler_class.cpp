@@ -10,15 +10,41 @@ bool filehandler_class::strcasestr(string str,string substr)
     {   return false;}
 }
 
-string filehandler_class::get_name_from_path(string path)
+string filehandler_class::convert_to_windows_path(string path)
 {
-    string name;
+    string new_path;
     for(int a=path.length()-1;a>=0;a--)
     {
-        if(path.at(a)!='\\')
-        {   name=path.at(a)+name;}
+        if(path.at(a)=='/')
+        {   new_path="\\"+new_path;}
         else
-        {   break;}
+        {   new_path=path.at(a)+new_path;}
+    }
+    return new_path;
+}
+
+string filehandler_class::get_name_from_path(string path,bool is_windows)
+{
+    string name;
+    if(is_windows)
+    {
+        for(int a=path.length()-1;a>=0;a--)
+        {
+            if(path.at(a)!='\\')
+            {   name=path.at(a)+name;}
+            else
+            {   break;}
+        }
+    }
+    else
+    {
+        for(int a=path.length()-1;a>=0;a--)
+        {
+            if(path.at(a)!='/')
+            {   name=path.at(a)+name;}
+            else
+            {   break;}
+        }
     }
     return name;
 }
@@ -57,7 +83,7 @@ void filehandler_class::close_db()
 
 void filehandler_class::change_password(string new_password)
 {
-    string temp_dir=database_dir+"/temp_files";
+    string temp_dir=database_dir+"temp_files";
     decrypted_data obj;
     //setting the new password
     string old_password=password;
@@ -97,6 +123,42 @@ void filehandler_class::change_password(string new_password)
         obj=decrypt_file_text(database_dir+"/"+relation_file_list.at(a).file_name);
         password=new_password;
         encrypt_file(temp_dir+"/"+relation_file_list.at(a).file_name,obj.decrypted_text);
+    }
+    //re encrypting attached files
+    string attached_file_dir=database_dir+"attached_files\\";
+    for(auto& p: fs::recursive_directory_iterator(attached_file_dir))
+    {  
+        if(!p.is_directory())
+        {
+            password=old_password;
+            obj=decrypt_file_text(p.path().string());
+            password=new_password;
+            //get folder name from path
+            string folder_name,path=p.path().string();
+            int count=0;
+            for(int a=path.length()-1;a>=0;a--)
+            {
+                if(path.at(a)!='\\')
+                {   folder_name=path.at(a)+folder_name;}
+                else
+                {   
+                    if(count!=1)
+                    {   folder_name="";}
+                    count++;
+                }
+                if(count==2)
+                {   break;}
+            }
+            folder_name=decrypt_text(folder_name,old_password).decrypted_text;
+            folder_name=encrypt_text(folder_name,new_password);
+            string file_name=encrypt_text(decrypt_text(get_name_from_path(p.path().string(),true),old_password).decrypted_text,new_password);
+            encrypt_file(temp_dir+"/attached_files/"+folder_name+"/"+file_name,obj.decrypted_text);
+        }
+        else
+        {   
+            string folder_name=encrypt_text(decrypt_text(get_name_from_path(p.path().string(),true),old_password).decrypted_text,new_password);
+            fs::create_directory(temp_dir+"\\attached_files\\"+folder_name);
+        }
     }
 }
 
@@ -241,7 +303,7 @@ void filehandler_class::change_settings(string file_dir,string settings_name,str
             getline(settings_file,line);
             if(settings_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),settings_name.c_str()))
+            if(strcasestr(line,settings_name))
             {
                 temp_data+=settings_name;
                 temp_data+=":,";
@@ -268,7 +330,7 @@ void filehandler_class::change_settings(string file_dir,string settings_name,str
             getline(settings_file,line);
             if(settings_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),settings_name.c_str()))
+            if(strcasestr(line,settings_name))
             {
                 temp_data+=settings_name;
                 temp_data+=":,";
@@ -479,8 +541,6 @@ void filehandler_class::load_nodes()
                         {   node.node_name=word;}
                         else if(comma_count==2)
                         {   node.node_type_id=stoi(word);}
-                        else
-                        {   node.relation_id_list.push_back(stoi(word));};
                         word="";
                         comma_count++;
                     }
@@ -524,7 +584,7 @@ bool filehandler_class::check_if_file_is_present(string file_name)
     bool file_found=false;
     for(auto& p: fs::directory_iterator(database_dir))
     {
-        if(strcmp(file_name.c_str(),get_name_from_path(p.path().string()).c_str())==0)
+        if(strcmp(file_name.c_str(),get_name_from_path(p.path().string(),true).c_str())==0)
         {   file_found=true;break;}
     }
     return file_found;
@@ -581,8 +641,6 @@ unsigned int filehandler_class::write_nodedata_to_file(string file_name,data_nod
     node.node_id=insertion_index;
     
     line2=to_string(node.node_id)+","+node.node_name+","+to_string(node.node_type_id)+",";
-    for(int a=0;a<node.relation_id_list.size();a++)
-    {   line2+=to_string(node.relation_id_list.at(a));line2+=",";}
     line2+="\n";
     
     bool insertion_done=false;
@@ -648,7 +706,6 @@ void filehandler_class::add_new_node(data_node &node)
         data_node_list.at(gap_node_iterator->first).node_id=gap_node_iterator->first;
         data_node_list.at(gap_node_iterator->first).node_name=node.node_name;
         data_node_list.at(gap_node_iterator->first).node_type_id=node.node_type_id;
-        data_node_list.at(gap_node_iterator->first).relation_id_list.assign(node.relation_id_list.begin(),node.relation_id_list.end());
         string file_name=node_file_list.at(gap_node_iterator->first/no_of_nodes_in_one_node_file).file_name;
         current_file_id=gap_node_iterator->first/no_of_nodes_in_one_node_file;
         node.node_id=gap_node_iterator->first;
@@ -859,7 +916,6 @@ void filehandler_class::edit_node(data_node &node)
     //editing data_node_list
     data_node_list.at(node.node_id).node_name=node.node_name;
     data_node_list.at(node.node_id).node_type_id=node.node_type_id;
-    data_node_list.at(node.node_id).relation_id_list=node.relation_id_list;
     //edit the node file
     string node_file_name=database_dir+node_file_list.at(node.node_id/no_of_nodes_in_one_node_file).file_name;
     stringstream in_file=decrypt_file(node_file_name);
@@ -888,8 +944,6 @@ void filehandler_class::edit_node(data_node &node)
                         line+=(to_string(node.node_id)+",");
                         line+=(node.node_name+",");
                         line+=(to_string(node.node_type_id)+",");
-                        for(int b=0;b<node.relation_id_list.size();b++)
-                        {   line+=(to_string(node.relation_id_list.at(a))+",");}
                         line+="\n";
                         new_data+=line;
                         found=true;
@@ -1251,18 +1305,18 @@ void filehandler_class::load_relations()
             getline(in_file,line);
             if(in_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),"RELATION_ID"))
+            if(strcasestr(line,"RELATION_ID"))
             {
                 relation r1;
                 line_count=0;
                 unsigned int current_line=0;
                 bool local_source_list_lock=false,source_url_list_lock=false;
-                while(!strcasestr(line.c_str(),"#END"))
+                while(!strcasestr(line,"#END"))
                 {   
                     comma_count=0;
-                    if(strcasestr(line.c_str(),"SOURCE_URL_LIST"))
+                    if(strcasestr(line,"SOURCE_URL_LIST"))
                     {   current_line=line_count;source_url_list_lock=true;local_source_list_lock=false;}
-                    else if(strcasestr(line.c_str(),"LOCAL_SOURCE_LIST"))
+                    else if(strcasestr(line,"LOCAL_SOURCE_LIST"))
                     {   current_line=line_count;source_url_list_lock=false;local_source_list_lock=true;}
                     if(!source_url_list_lock && !local_source_list_lock)
                     {   
@@ -1321,6 +1375,9 @@ void filehandler_class::load_relations()
                 relation_list.push_back(r1);
                 previous_id=r1.relation_id;
                 is_prev_id_neg=false;
+                //graph creation
+                data_node_list.at(r1.source_node_id).relations.push_back(r1.relation_id);
+                data_node_list.at(r1.destination_node_id).relations.push_back(r1.relation_id);
             }
         }
         in_file.clear();
@@ -1377,7 +1434,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
         if(in_file.eof() && no_of_relation_in_this_file!=1)
         {   break;}
         point1:
-        if((strcasestr(line.c_str(),"RELATION_ID") && !strcasestr(line.c_str(),"GROUPED_RELATION_ID_LIST") && !strcasestr(line.c_str(),"RELATION_ID_LIST")) || !file_found || last_entry || no_of_relation_in_this_file==1)
+        if((strcasestr(line,"RELATION_ID") && !strcasestr(line,"GROUPED_RELATION_ID_LIST") && !strcasestr(line,"RELATION_ID_LIST")) || !file_found || last_entry || no_of_relation_in_this_file==1)
         {
             if(relation_count==insertion_point)
             {
@@ -1432,7 +1489,7 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
             temp_data+="\n";
         }
         last_entry=false;
-        if(strcasestr(line.c_str(),"#END"))
+        if(strcasestr(line,"#END"))
         {
             end_counter++;
             if(end_counter==insertion_point)
@@ -1444,6 +1501,9 @@ unsigned int filehandler_class::write_relationdata_to_file(string file_name,rela
     encrypt_file(file_name,temp_data);
     relation_list.push_back(relation);
     last_entered_relation=relation;
+    //graph creation
+    data_node_list.at(relation.source_node_id).relations.push_back(relation.relation_id);
+    data_node_list.at(relation.destination_node_id).relations.push_back(relation.relation_id);
     return no_of_relation_in_this_file;
 }
 
@@ -1512,6 +1572,83 @@ void filehandler_class::add_new_data_to_relation_file_list(file_info &new_file)
     encrypt_file(relation_file_list_dir,temp_data);
 }
 
+void filehandler_class::check_size_encrypt_copy_file(relation& relation_obj)//the problem of duplicate file is prevented in js body.
+{
+    string attached_file_dir=database_dir+"attached_files\\";
+    if(!check_if_file_is_present("attached_files"))
+    {   fs::create_directory(attached_file_dir);}
+    attached_failed_files.clear();
+    for(int a=relation_obj.source_local.size()-1;a>=0;a--)
+    {
+        if(!strcasestr(relation_obj.source_local.at(a),"attached_files/r"))
+        {
+            auto fsize = fs::file_size(relation_obj.source_local.at(a));
+            if((float)(((float)fsize)/(1024.0*1024.0))>attached_file_size_in_MiB)
+            {
+                attached_failed_files.push_back(relation_obj.source_local.at(a));
+                relation_obj.source_local.erase(relation_obj.source_local.begin()+a);
+            }
+            else
+            {
+                //orig file meta data
+                string orig_file_name=get_name_from_path(relation_obj.source_local.at(a),false);
+                string relation_folder_name="r"+to_string(relation_obj.relation_id);
+                //encrypted file meta data
+                string encrypted_file_name=encrypt_text(orig_file_name,password);
+                string encrypted_relation_folder_name;//=encrypt_text(relation_folder_name,password);
+                for(auto& p: fs::directory_iterator(attached_file_dir))
+                {
+                    string cur_folder=get_name_from_path(p.path().string(),true);
+                    if(strcmp(relation_folder_name.c_str(),decrypt_text(cur_folder,password).decrypted_text.c_str())==0)
+                    {   encrypted_relation_folder_name=cur_folder;break;}
+                }
+                if(encrypted_relation_folder_name.length()==0)
+                {   encrypted_relation_folder_name=encrypt_text(relation_folder_name,password);}
+                if(!check_if_file_is_present(attached_file_dir+encrypted_relation_folder_name))
+                {   fs::create_directory(attached_file_dir+encrypted_relation_folder_name);}
+                //encrypt and copy the file
+                string data="";
+                ifstream in_file(convert_to_windows_path(relation_obj.source_local.at(a)),ios::binary);
+                stringstream in_file2;
+                in_file2<<in_file.rdbuf();
+                in_file.close();
+                data=in_file2.str();
+                in_file2.clear();
+                encrypt_file(attached_file_dir+encrypted_relation_folder_name+"\\"+encrypted_file_name,data);
+                relation_obj.source_local.at(a)="attached_files/"+relation_folder_name+"/"+orig_file_name;
+            }
+        }
+        else
+        {   cout<<"\ndup file!!";}
+    }
+}
+
+void filehandler_class::save_file(unsigned int relation_id,string file_name,string destination_dir)
+{
+    string attached_file_dir=database_dir+"attached_files\\";
+    string folder_name="r"+to_string(relation_id),encrypted_folder_name,encrypted_file_name;
+    //getting encrypted folder name
+    for(auto& p: fs::directory_iterator(attached_file_dir))
+    {
+        string cur_folder=get_name_from_path(p.path().string(),true);
+        if(strcmp(folder_name.c_str(),decrypt_text(cur_folder,password).decrypted_text.c_str())==0)
+        {   encrypted_folder_name=cur_folder;break;}
+    }
+    //getting encrypted file name
+    for(auto& p: fs::directory_iterator(attached_file_dir+encrypted_folder_name))
+    {
+        string cur_file=get_name_from_path(p.path().string(),true);
+        if(strcmp(file_name.c_str(),decrypt_text(cur_file,password).decrypted_text.c_str())==0)
+        {   encrypted_file_name=cur_file;break;}
+    }
+    string encrypted_dir=attached_file_dir+encrypted_folder_name+"\\"+encrypted_file_name;
+    stringstream in_file=decrypt_file(encrypted_dir);
+    ofstream out_file(destination_dir,ios::binary);
+    out_file<<in_file.rdbuf();
+    out_file.close();
+    in_file.clear();
+}
+
 void filehandler_class::add_new_relation(relation &relation)
 {
     unsigned int no_of_relation_in_current_file=0,current_file_id;
@@ -1525,6 +1662,8 @@ void filehandler_class::add_new_relation(relation &relation)
         new_file.start_id=0;
         new_file.end_id=0;
         relation.relation_id=0;
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         if(no_of_nodes_in_one_node_file==1)
         {   new_file.file_full=true;}
         else
@@ -1536,6 +1675,9 @@ void filehandler_class::add_new_relation(relation &relation)
     else if(gap_relation_id_map.size()>0)
     {   //cout<<"\n\ncheck2";
         gap_relation_iterator=gap_relation_id_map.begin();
+        relation.relation_id=gap_relation_iterator->first;
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         relation_list.at(gap_relation_iterator->first).relation_id=gap_relation_iterator->first;
         relation_list.at(gap_relation_iterator->first).gap_relation=false;
         relation_list.at(gap_relation_iterator->first).weight=relation.weight;
@@ -1550,7 +1692,6 @@ void filehandler_class::add_new_relation(relation &relation)
 
         string file_name=relation_file_list.at(gap_relation_iterator->first/no_of_relation_in_one_file).file_name;
         current_file_id=gap_relation_iterator->first/no_of_relation_in_one_file;
-        relation.relation_id=gap_relation_iterator->first;
         no_of_relation_in_current_file=write_relationdata_to_file(file_name,relation);
         gap_relation_id_map.erase(gap_relation_iterator->first);
         total_no_of_relations++;
@@ -1569,6 +1710,8 @@ void filehandler_class::add_new_relation(relation &relation)
         else
         {   new_file.file_full=false;}
         add_new_data_to_relation_file_list(new_file);
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         no_of_relation_in_current_file=write_relationdata_to_file(new_file.file_name,relation);
         current_file_id=relation_file_list.size()-1;
     }
@@ -1576,11 +1719,13 @@ void filehandler_class::add_new_relation(relation &relation)
     {   //cout<<"\n\ncheck4";
         relation.relation_id=total_no_of_relations;
         unsigned int free_file_index;
-        for(unsigned int a=0;a<relation_file_list.size();a++)
+        for(unsigned int a=0;a<relation_file_list.size();a++)//optimization may be done here in future
         {
             if(!relation_file_list.at(a).file_full)
             {   free_file_index=a;break;}
         }
+        //check size encrypt and copy file
+        check_size_encrypt_copy_file(relation);
         no_of_relation_in_current_file=write_relationdata_to_file(relation_file_list.at(free_file_index).file_name,relation);
         change_settings(relation_file_list_dir,"NO_OF_RELATIONS",to_string((free_file_index)*no_of_relation_in_one_file+no_of_relation_in_current_file));
         total_no_of_relations++;
@@ -1622,7 +1767,7 @@ void filehandler_class::delete_relation(unsigned int relation_id)
             getline(in_file,line);
             if(in_file.eof())
             {   break;}
-            if(strcasestr(line.c_str(),"RELATION_ID") && !strcasestr(line.c_str(),"GROUPED_RELATION_ID_LIST") && !strcasestr(line.c_str(),"RELATION_ID_LIST"))
+            if(strcasestr(line,"RELATION_ID") && !strcasestr(line,"GROUPED_RELATION_ID_LIST") && !strcasestr(line,"RELATION_ID_LIST"))
             {   
                 word="";
                 comma_count=0;
@@ -1641,7 +1786,7 @@ void filehandler_class::delete_relation(unsigned int relation_id)
             }
             if(relation_id==current_id)
             {
-                while(!strcasestr(line.c_str(),"#END"))
+                while(!strcasestr(line,"#END"))
                 {   getline(in_file,line);}
             }
             else
@@ -1652,10 +1797,30 @@ void filehandler_class::delete_relation(unsigned int relation_id)
         }
         in_file.clear();
         encrypt_file(file_dir,temp_data);
+        //graph editing
+        int position;
+        for(int a=0;a<data_node_list.at(relation_list.at(relation_id).source_node_id).relations.size();a++)
+        {
+            if(data_node_list.at(relation_list.at(relation_id).source_node_id).relations.at(a)==relation_list.at(relation_id).relation_id)
+            {   position=a;break;}
+        }
+        data_node_list.at(relation_list.at(relation_id).source_node_id).relations.erase(data_node_list.at(relation_list.at(relation_id).source_node_id).relations.begin()+position);
+
+        for(int a=0;a<data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.size();a++)
+        {
+            if(data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.at(a)==relation_list.at(relation_id).relation_id)
+            {   position=a;break;}
+        }
+        data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.erase(data_node_list.at(relation_list.at(relation_id).destination_node_id).relations.begin()+position);
+
         //post processing
         relation_list.at(relation_id).gap_relation=true;
         total_no_of_relations--;
         gap_relation_id_map.insert(make_pair(relation_id,gap_relation_id_map.size()));
+        //delete files
+        relation r_temp=relation_list.at(relation_id);
+        r_temp.source_local.clear();
+        delete_attached_file_if_required(r_temp);
         //change all the settings from node_file_list.csv
         change_settings(relation_file_list_dir,"NO_OF_RELATIONS",to_string(total_no_of_relations));
         set_file_full_status(relation_id/no_of_relation_in_one_file,false,1);
@@ -1666,8 +1831,81 @@ void filehandler_class::delete_relation(unsigned int relation_id)
     }
 }
 
+void filehandler_class::delete_attached_file_if_required(relation& relation)
+{   
+    string attached_file_dir=database_dir+"attached_files\\";
+    for(int a=0;a<relation_list.at(relation.relation_id).source_local.size();a++)
+    {   
+        string old_file_name=get_name_from_path(relation_list.at(relation.relation_id).source_local.at(a),false);
+        bool file_found=false;
+        for(int b=0;b<relation.source_local.size();b++)
+        {
+            if(strcmp(old_file_name.c_str(),get_name_from_path(relation.source_local.at(b),false).c_str())==0)
+            {   file_found=true;break;}
+        }
+        if(!file_found)//delete the file
+        {
+            //finding the relation folder name
+            int count=0;
+            string relation_folder_name="";
+            for(int b=relation_list.at(relation.relation_id).source_local.at(a).size()-1;b>=0;b--)
+            {
+                if(relation_list.at(relation.relation_id).source_local.at(a).at(b)=='/')
+                {
+                    if(count!=1)
+                    {   relation_folder_name="";}
+                    count++;
+                }
+                else
+                {   relation_folder_name=relation_list.at(relation.relation_id).source_local.at(a).at(b)+relation_folder_name;}
+                if(count==2)
+                {   break;}
+            }
+            //getting encrypted folder name
+            string encrypted_folder_name;
+            for(auto& p: fs::recursive_directory_iterator(attached_file_dir))
+            {   
+                string cur_folder=get_name_from_path(p.path().string(),true);
+                if(strcmp(relation_folder_name.c_str(),decrypt_text(cur_folder,password).decrypted_text.c_str())==0)
+                {   encrypted_folder_name=cur_folder;break;}
+            }
+            //getting encrypted file name
+            string encrypted_file_name;
+            for(auto& p: fs::directory_iterator(attached_file_dir+encrypted_folder_name))
+            {   
+                string cur_file=get_name_from_path(p.path().string(),true);
+                if(strcmp(old_file_name.c_str(),decrypt_text(cur_file,password).decrypted_text.c_str())==0)
+                {   encrypted_file_name=cur_file;break;}
+            }
+            fs::remove(attached_file_dir+encrypted_folder_name+"\\"+encrypted_file_name);
+        }
+    }
+}
+
 void filehandler_class::edit_relation(relation& relation_obj)
 {
+    //file delete
+    delete_attached_file_if_required(relation_obj);
+    check_size_encrypt_copy_file(relation_obj);
+    //check size encrypt and copy file
+    //graph editing
+    int position;
+    for(int a=0;a<data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.size();a++)
+    {
+        if(data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.at(a)==relation_list.at(relation_obj.relation_id).relation_id)
+        {   position=a;break;}
+    }
+    data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.erase(data_node_list.at(relation_list.at(relation_obj.relation_id).source_node_id).relations.begin()+position);
+
+    for(int a=0;a<data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.size();a++)
+    {
+        if(data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.at(a)==relation_list.at(relation_obj.relation_id).relation_id)
+        {   position=a;break;}
+    }
+    data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.erase(data_node_list.at(relation_list.at(relation_obj.relation_id).destination_node_id).relations.begin()+position);
+    
+    data_node_list.at(relation_obj.source_node_id).relations.push_back(relation_obj.relation_id);
+    data_node_list.at(relation_obj.destination_node_id).relations.push_back(relation_obj.relation_id);
     //change the relation data
     relation_list.at(relation_obj.relation_id).destination_node_id=relation_obj.destination_node_id;
     relation_list.at(relation_obj.relation_id).source_node_id=relation_obj.source_node_id;
@@ -1688,7 +1926,7 @@ void filehandler_class::edit_relation(relation& relation_obj)
         getline(infile,line);
         if(infile.eof())
         {   break;}
-        if(strcasestr(line.c_str(),"RELATION_ID"))
+        if(strcasestr(line,"RELATION_ID"))
         {
             word="";
             comma_count=0;
@@ -1745,7 +1983,7 @@ void filehandler_class::edit_relation(relation& relation_obj)
                     getline(infile,line);
                     if(infile.eof())
                     {   break;}
-                    if(strcasestr(line.c_str(),"#END"))
+                    if(strcasestr(line,"#END"))
                     {   break;}
                 }
             }

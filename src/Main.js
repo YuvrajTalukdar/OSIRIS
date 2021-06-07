@@ -1,22 +1,18 @@
 import React,{createRef} from 'react';
-import {Button,Toolbar,AppBar,TextField,Grid,IconButton,Drawer,Tooltip,Popover,Box,Typography,Slider} from '@material-ui/core';
+import {Button,Snackbar,SnackbarContent,Toolbar,AppBar,TextField,Grid,IconButton,Tooltip} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import theme from './theme';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import SpeedIcon from '@material-ui/icons/Speed';
 import CenterFocusStrongIcon from '@material-ui/icons/CenterFocusStrong';
-import AddIcon from '@material-ui/icons/Add';
-import SearchIcon from '@material-ui/icons/Search';
-import GroupIcon from '@material-ui/icons/Group';
-import CategoryIcon from '@material-ui/icons/Category';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
-import CloseIcon from '@material-ui/icons/Close';
 
-import {add_node_relation_props_func,relation_node_properties_panel} from './relation_and_node_properites_panel.js';
-import {add_add_panel_func,add_panel} from './add_panel.js'
+import {add_node_relation_props_func,Relation_Node_Properties_Panel} from './relation_and_node_properites_panel.js';
+import {add_add_panel_func,Add_Panel} from './add_panel.js'
 import {add_network_func,Add_Network} from './network.js';
+import {add_operations_func,Add_Operations_Panel} from './operations_panel.js'
+import {Side_Bar_Buttons,Speed_Menu,Change_Password_Dialog,Attached_File_Save_UI} from './other_ui_components.js';
 
 const useStyles = (theme)=>
 ({
@@ -24,7 +20,7 @@ const useStyles = (theme)=>
     {
         paddingLeft:'52px',
         paddingRight:'2px',
-        paddingTop:'2px'
+        paddingTop:'10px'
     },
     textfield_background:
     {   background: "#00404B"},
@@ -61,7 +57,16 @@ const useStyles = (theme)=>
         width: '100%',
         position: 'relative',
         overflow: 'auto',
-        border:'1px solid #03DAC5'
+        border:'1px solid #03DAC5',
+        marginBottom:15,
+    },
+    properties_list_class2:{
+        height: "25vh",
+        width: '49%',
+        position: 'relative',
+        overflow: 'auto',
+        border:'1px solid #03DAC5',
+        marginBottom:15,
     },
     formControl: {
         minWidth: '100%',
@@ -152,91 +157,32 @@ class Main extends React.Component
         this.state=
         {
             /*Drawer Settings*/
-            add_drawer_open:false,
-            add_icon_color:'primary',
-            search_drawer_open:false,
-            operation_drawer_open:false,
-            relation_node_properties_drawer_open:false,
-            relation_node_properties_icon_color:'primary',
-            color_picker_hex_value:"#03DAC5",
-            collaborate_drawer_open:false,
-            
+            //search_drawer_open:false,
+            //collaborate_drawer_open:false,
             /*Node data */
             node_data_list:[],
-            new_node_name:"",
-            new_node_name_close_button_visible:'none',
-            new_node_type:"",
-            add_button_text:'Add',
-            disable_add_button:false,
-            matched_node:undefined,
-            edit_node_name_box_visible:'none',
-            edit_node_name_close_button:'none',
-            edit_node_name:'',
-
             /*Relation Data*/
             relation_data_list:[],
-            source_node:"",
-            destination_node:"",
-            new_relation_type:"",
-            source_url:"",
-            source_url_close_button_visible:'none',
-            source_url_list:[],
-            file_dir:"",
-            file_dir_list:[],
-            grouped_relation_search:"",//will bw used later
-            edit_relation_id:'',
-            edit_mode_on:false,
-            relation_add_button_text:'Add',
-            disable_relation_add_button:false,
             /*type data */
-                /*Node Type */
-            node_type_data_list:[],
-            node_type_name_edit:"",
-            node_type_search_close_button_visible:"none",
-            node_type_name:"",
-            edit_node_type_box_visible:'none',
-            add_node_type_button_text:'Add',
-            disable_add_node_type_button:false,
-            edit_node_type:undefined,
-            edit_node_type_name_close_button_visible:'none',
-                /*Relation Type */
-            relation_type_data_list:[],
-            vectored_relation:false,
-            edit_relation_type:"",
-            relation_type_close_button_visible:"none",
-            relation_type_name:"",
-            edit_relation_type_box_visible:'none',
-            edit_relation_type_close_button_visible:'none',
-            edit_relation_type_obj:undefined,
-            disabled_add_relation_type_button:false,
-            relation_type_add_button_text:'Add',
+            node_type_data_list:[],/*Node Type */
+            relation_type_data_list:[],/*Relation Type */
             /*Dialog Box Settings*/
             permission_dialog_open:false,
             permission_dialog_text:"",
             alert_dialog_open:false,
             alert_dialog_text:"",
-            change_pass_dialog:false,
-            current_pass:'',
-            current_pass_close_btn_show:'none',
-            new_pass1:'',
-            new_pass1_close_btn_show:'none',
-            new_pass2:'',
-            new_pass2_close_btn_show:'none',
             /*Other UI components*/
-            //search_node_bar:'', 
-            net_ref:createRef(),
             open_network_popup:false,
-            network_popup_top:100,
-            network_popup_bottom:100,
-            open_speed_popover:false,
-            speed_popover_anchor:'',
-            keyboard_zoom:0.05,
-            mouse_zoom:1,
-            navigation_speed:10,
-
-            context_menu_list:[],
+            snack_bar_text:'',
+            snack_bar_open:false
         };
+
+        this.net_ref=createRef();
+        this.context_menu_list=[];
         this.network = {};
+        this.color_changed_node_id=[];
+        this.cluster_id_list=[];
+        this.cluster_id_with_nodes=[];
 
         this.context_node_id=-1;
         this.context_node_name="";
@@ -248,7 +194,6 @@ class Main extends React.Component
         //this.ctrlKey=false;
 
         this.handle_drawer=this.handle_drawer.bind(this);
-        this.color_picker_handler=this.color_picker_handler.bind(this);
         this.add_main_window_data=this.add_main_window_data.bind(this);
         
         this.permission_dialog_options=this.permission_dialog_options.bind(this);
@@ -256,22 +201,29 @@ class Main extends React.Component
 
         this.rgbToHex=this.rgbToHex.bind(this);
         this.getRndInteger=this.getRndInteger.bind(this);
-        this.change_password=this.change_password.bind(this);
 
         add_node_relation_props_func(Main);
+        add_operations_func(Main);
         add_add_panel_func(Main);
         add_network_func(Main);
     }
 
     add_relation_ref=createRef();
     add_node_ref=createRef();
-    
+    add_panel_ref=createRef();
+    properties_panel_ref=createRef();
+    operations_panel_ref=createRef();
+    side_bar_ref=createRef();
+    speed_menu_ref=createRef();
+    password_dialog_ref=createRef();
+    attached_file_dialog_ref=createRef();
+    //CURRENTLY THE TYPE IDS CA BE SHIFTED IN THE PROPERTIES PANEL, BUT MAYBE IN FUTURE THEY MIGHT BE REQUIRED FOR COMMUNICATING WITH THE NETWORK
     delete_node_type_id=-1;
     delete_node_type_name="";
 
     delete_relation_type_id=-1;
     delete_relation_type_name="";
-    
+    //DELETE IDS CANNOT BE SHIFTER FROM HERE
     delete_node_id=-1;
     delete_node_name="";
 
@@ -280,55 +232,9 @@ class Main extends React.Component
     delete_relation_destination_node="";
     delete_relation_type="";
 
-    match_found_at=-1;//for edit node
-    match_found_at2=-1;//for edit node type
-    match_found_at3=-1;//for edit relation type
-
     source_node_id=-1;
     destination_node_id=-1;
     relation_type_id=-1;
-    url_list=[];
-    source_local=[];
-
-    change_password()
-    {
-        if(this.state.current_pass.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Enter the current Password !",
-                alert_dialog_open:true
-            });
-        }
-        else if(this.state.new_pass1.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Enter the new password !",
-                alert_dialog_open:true
-            });
-        }
-        else if(this.state.new_pass2.length==0)
-        {
-            this.setState({
-                alert_dialog_text:"Type the new password again !",
-                alert_dialog_open:true
-            });
-        }
-        else if(this.state.new_pass1.localeCompare(this.state.new_pass2)!=0)
-        {
-            this.setState({
-                alert_dialog_text:"Password didnot match !",
-                alert_dialog_open:true
-            });
-        }
-        else
-        {
-            var data={
-                current_pass:this.state.current_pass,
-                new_pass:this.state.new_pass1,
-            };
-            window.ipcRenderer.send('change_password', data);
-        }
-    }
 
     reset_context_menu_settings()
     {
@@ -353,14 +259,14 @@ class Main extends React.Component
                 behavior: 'smooth',
                 block: 'start',
             });
-            this.search_node_name(this.context_node_name);
-            this.setState({
+            this.add_panel_ref.current.search_node_name(this.context_node_name);
+            this.add_panel_ref.current.setState({
                 new_node_name:this.context_node_name,
                 source_node:'',
                 destination_node:'',
                 new_relation_type:''
             });
-            this.edit_relation_switch_toggle(false);
+            this.add_panel_ref.current.edit_relation_switch_toggle(false);
         }
         else if(section_id==1)
         {
@@ -368,24 +274,17 @@ class Main extends React.Component
                 behavior: 'smooth',
                 block: 'start',
             });
-            this.search_node_name("");
+            this.add_panel_ref.current.search_node_name("");
             var obj=this.get_node_indexes_from_edge_id(this.context_edge_id);
-            this.setState({
+            this.add_panel_ref.current.setState({
                 new_node_name:"",
                 source_node:this.state.node_data_list[obj.from_node_index],
                 destination_node:this.state.node_data_list[obj.to_node_index],
                 new_relation_type:obj.relation_type
             });
-            this.edit_relation_switch_toggle(true);   
+            this.add_panel_ref.current.edit_relation_switch_toggle(true);   
         }
         this.reset_context_menu_settings();
-    }
-
-    color_picker_handler(color)
-    {
-        this.setState({
-            color_picker_hex_value:color
-        });
     }
 
     rgbToHex(r, g, b) 
@@ -397,15 +296,17 @@ class Main extends React.Component
     check_if_drawer_is_open(drawer_id)
     {
         if(drawer_id==0)
-        {   return this.state.add_drawer_open;}
-        else if(drawer_id==1)
-        {   return this.state.search_drawer_open;}
+        {   return this.add_panel_ref.current.state.add_drawer_open;}
+        //else if(drawer_id==1)
+        //{   return this.state.search_drawer_open;}
         else if(drawer_id==2)
-        {   return this.state.operation_drawer_open;}
+        {   return this.operations_panel_ref.current.state.operation_drawer_open;}
         else if(drawer_id==3)
-        {   return this.state.relation_node_properties_drawer_open;}
-        else if(drawer_id==4)
-        {   return this.state.collaborate_drawer_open;}
+        {   return this.properties_panel_ref.current.state.relation_node_properties_drawer_open;}
+        //else if(drawer_id==4)
+        //{   return this.state.collaborate_drawer_open;}
+        else
+        {   return false;}
     }
 
     handle_drawer(drawer_id)
@@ -413,38 +314,52 @@ class Main extends React.Component
         if(drawer_id==0)
         {
             var color;
-            if(this.state.add_drawer_open)
+            if(this.add_panel_ref.current.state.add_drawer_open)
             {   color='primary';}
             else
             {   color='secondary'}
-            this.setState({
-                add_drawer_open:!this.state.add_drawer_open,
+            this.side_bar_ref.current.setState({
                 add_icon_color:color,
-                search_drawer_open:false,
-                operation_drawer_open:false,
-                relation_node_properties_drawer_open:false,
+                operation_drawer_color:'primary',
                 relation_node_properties_icon_color:'primary',
-                collaborate_drawer_open:false,
             });
+            this.add_panel_ref.current.setState({add_drawer_open:!this.add_panel_ref.current.state.add_drawer_open,});
+            this.operations_panel_ref.current.setState({operation_drawer_open:false,});
+            this.properties_panel_ref.current.setState({relation_node_properties_drawer_open:false,});
+        }
+        else if(drawer_id==2)
+        {
+            var color;
+            if(this.operations_panel_ref.current.state.operation_drawer_open)
+            {   color='primary';}
+            else
+            {   color='secondary'}
+            this.side_bar_ref.current.setState({
+                add_icon_color:'primary',
+                operation_drawer_color:color,
+                relation_node_properties_icon_color:'primary',
+            });
+            this.add_panel_ref.current.setState({add_drawer_open:false,});
+            this.operations_panel_ref.current.setState({operation_drawer_open:!this.operations_panel_ref.current.state.operation_drawer_open,});
+            this.properties_panel_ref.current.setState({relation_node_properties_drawer_open:false,});
+            this.operations_panel_ref.current.setState({cluster_color:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))});
         }
         else if(drawer_id==3)
         {
             var color;
-            if(this.state.relation_node_properties_drawer_open)
+            if(this.properties_panel_ref.current.state.relation_node_properties_drawer_open)
             {   color='primary';}
             else
             {   color='secondary'}
-            this.setState({
-                add_drawer_open:false,
+            this.side_bar_ref.current.setState({
                 add_icon_color:'primary',
-                search_drawer_open:false,
-                operation_drawer_open:false,
-                relation_node_properties_drawer_open:!this.state.relation_node_properties_drawer_open,
+                operation_drawer_color:'primary',
                 relation_node_properties_icon_color:color,
-                collaborate_drawer_open:false,
-
-                color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))
             });
+            this.add_panel_ref.current.setState({add_drawer_open:false,});
+            this.operations_panel_ref.current.setState({operation_drawer_open:false,});
+            this.properties_panel_ref.current.setState({ relation_node_properties_drawer_open:!this.properties_panel_ref.current.state.relation_node_properties_drawer_open,});
+            this.properties_panel_ref.current.setState({color_picker_hex_value:this.rgbToHex(this.getRndInteger(0,255),this.getRndInteger(0,255),this.getRndInteger(0,255))});
         }
     }
 
@@ -455,13 +370,13 @@ class Main extends React.Component
             permission_dialog_open:false,
         });
         if(this.permission_dialog_purpose_code==1)
-        {   this.delete_node_type();}
+        {   this.properties_panel_ref.current.delete_node_type();}
         else if(this.permission_dialog_purpose_code==2)
-        {   this.Delete_Relation_Type();}
+        {   this.properties_panel_ref.current.Delete_Relation_Type();}
         else if(this.permission_dialog_purpose_code==3)
-        {   this.delete_node();}
+        {   this.add_panel_ref.current.delete_node();}
         else if(this.permission_dialog_purpose_code==4)
-        {   this.delete_relation();}
+        {   this.add_panel_ref.current.delete_relation();}
         this.permission_dialog_purpose_code=0;
     }
 
@@ -529,6 +444,27 @@ class Main extends React.Component
     
     componentDidMount() 
     {  
+        window.ipcRenderer.on('file_saved',(event,data)=>
+        {   this.setState({snack_bar_text:'File '+data+' Saved.',snack_bar_open:true})});
+
+        window.ipcRenderer.on('attach_failed_files',(event,data)=>
+        {  
+            let msg="Failed to attach the following files:- ";
+            for(let a=0;a<data.length;a++)
+            {   msg=msg+(a+1)+". "+data[a].file_name+", ";}
+            msg=msg+" because they are larger than 100 MB."
+            this.setState({
+                alert_dialog_text:msg,
+                alert_dialog_open:true
+            });
+        });
+
+        window.ipcRenderer.on('find_mst',(event,data)=>
+        {   this.highlight_mst(data,this.operations_panel_ref.current.state.mst_node_list);});
+
+        window.ipcRenderer.on('shortest_path',(event,data)=>
+        {   this.highlight_path(data,this.operations_panel_ref.current.state.shortest_path_node_source,this.operations_panel_ref.current.state.shortest_path_node_destination);});
+
         window.ipcRenderer.on('main_window_data_received',(event,data)=>
         {   this.add_main_window_data(data);});
 
@@ -539,10 +475,10 @@ class Main extends React.Component
         {   this.add_new_node_body(data);});
 
         window.ipcRenderer.on('add_file_dir',(event,data)=>
-        {   this.add_file_dir(data);});
+        {   this.add_panel_ref.current.add_file_dir(data);});
 
         window.ipcRenderer.on('change_pass_dialog',(event,data)=>
-        {   this.setState({
+        {   this.password_dialog_ref.current.setState({
             change_pass_dialog:true,
             current_pass:'',
             new_pass1:'',
@@ -562,7 +498,10 @@ class Main extends React.Component
                 });
             }
             else
-            {   this.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}
+            {   
+                this.password_dialog_ref.current.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});
+                this.setState({snack_bar_text:'Pasword Changed.',snack_bar_open:true});
+            }
         });
 
         var dummy="";
@@ -570,158 +509,22 @@ class Main extends React.Component
 
         this.init_network();
     }
-    
+
     render()
     {
         return(
         <ThemeProvider theme={theme}>
             <header className="Main_Style">
+                <Snackbar open={this.state.snack_bar_open} autoHideDuration={3000}
+                onClose={e=>{this.setState({snack_bar_text:'',snack_bar_open:false})}}>
+                    <SnackbarContent style={{backgroundColor:'#191919',color: '#03DAC5'}}
+                    message={this.state.snack_bar_text}/>
+                </Snackbar>
                 {/*-----------------------------------------Dialogs----------------------------------------------------- */ }
+                {/*Attached File Save UI*/}
+                <Attached_File_Save_UI THIS={this} ref={this.attached_file_dialog_ref}/>
                 {/*Password change dialog*/}
-                <Dialog
-                    open={this.state.change_pass_dialog}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                    PaperProps={{
-                        style:{
-                            backgroundColor:'#191919'
-                        }
-                    }}
-                >
-                    <DialogTitle color='primary'><span style={{color: '#03DAC5'}}>Change Password</span></DialogTitle>
-                    <DialogContent>
-                        <TextField 
-                            label='Current Password'
-                            variant='outlined' 
-                            size='small' 
-                            value={this.state.current_pass}
-                            type="password"
-                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e => 
-                                {
-                                    var btn_visible='';
-                                    if(e.target.value.length>0)
-                                    {   btn_visible='block';}
-                                    else
-                                    {   btn_visible='none';}
-                                    this.setState({current_pass:e.target.value,current_pass_close_btn_show:btn_visible});
-                                }}                                            
-                            style={{width:300}} 
-                            InputLabelProps={
-                            {   className: this.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.classes.root,
-                                    notchedOutline: this.props.classes.valueTextField,
-                                    disabled: this.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.current_pass_close_btn_show}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>{this.setState({current_pass:"",current_pass_close_btn_show:'none'});}}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <TextField 
-                            label='New Password'
-                            variant='outlined' 
-                            size='small' 
-                            value={this.state.new_pass1}
-                            type="password"
-                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e => 
-                                {
-                                    var btn_visible='';
-                                    if(e.target.value.length>0)
-                                    {   btn_visible='block';}
-                                    else
-                                    {   btn_visible='none';}
-                                    this.setState({new_pass1:e.target.value,new_pass1_close_btn_show:btn_visible});
-                                }}                                            
-                            style={{width:300}} 
-                            InputLabelProps={
-                            {   className: this.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.classes.root,
-                                    notchedOutline: this.props.classes.valueTextField,
-                                    disabled: this.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.new_pass1_close_btn_show}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>{this.setState({new_pass1:"",new_pass1_close_btn_show:'none'});}}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <TextField 
-                            label='Confirm Password'
-                            variant='outlined' 
-                            size='small' 
-                            value={this.state.new_pass2}
-                            type="password"
-                            onFocus={e=>{this.enable_keyboard_navigation(false);}}
-                            onBlur={e=>{this.enable_keyboard_navigation(true);}}
-                            onChange={
-                                e => 
-                                {
-                                    var btn_visible='';
-                                    if(e.target.value.length>0)
-                                    {   btn_visible='block';}
-                                    else
-                                    {   btn_visible='none';}
-                                    this.setState({new_pass2:e.target.value,new_pass2_close_btn_show:btn_visible});
-                                }}                                            
-                            style={{width:300}} 
-                            InputLabelProps={
-                            {   className: this.props.classes.textfield_label}}
-                            InputProps={{
-                                className: this.props.classes.valueTextField,
-                                classes:{
-                                    root:this.props.classes.root,
-                                    notchedOutline: this.props.classes.valueTextField,
-                                    disabled: this.props.classes.valueTextField
-                                },
-                                endAdornment: 
-                                (
-                                    <Box display={this.state.new_pass2_close_btn_show}> 
-                                        <IconButton color='primary' size='small'
-                                        onClick={e=>{this.setState({new_pass2:"",new_pass2_close_btn_show:'none'});}}>
-                                            <CloseIcon/>
-                                        </IconButton>
-                                    </Box> 
-                                ),
-                            }}
-                        />
-                    </DialogContent>
-                    
-                    <DialogActions>
-                        <Button onClick={e=>{this.change_password()}} color="primary">
-                            Change Password
-                        </Button>
-                        <Button onClick={e=>{this.setState({change_pass_dialog:false,current_pass:'',new_pass1:'',new_pass2:''});}} color="primary">
-                            Cancel
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                <Change_Password_Dialog THIS={this} ref={this.password_dialog_ref}/>
                 {/*Alert Dialog*/}
                 <Dialog
                     open={this.state.alert_dialog_open}
@@ -771,57 +574,7 @@ class Main extends React.Component
                         </Button>
                     </DialogActions>
                 </Dialog>
-                <Popover
-                open={this.state.open_speed_popover}
-                anchorEl={this.state.speed_popover_anchor}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                }}
-                onClose={e=>
-                {
-                    this.setState({open_speed_popover:false});
-                    this.set_speed();
-                }}>
-                    <div className="speedMenu">
-                        <Typography color="primary">Keyboard Zoom</Typography>
-                        <Slider
-                            valueLabelDisplay="auto"
-                            marks
-                            min={0.01}
-                            step={0.01}
-                            max={0.1}
-                            value={this.state.keyboard_zoom}
-                            onChange={(e,value)=>{
-                                this.setState({keyboard_zoom:value});
-                            }}
-                        />
-                        <Typography color="primary">Mouse Wheel Zoom</Typography>
-                        <Slider
-                            valueLabelDisplay="auto"
-                            marks
-                            min={1}
-                            step={1}
-                            max={8}
-                            value={this.state.mouse_zoom}
-                            onChange={(e,value)=>{
-                                this.setState({mouse_zoom:value});
-                            }}
-                        />
-                        <Typography color="primary">Keyboard Navigation</Typography>
-                        <Slider
-                            valueLabelDisplay="auto"
-                            marks
-                            min={5}
-                            step={5}
-                            max={40}
-                            value={this.state.navigation_speed}
-                            onChange={(e,value)=>{
-                                this.setState({navigation_speed:value});
-                            }}
-                        />
-                    </div>
-                </Popover>
+                <Speed_Menu THIS={this} ref={this.speed_menu_ref}/>
                 {/*-----------------------------------------App Bar--------------------------------------------------- */ }
                 <AppBar  style={{ background: '#242527',paddingLeft: 40 }} className={this.props.classes.appBar}>
                     <Toolbar variant="dense">
@@ -837,7 +590,6 @@ class Main extends React.Component
                         onBlur={e=>{this.enable_keyboard_navigation(true);}}
                         onChange={(event,value)=>
                             {
-                                //this.setState({search_node_bar:value});
                                 if(value!=null)
                                 {   this.focus_on_node(value.node_id);}
                             }}
@@ -870,7 +622,7 @@ class Main extends React.Component
                                 <IconButton color="primary"
                                 onClick={
                                     e=>{
-                                        this.setState(
+                                        this.speed_menu_ref.current.setState(
                                         {
                                             open_speed_popover:true,
                                             speed_popover_anchor:e.target,
@@ -890,45 +642,13 @@ class Main extends React.Component
                     </Toolbar>
                 </AppBar>
                 {/*-------------------------------------------------Add panel------------------------------------------------------ */ }
-                {add_panel(this)}
+                <Add_Panel THIS={this} ref={this.add_panel_ref}/>
+                {/*---------------------------------------------Operations Panel-----------------------------------------------------*/}
+                <Add_Operations_Panel THIS={this} ref={this.operations_panel_ref}/>
                 {/*----------------------------------------Relation & node properties-------------------------------------------------------- */ }
-                {relation_node_properties_panel(this)}
+                <Relation_Node_Properties_Panel THIS={this} ref={this.properties_panel_ref}/>
                 {/*------------------------------------------------Side Bar-------------------------------------------------------- */ }
-                <Drawer variant="permanent" className={this.props.classes.drawer}
-                 classes={{paper: this.props.classes.drawerPaper,}}>
-                    <Toolbar variant="dense"/>
-                    <Grid container direction="column"   xs={1} alignItems="center" justify="flex-start">
-                        <Tooltip title="Add Node or Relation">
-                            <IconButton color={this.state.add_icon_color} onClick={()=>this.handle_drawer(0)}>
-                                <AddIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        {/*
-                        <Tooltip title="Search">
-                            <IconButton color="primary">
-                                <SearchIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Perform Operations">
-                            <IconButton color="primary">
-                                <AccountTreeIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        */}
-                        <Tooltip title="Relation and Node Properties">
-                            <IconButton color={this.state.relation_node_properties_icon_color} onClick={()=>this.handle_drawer(3)}>
-                                <CategoryIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        {/*
-                        <Tooltip title="Collaborate">
-                            <IconButton color="primary">
-                                <GroupIcon/>
-                            </IconButton>
-                        </Tooltip>
-                        */}
-                    </Grid>
-                </Drawer>   
+                <Side_Bar_Buttons THIS={this} ref={this.side_bar_ref}/>
                 {Add_Network(this)}
             </header>
         </ThemeProvider>

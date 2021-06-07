@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button,TextField,Grid,IconButton,Box,Typography} from '@material-ui/core';
+import {Button,Snackbar,SnackbarContent,TextField,Grid,IconButton,Box,Typography} from '@material-ui/core';
 import {DialogActions,Dialog,DialogContent,DialogContentText,DialogTitle} from '@material-ui/core';
 import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import theme from './theme';
@@ -86,6 +86,8 @@ class Login extends React.Component
             //dialog box
             alert_dialog_open:false,
             alert_dialog_text:'',
+            snack_bar_text:'',
+            snack_bar_open:false
         };
         this.login=this.login.bind(this);
         this.handle_login_create_mode=this.handle_login_create_mode.bind(this);
@@ -179,6 +181,8 @@ class Login extends React.Component
                     confirm_pass:'',
                     confirm_pass_textfield_close_button:'none',
                     pass_textfield_close_button:'none',
+                    snack_bar_open:true,
+                    snack_bar_text:'New Database Created.'
                 })
             }
         }
@@ -226,6 +230,13 @@ class Login extends React.Component
                             </Button>
                         </DialogActions>
                     </Dialog>
+                    <Snackbar open={this.state.snack_bar_open} autoHideDuration={3000}
+                    onClose={e=>{this.setState({snack_bar_text:'',snack_bar_open:false})}}>
+                        <SnackbarContent style={{
+                            backgroundColor:'#191919',color: '#03DAC5'
+                            }}
+                            message={this.state.snack_bar_text}/>
+                    </Snackbar>
                     <Grid container direction="column" xs={12} spacing={5} justify="center" alignItems="center">
                         <Grid container direction="column" justify="center" alignItems="center">
                             <img src={logo} style={{padding:12}} width="100" height="100" />

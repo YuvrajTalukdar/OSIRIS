@@ -1,4 +1,4 @@
-const version=1.0;
+const version=2.0;
 process.env.NODE_ENV = 'production';
 //const AvyuktaEngine=require('../build/Release/AvyuktaEngine');
 const AvyuktaEngine=require('AvyuktaEngine');
@@ -59,7 +59,7 @@ ipcMain.on('change_password',(enent,data)=>{
 ipcMain.on('get_main_window_data',(event,todo)=>{
     let obj1=AvyuktaEngine.get_type_data();
     let obj2=AvyuktaEngine.get_node_relation_data();
-    var data={
+    let data={
         'node_type_list':obj1.node_type_list,
         'relation_type_list':obj1.relation_type_list,
         'node_list':obj2.node_list,
@@ -88,7 +88,7 @@ ipcMain.on('add_new_node',(enent,data)=>{
     AvyuktaEngine.add_new_node(data.node_name,data.node_type_id);
     let obj=AvyuktaEngine.get_last_entered_node_data();
     //send the data to top
-    var last_entered_node={
+    let last_entered_node={
         'node_id':obj.node_id,
         'node_type_id':obj.node_type_id,
         'node_name':obj.node_name,
@@ -98,15 +98,24 @@ ipcMain.on('add_new_node',(enent,data)=>{
     mainWindow.webContents.send('last_entered_node',last_entered_node);
 });
 
-ipcMain.on('edit_relation',(enent,data)=>{
-    var source_local=[];
-    for(var a=0;a<data.source_local.length;a++)
-    {   
-        copy_files(data.source_local[a].file_dir,data.source_local[a].new_file_dir);
-        source_local.push(data.source_local[a].new_file_dir);
-    }
+async function edit_relation(data,source_local)
+{   
+   
+   //await AvyuktaEngine.edit_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local,data.relation_id);
+    let myPromise = new Promise(function(myResolve, myReject) {
+    //setTimeout(function() { console.log("I love You !!"); }, 3000);
     AvyuktaEngine.edit_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local,data.relation_id);
-    console.log("relation_edited");
+    });
+    let gh=myPromise;
+}
+
+ipcMain.on('edit_relation',async (enent,data)=>{
+    let source_local=[];
+    for(let a=0;a<data.source_local.length;a++)
+    {   source_local.push(data.source_local[a].file_dir);}
+    AvyuktaEngine.edit_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local,data.relation_id);
+    //edit_relation(data,source_local);
+    //console.log("testing!!!!");
 });
 
 ipcMain.on('delete_node',(enent,data)=>{
@@ -119,17 +128,17 @@ ipcMain.on('delete_relation',(enent,data)=>{
 
 function get_filename_from_path(path)
 {
-    var file_name="";
-    for(var a=path.length-1;a>=0;a--)
+    let file_name="";
+    for(let a=path.length-1;a>=0;a--)
     {
-        if(path[a].localeCompare("/")!=0)
+        if(path[a].localeCompare("\\")!=0)
         {   file_name=path[a]+file_name;}
         else
         {   break;}
     }
     return file_name;
 }
-function copy_files(source_path,destination_path)
+/*function copy_files(source_path,destination_path)
 {
     fs.copyFile(source_path,destination_path, 
     fs.constants.COPYFILE_EXCL, (err) => {
@@ -138,14 +147,23 @@ function copy_files(source_path,destination_path)
         else 
         {}
     });
+}*/
+function convert_to_unix_path(path)
+{
+    let new_path="";
+    for(let a=path.length-1;a>=0;a--)
+    {
+        if(path[a].localeCompare("\\")==0)
+        {   new_path="/"+new_path;}
+        else
+        {   new_path=path[a]+new_path;}
+    }
+    return new_path;
 }
 ipcMain.on('add_new_relation',(event,data)=>{
-    var source_local=[];
-    for(var a=0;a<data.source_local.length;a++)
-    {   
-        copy_files(data.source_local[a].file_dir,data.source_local[a].new_file_dir);
-        source_local.push(data.source_local[a].new_file_dir);
-    }
+    let source_local=[];
+    for(let a=0;a<data.source_local.length;a++)
+    {   source_local.push(data.source_local[a].file_dir);}
     AvyuktaEngine.add_new_relation(data.source_node_id,data.destination_node_id,data.relation_type_id,data.source_url_list,source_local);
     let obj=AvyuktaEngine.get_last_entered_relation_data();
     mainWindow.webContents.send('last_entered_relation',obj);
@@ -158,17 +176,23 @@ ipcMain.on('open_file_picker',(event,todo)=>{
     {   
         if (!response.canceled) 
         {
-            for(var a=0;a<response.filePaths.length;a++)    
+            let failed_file_list=[];
+            for(let a=0;a<response.filePaths.length;a++)    
             {
-                var file_name=get_filename_from_path(response.filePaths[a]);
-                var new_file_dir="database/documents/"+file_name
-                var data={
+                let stats = fs.statSync(response.filePaths[a]);
+                let fileSizeInMegaBytes = stats.size/(1024*1024);
+                let file_name=get_filename_from_path(response.filePaths[a]);
+                let data={
                     'file_name':file_name,
-                    'new_file_dir':new_file_dir,
-                    'file_dir':response.filePaths[a]
+                    'file_dir':convert_to_unix_path(response.filePaths[a])
                 }
-                mainWindow.webContents.send('add_file_dir',data);
+                if(fileSizeInMegaBytes<=100)
+                {   mainWindow.webContents.send('add_file_dir',data);}
+                else
+                {   failed_file_list.push(data);}
             }
+            if(failed_file_list.length>0)
+            {   mainWindow.webContents.send('attach_failed_files',failed_file_list);}
         } 
     });
 });
@@ -187,12 +211,25 @@ ipcMain.on('close_db',(enent,data)=>{
     Menu.getApplicationMenu().getMenuItemById(2).enabled=false;
 });
 
+ipcMain.on('find_shortest_path',(enent,data)=>{
+    let obj=AvyuktaEngine.find_shortest_path(data.source.node_id,data.destination.node_id);
+    mainWindow.webContents.send('shortest_path',obj);
+});
+
+ipcMain.on('find_mst',(enent,data)=>{
+    let node_ids=[];
+    for(let a=0;a<data.length;a++)
+    {   node_ids.push(data[a].node_id);}
+    let obj=AvyuktaEngine.find_mst(node_ids);
+    mainWindow.webContents.send('find_mst',obj);
+});
+
 /*Login Page functions*/
 
 ipcMain.on('login_create',(enent,data)=>{
     if(data.login_create_code==0)
     {   
-        var error=AvyuktaEngine.initialize_engine(data.db_dir,data.password);
+        let error=AvyuktaEngine.initialize_engine(data.db_dir,data.password);
         if(error.error_code==-1)
         {   
             let index_file=url.format({
@@ -211,7 +248,7 @@ ipcMain.on('login_create',(enent,data)=>{
     }
     else if(data.login_create_code==1)
     {   
-        var error=AvyuktaEngine.create_new_odb(data.db_dir,data.file_name,data.password);
+        let error=AvyuktaEngine.create_new_odb(data.db_dir,data.file_name,data.password);
         if(error.error_code==1)
         {   mainWindow.webContents.send('login_create_error',error);}
     }
@@ -227,8 +264,8 @@ ipcMain.on('open_db_picker',(event,todo)=>{
     {   
         if (!response.canceled) 
         {
-            var file_name=get_filename_from_path(response.filePaths);
-            var data={
+            let file_name=get_filename_from_path(response.filePaths);
+            let data={
                 'file_name':get_filename_from_path(file_name),
                 'file_dir':response.filePaths[0]
             }
@@ -245,10 +282,8 @@ ipcMain.on('open_save_folder_picker',(event,todo)=>{
     ).then(function (response) 
     {   
         if (!response.canceled) 
-        {
-            console.log(response);
-            
-            var data={
+        { 
+            let data={
                 'file_name':get_filename_from_path(response.filePath)+".odb",
                 'file_dir':response.filePath+".odb"
             }
@@ -256,6 +291,24 @@ ipcMain.on('open_save_folder_picker',(event,todo)=>{
         } 
     });
 });
+
+ipcMain.on('open_save_file_picker',(event,data)=>{
+    dialog.showSaveDialog({
+        title:'Save File',
+        defaultPath:data.file_name
+    },
+    ).then(function (response) 
+    {   
+        if(!response.canceled)
+        {
+            AvyuktaEngine.save_file(data.relation_id,data.file_name,response.filePath);
+            mainWindow.webContents.send('file_saved',data.file_name);
+        }
+    });
+});
+
+ipcMain.on('copy_text',(event,data)=>
+{   electron.clipboard.writeText(data);});
 
 /*Settings window functions and variables*/ 
 function startSettingsWindow()
@@ -289,7 +342,7 @@ ipcMain.on('cancelButton:pressed',(event,todo)=>{
 });
 
 ipcMain.on('get_settings_data',(event,todo)=>{
-    var settings_obj=AvyuktaEngine.load_settings();
+    let settings_obj=AvyuktaEngine.load_settings();
     settingsWindow.webContents.send('settings_data_received',settings_obj);
 });
 
@@ -334,14 +387,14 @@ function startAboutWindow()
 
 ipcMain.on('get_about_data',(event,data)=>
 {   
-    var data={
+    let data1={
         version:version.toPrecision(2),
         electron_version:process.versions.electron,
         chrome_version:process.versions.chrome,
         node_version:process.versions.node,
         v8_version:process.versions.v8,
     }
-    aboutWindow.webContents.send('get_about_data',data);
+    aboutWindow.webContents.send('get_about_data',data1);
 
 });
 

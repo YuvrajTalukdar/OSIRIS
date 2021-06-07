@@ -3,6 +3,8 @@
 2. In future it will be connected to the encryption class.
 3. File formats are handled here.
 */
+//#ifndef _FILEHANDLER_CLASS_H_
+//#define _FILEHANDLER_CLASS_H_
 #include<fstream>
 #include<algorithm>
 #include<map>
@@ -48,8 +50,9 @@ class filehandler_class
     //mics functions
     bool is_whitespace(const string& s); 
     bool check_if_file_is_present(string);
-    string get_name_from_path(string path);
+    string get_name_from_path(string path,bool is_windows);
     bool strcasestr(string str,string substr);
+    string convert_to_windows_path(string path);
     //node related private functions
     unsigned int write_nodedata_to_file(string file_name,data_node&);//aes ok tested
     void delete_node_data_from_file(string file_name,unsigned int node_index);//aes ok tested
@@ -57,6 +60,8 @@ class filehandler_class
     //relation related file
     unsigned int write_relationdata_to_file(string file_name,relation &relation);
     void add_new_data_to_relation_file_list(file_info &new_file);
+    void check_size_encrypt_copy_file(relation& relation_obj);
+    void delete_attached_file_if_required(relation& relation_obj);
     //both node_relation_functions
     void load_node_relation_file_list(int node_or_relation);//aes ok tested 0 means node 1 means relation.
     void set_file_full_status(unsigned int file_id,bool file_full,int node_or_relation);//aes ok tested
@@ -72,6 +77,8 @@ class filehandler_class
     //relation related data
     vector<relation> relation_list;
     relation last_entered_relation;
+    int attached_file_size_in_MiB=100;
+    vector<string> attached_failed_files;
     //settings data
     string settings_file_dir;//="./database/settings.csv";
     unsigned int total_no_of_nodes=0;
@@ -89,6 +96,7 @@ class filehandler_class
     void set_password_and_dir(string current_db_dir,string password);
     bool password_same(string current_passowrd);
     void change_password(string new_password);
+    void save_file(unsigned int relation_id,string file_name,string destination_dir);
 
     //settings related functions
     void change_settings(string file_dir,string settings_name,string settings_value);//aes ok tested, Function for changing individual settings of a file.
@@ -135,9 +143,9 @@ class filehandler_class
         for(int a=0;a<data_node_list.size();a++)
         {
             cout<<data_node_list.at(a).node_id<<","<<data_node_list.at(a).node_name<<","<<data_node_list.at(a).node_type_id<<",";
-            for(int b=0;b<data_node_list.at(a).relation_id_list.size();b++)
+            for(int b=0;b<data_node_list.at(a).relations.size();b++)
             {
-                cout<<data_node_list.at(a).relation_id_list.at(b)<<",";
+                cout<<data_node_list.at(a).relations.at(b)<<",";
             }
             cout<<"\n";
         }
@@ -219,3 +227,4 @@ class filehandler_class
         }
     }
 };
+//#endif
