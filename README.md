@@ -20,7 +20,7 @@ Add Panel
 ![](screenshots/properties_panel.png)
 Properties Panel
 
-![](screenshots/sortest_path.png)
+![](screenshots/shortest_path.png)
 Shortest Path Finder
 
 ![](screenshots/network_finder.png)
