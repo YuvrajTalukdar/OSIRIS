@@ -3,7 +3,10 @@
 OSIRIS is an open source free as in freedom app for storing and researching on events or relations.
 Key feature:-
 1. It stores node and relations and creates a graph out of it.
-2. Database created by OSIRIS is encrypted using AES.
+2. Database created by OSIRIS is encrypted using AES including the attached files.
+3. It can find the shortest path between nodes.
+4. It can created an optimized map between nodes.
+5. It can cluster several nodes as one.
 
 ![](screenshots/login.png)
 Login Screen
@@ -16,6 +19,15 @@ Add Panel
 
 ![](screenshots/properties_panel.png)
 Properties Panel
+
+![](screenshots/shortest_path.png)
+Shortest Path Finder
+
+![](screenshots/network_finder.png)
+Network Finder
+
+![](screenshots/clustering.png)
+Cluster Creator
 
 # Building from source (Linux)
 
