@@ -9,7 +9,7 @@
                     "AvyuktaEngineSource/filehandler_class.cpp"],
          
         'cflags_cc': [ '-frtti','-fexceptions','-std=c++17','-O2'],
-        "libraries": ["-lcryptopp"]
+        "libraries": ["../cryptopp/libcryptopp.a"]
       }
    ]
 }

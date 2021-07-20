@@ -26,7 +26,7 @@ app.on('ready', () =>
             preload: path.join(__dirname, './preload.js'),
             contextIsolation: false 
         },
-        icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
+        //icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
     });
     mainWindow.loadURL(is_dev? 'http://localhost:3000/Login':`file://${path.join(__dirname,"../build/index.html#/Login")}`);
     mainWindow.on('closed',()=>
@@ -283,7 +283,7 @@ function startSettingsWindow()
                 contextIsolation: false 
             },
             resizable:false,
-            icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
+            //icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
         });
         settingsWindow.loadURL(is_dev? 'http://localhost:3000/Settings':`file://${path.join(__dirname,"../build/index.html#/settings")}`);
         settingsWindow.on('closed',()=>settingsWindow=null);
@@ -325,7 +325,7 @@ function startAboutWindow()
                 contextIsolation: false 
             },
             resizable:false,
-            icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
+            //icon:electron.nativeImage.createFromPath(__dirname+'/osiris_icon2.png')
         });
         aboutWindow.loadURL(is_dev? 'http://localhost:3000/About':`file://${path.join(__dirname,"../build/index.html#/About")}`);
         aboutWindow.on('closed',()=>aboutWindow=null);
