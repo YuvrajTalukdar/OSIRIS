@@ -174,6 +174,7 @@ export class Relation_Node_Properties_Panel extends React.Component
         
         const relation_type_list=[...this.props.THIS.state.relation_type_data_list];
         var match_count=0;
+        let match_index_list=[]
         for(var a=0;a<relation_type_list.length;a++)
         {
             if(relation_type_list[a].relation_type.toUpperCase().includes(data.toUpperCase()))
@@ -181,6 +182,7 @@ export class Relation_Node_Properties_Panel extends React.Component
                 relation_type_list[a].show=true;
                 match_count++;
                 this.match_found_at3=a;
+                match_index_list.push(a);
             }
             else
             {   relation_type_list[a].show=false;}
@@ -190,6 +192,18 @@ export class Relation_Node_Properties_Panel extends React.Component
         {
             if(relation_type_list[this.match_found_at3].relation_type.toUpperCase().localeCompare(data.toUpperCase())==0)
             {   type_matched=true;}
+        }
+        else
+        {
+            for(let a=0;a<match_index_list.length;a++)
+            {
+                if(relation_type_list[match_index_list[a]].relation_type.toUpperCase().localeCompare(data.toUpperCase())==0)
+                {   
+                    type_matched=true;
+                    this.match_found_at3=match_index_list[a];
+                    break;
+                }
+            }
         }
         if(type_matched)
         {
@@ -206,7 +220,7 @@ export class Relation_Node_Properties_Panel extends React.Component
             });
         }
         else
-        {
+        {   console.log('test');
             this.props.THIS.setState({relation_type_data_list:relation_type_list,});
             this.setState({
                 edit_relation_type_box_visible:'none',
