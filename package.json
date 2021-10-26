@@ -1,16 +1,17 @@
 {
   "name": "osiris",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "private": true,
   "author": "Yuvraj Talukdar <yuvrajtalukdar@gmail.com>",
   "build": {
     "appId": "yuvraj.osiris",
     "linux":{
         "target":[
-            "deb"
+            "deb",
+            "AppImage"
         ],
         "icon":"./icon.icns",
-        "synopsis":"OSIRIS 2.0.0",
+        "synopsis":"OSIRIS 2.0.3",
         "description":"OSIRIS is an open source free as in freedom app for storing and researching on events or relations.",
         "category":"Office"
     }

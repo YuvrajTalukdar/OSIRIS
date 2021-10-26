@@ -328,6 +328,7 @@ export class Relation_Node_Properties_Panel extends React.Component
 
         const node_type_list=[...this.props.THIS.state.node_type_data_list];
         var match_count=0;
+        let match_index_list=[]
         for(var a=0;a<node_type_list.length;a++)
         {
             if(node_type_list[a].node_type.toUpperCase().includes(data.toUpperCase()))
@@ -335,6 +336,7 @@ export class Relation_Node_Properties_Panel extends React.Component
                 node_type_list[a].show=true;
                 match_count++;
                 this.match_found_at2=a;
+                match_index_list.push(a);
             }
             else
             {   node_type_list[a].show=false;}
@@ -344,6 +346,18 @@ export class Relation_Node_Properties_Panel extends React.Component
         {
             if(node_type_list[this.match_found_at2].node_type.toUpperCase().localeCompare(data.toUpperCase())==0)
             {   type_matched=true;}
+        }
+        else
+        {
+            for(let a=0;a<match_index_list.length;a++)
+            {
+                if(node_type_list[match_index_list[a]].node_type.toUpperCase().localeCompare(data.toUpperCase())==0)
+                {
+                    type_matched=true;
+                    this.match_found_at2=match_index_list[a];
+                    break;
+                }
+            }
         }
         if(type_matched)
         {
